@@ -13,7 +13,7 @@ class CreateAccountScreen extends StatelessWidget {
               // Sky-blue background section (Logo part)
               Container(
                 width: double.infinity,
-                color: Color(0xFFBFDBFE), // Sky-blue color
+                color: const Color(0xFFBFDBFE), // Sky-blue color
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 30.0),
                   child: Column(
@@ -24,7 +24,7 @@ class CreateAccountScreen extends StatelessWidget {
                         height: 200.0,
                         fit: BoxFit.cover, // Logo ki height adjust karein
                       ),
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
@@ -39,40 +39,40 @@ class CreateAccountScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Get started for free Title
-                      Text(
+                      const Text(
                         'Get Started for free',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       // Email TextField
-                      TextField(
+                      const TextField(
                         decoration: InputDecoration(
                           labelText: 'Email',
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       // Your Name TextField
-                      TextField(
+                      const TextField(
                         obscureText: true,
                         decoration: InputDecoration(
                           labelText: 'Your Name',
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       // Password TextField
-                      TextField(
+                      const TextField(
                         obscureText: true,
                         decoration: InputDecoration(
                           labelText: 'Create New Password',
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       // SignUp Button
                       ElevatedButton(
                         onPressed: () {
@@ -81,14 +81,14 @@ class CreateAccountScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black, // Button color
                           foregroundColor: Colors.white,
-                          minimumSize: Size(double.infinity, 50),
+                          minimumSize: const Size(double.infinity, 50),
                         ),
-                        child: Text('Sign Up'),
+                        child: const Text('Sign Up'),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       // Or Continue Section
-                      Text('Or SignUp with'),
-                      SizedBox(height: 15),
+                      const Text('Or SignUp with'),
+                      const SizedBox(height: 15),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -96,29 +96,30 @@ class CreateAccountScreen extends StatelessWidget {
                             onPressed: () {
                               // Handle Google Login
                             },
-                            icon: FaIcon(FontAwesomeIcons.google, size: 25.0, color: Colors.red),
-                            label: Text('Google'),
+                            icon: const FaIcon(FontAwesomeIcons.google,
+                                size: 25.0, color: Colors.red),
+                            label: const Text('Google'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.black,
-                              side: BorderSide(color: Colors.grey),
+                              side: const BorderSide(color: Colors.grey),
                             ),
                           ),
                           ElevatedButton.icon(
                             onPressed: () {
                               // Handle Facebook Login
                             },
-                            icon: Icon(Icons.facebook, size: 25.0, color: Colors.blue),
-                            label: Text('Facebook'),
+                            icon: const Icon(Icons.facebook,
+                                size: 25.0, color: Colors.blue),
+                            label: const Text('Facebook'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.black,
-                              side: BorderSide(color: Colors.grey),
+                              side: const BorderSide(color: Colors.grey),
                             ),
                           ),
                         ],
                       ),
-
                     ],
                   ),
                 ),
