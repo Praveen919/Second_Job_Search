@@ -3,6 +3,9 @@ import 'package:second_job_search/screens/Bottom_navigation/find_jobs_page.dart'
 import 'package:second_job_search/screens/Bottom_navigation/home_page.dart';
 import 'package:second_job_search/screens/Bottom_navigation/my_blogs_page.dart';
 import 'package:second_job_search/screens/Bottom_navigation/my_profile_page.dart';
+import 'package:second_job_search/screens/saved_jobs_screen.dart';
+import 'package:second_job_search/screens/notifications_screen.dart';
+import 'package:second_job_search/screens/sms_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -40,39 +43,72 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         title: Image.asset(
           'assets/logo.png',
-          height: 105.0,
-          width: 105.0,
+          height: 80.0,
+          width: 80.0,
           fit: BoxFit.cover,
         ),
-        actions: const [
+        actions: [  // Remove `const` from here
           Padding(
-            padding: EdgeInsets.fromLTRB(0, 0, 15.0, 0),
+            padding: const EdgeInsets.fromLTRB(0, 0, 15.0, 0),
             child: Row(
               children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 5.0, 0),
-                  child: Icon(
-                    Icons.bookmark_border,
-                    color: Colors.white,
+                  padding: const EdgeInsets.fromLTRB(0, 0, 5.0, 0),
+                  child: IconButton(
+                    onPressed: () {
+                      // Handle the button press action here
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SavedJobsScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.bookmark_border,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 0, 5.0, 0),
-                  child: Icon(
-                    Icons.notifications_none,
-                    color: Colors.white,
+                  child: IconButton(
+                    onPressed: () {
+                      // Handle the button press action here
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.notifications_none,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 0, 5.0, 0),
-                  child: Icon(
-                    Icons.sms,
-                    color: Colors.white,
+                  child: IconButton(
+                    onPressed: () {
+                      // Handle the button press action here
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SMSScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.sms,
+                      color: Colors.white,
+                    ),
                   ),
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
         backgroundColor: const Color(0xFFBFDBFE),
       ),
@@ -89,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.black,
                   ),
                   Text(
-                    "  Dashboard",
+                    "Dashboard",
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.w500,
