@@ -121,6 +121,24 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                 ),
                 _buildOption(
                   context,
+                  icon: Icons.remove_red_eye_outlined,
+                  text: 'Password Update',
+                  onTap: () {},
+                ),
+                _buildOption(
+                  context,
+                  icon: Icons.add_comment_outlined,
+                  text: 'FAQ',
+                  onTap: () {},
+                ),
+                _buildOption(
+                  context,
+                  icon: Icons.ballot_outlined,
+                  text: 'Testimonials',
+                  onTap: () {},
+                ),
+                _buildOption(
+                  context,
                   icon: Icons.logout,
                   text: 'Log Out',
                   onTap: () {
@@ -211,10 +229,136 @@ class EditProfileScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Edit Profile"),
         backgroundColor: Colors.white,
+        elevation: 1,
         foregroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
-      body: Center(
-        child: const Text("Edit Profile Screen"),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              _buildTextField(
+                label: "Full Name",
+                hintText: "Enter your full name",
+                icon: Icons.person,
+                initialValue: "Puerto Rico",
+              ),
+              const SizedBox(height: 14.0),
+              _buildTextField(
+                label: "Nickname",
+                hintText: "Enter your nickname",
+                icon: Icons.tag,
+                initialValue: "puerto.rico",
+              ),
+              const SizedBox(height: 14.0),
+              _buildTextField(
+                label: "Email",
+                hintText: "Enter your email",
+                icon: Icons.email,
+                initialValue: "youremail@domain.com",
+              ),
+              const SizedBox(height: 14.0),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                      label: "Phone",
+                      hintText: "Enter your phone number",
+                      icon: Icons.phone,
+                      initialValue: "123-456-7890",
+                    ),
+                  ),
+                  const SizedBox(width: 14.0),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: "Gender",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                      ),
+                      value: "Female",
+                      items: const [
+                        DropdownMenuItem(value: "Male", child: Text("Male")),
+                        DropdownMenuItem(value: "Female", child: Text("Female")),
+                        DropdownMenuItem(value: "Other", child: Text("Other")),
+                      ],
+                      onChanged: (value) {},
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14.0),
+              _buildTextField(
+                label: "Address",
+                hintText: "Enter your address",
+                icon: Icons.location_on,
+                initialValue: "45 New Avenue, New York",
+              ),
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Handle submit action
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    "SUBMIT",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String hintText,
+    required IconData icon,
+    String? initialValue,
+  }) {
+    return TextField(
+      controller: TextEditingController(text: initialValue),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hintText,
+        prefixIcon: Icon(icon),
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.blueAccent),
+        ),
       ),
     );
   }
