@@ -1,9 +1,81 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:second_job_search/screens/create_account_screen.dart';
 import 'package:second_job_search/screens/change_password_screen.dart';
+import 'package:second_job_search/screens/main_home.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
+
+  // Replace this URL with your backend login endpoint
+  final String apiUrl = 'http://192.168.0.104:8000/api/users/login';
+
+  void login() async {
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      _showMessage('Please fill in all fields');
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": email,
+          "password": password,
+        }),
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+
+        // Navigate to the home screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(),
+          ),
+        );
+      } else {
+        final responseData = jsonDecode(response.body);
+        _showMessage(responseData['message'] ?? 'Invalid credentials');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      _showMessage('An error occurred. Please try again.');
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,9 +93,9 @@ class LoginScreen extends StatelessWidget {
                     children: [
                       Image.asset(
                         'assets/logo.png', // Replace with your logo asset
-                        width: 300.0, // Logo ki width adjust karein
+                        width: 300.0, // Adjust logo width
                         height: 200.0,
-                        fit: BoxFit.cover, // Logo ki height adjust karein
+                        fit: BoxFit.cover, // Adjust logo height
                       ),
                       SizedBox(height: 30),
                     ],
@@ -50,6 +122,7 @@ class LoginScreen extends StatelessWidget {
                       SizedBox(height: 20),
                       // Email TextField
                       TextField(
+                        controller: emailController,
                         decoration: InputDecoration(
                           labelText: 'Email',
                           border: OutlineInputBorder(),
@@ -58,6 +131,7 @@ class LoginScreen extends StatelessWidget {
                       SizedBox(height: 15),
                       // Password TextField
                       TextField(
+                        controller: passwordController,
                         obscureText: true,
                         decoration: InputDecoration(
                           labelText: 'Password',
@@ -83,15 +157,17 @@ class LoginScreen extends StatelessWidget {
                       SizedBox(height: 20),
                       // Login Button
                       ElevatedButton(
-                        onPressed: () {
-                          // Handle login action
-                        },
+                        onPressed: isLoading ? null : login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black, // Button color
                           foregroundColor: Colors.white,
                           minimumSize: Size(double.infinity, 50),
                         ),
-                        child: Text('Log In'),
+                        child: isLoading
+                            ? CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                            : Text('Log In'),
                       ),
                       SizedBox(height: 20),
                       // Or Continue Section
