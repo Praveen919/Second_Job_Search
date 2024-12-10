@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import 'package:second_job_search/screens/login.dart';
+import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 
 class MyProfilePageScreen extends StatefulWidget {
   const MyProfilePageScreen({super.key});
@@ -99,7 +100,12 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   context,
                   icon: Icons.dashboard,
                   text: 'Dashboard',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const Profilescreen()));
+                  },
                 ),
                 _buildOption(
                   context,
@@ -161,9 +167,9 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
 
   Widget _buildOption(BuildContext context,
       {required IconData icon,
-        required String text,
-        required VoidCallback onTap,
-        bool isLogout = false}) {
+      required String text,
+      required VoidCallback onTap,
+      bool isLogout = false}) {
     return ListTile(
       leading: Icon(icon, color: isLogout ? Colors.red : Colors.blue),
       title: Text(
@@ -290,7 +296,8 @@ class EditProfileScreen extends StatelessWidget {
                       value: "Female",
                       items: const [
                         DropdownMenuItem(value: "Male", child: Text("Male")),
-                        DropdownMenuItem(value: "Female", child: Text("Female")),
+                        DropdownMenuItem(
+                            value: "Female", child: Text("Female")),
                         DropdownMenuItem(value: "Other", child: Text("Other")),
                       ],
                       onChanged: (value) {},
