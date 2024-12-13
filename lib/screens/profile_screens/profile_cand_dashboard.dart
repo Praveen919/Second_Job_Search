@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:second_job_search/screens/notifications_screen.dart';
 
 class Profilescreen extends StatelessWidget {
   const Profilescreen({super.key});
@@ -17,7 +18,7 @@ class Profilescreen extends StatelessWidget {
       width: containerWidth,
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor, // Background color for the container
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.white, width: 1),
         boxShadow: [
@@ -86,7 +87,8 @@ class Profilescreen extends StatelessWidget {
         ),
         title: const Text(
           'Dashboard',
-          style: TextStyle(color: Colors.black, fontSize: 24),
+          style: TextStyle(
+              color: Colors.black, fontSize: 24, fontWeight: FontWeight.w500),
         ),
       ),
       body: SingleChildScrollView(
@@ -120,7 +122,8 @@ class Profilescreen extends StatelessWidget {
                       count: '1',
                       label: 'Applied Jobs',
                       iconColor: Colors.black,
-                      backgroundColor: Colors.purpleAccent,
+                      backgroundColor:
+                          const Color.fromARGB(255, 169, 210, 230)!,
                       containerWidth: screenWidth * 0.4, // Responsive width
                     ),
                   ),
@@ -131,7 +134,8 @@ class Profilescreen extends StatelessWidget {
                       count: '4525',
                       label: 'Job Alerts',
                       iconColor: Colors.black,
-                      backgroundColor: Colors.black26,
+                      backgroundColor:
+                          const Color.fromARGB(255, 179, 233, 182)!,
                       containerWidth: screenWidth * 0.4, // Responsive width
                     ),
                   ),
@@ -147,7 +151,8 @@ class Profilescreen extends StatelessWidget {
                       count: '0',
                       label: 'Messages',
                       iconColor: Colors.black,
-                      backgroundColor: Colors.black26,
+                      backgroundColor:
+                          const Color.fromARGB(255, 224, 189, 137)!,
                       containerWidth: screenWidth * 0.4, // Responsive width
                     ),
                   ),
@@ -158,7 +163,7 @@ class Profilescreen extends StatelessWidget {
                       count: '0',
                       label: 'Shortlist',
                       iconColor: Colors.black,
-                      backgroundColor: Colors.black26,
+                      backgroundColor: Colors.pink[200]!,
                       containerWidth: screenWidth * 0.4, // Responsive width
                     ),
                   ),
@@ -166,6 +171,8 @@ class Profilescreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               const ProfileViewsChart(),
+              const SizedBox(height: 10),
+              const Notifications(),
             ],
           ),
         ),
@@ -594,3 +601,177 @@ class _ProfileViewsChartState1 extends State<ProfileViewsChart> {
     );
   }
 }
+
+class Notifications extends StatelessWidget {
+  const Notifications({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+      padding: EdgeInsets.all(screenWidth * 0.04),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 8,
+            spreadRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Notifications',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth * 0.05,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'See All',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: screenWidth * 0.04,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Notification list
+          Column(
+            children: List.generate(notificationData.length, (index) {
+              final notification = notificationData[index];
+              return NotificationTile(notification: notification);
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class NotificationTile extends StatelessWidget {
+  final NotificationItem notification;
+
+  const NotificationTile({super.key, required this.notification});
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.all(screenWidth * 0.03),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            spreadRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notification.title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: screenWidth * 0.04,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notification.description,
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: screenWidth * 0.035,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notification.time,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: screenWidth * 0.03,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            notification.icon,
+            color: Colors.blue,
+            size: screenWidth * 0.06,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class NotificationItem {
+  final String title;
+  final String description;
+  final String time;
+  final IconData icon;
+
+  NotificationItem({
+    required this.title,
+    required this.description,
+    required this.time,
+    required this.icon,
+  });
+}
+
+final List<NotificationItem> notificationData = [
+  NotificationItem(
+    title: 'New Comment',
+    description:
+        'Dennis Nedry commented on Isla Nublar SOC2 compliance report: "Oh, I finished de-bugging the phones..."',
+    time: 'Last Wednesday at 9:42 AM',
+    icon: Icons.comment,
+  ),
+  NotificationItem(
+    title: 'File Uploaded',
+    description:
+        'Dennis Nedry uploaded "landing_page_ver2.fig (2MB)" to Isla Nublar report.',
+    time: 'Last Wednesday at 10:00 AM',
+    icon: Icons.attach_file,
+  ),
+  NotificationItem(
+    title: 'New Mention',
+    description: '@You were mentioned in "Isla Nublar SOC2 compliance report"',
+    time: 'Yesterday at 3:15 PM',
+    icon: Icons.alternate_email,
+  ),
+];

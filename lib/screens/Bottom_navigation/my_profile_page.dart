@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
+import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/resume_screen.dart';
 
 class MyProfilePageScreen extends StatefulWidget {
   const MyProfilePageScreen({super.key});
@@ -111,7 +112,12 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   context,
                   icon: Icons.article,
                   text: 'My Resume',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ResumeScreen()));
+                  },
                 ),
                 _buildOption(
                   context,
