@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:second_job_search/screens/main_home.dart';
+import 'package:second_job_search/screens/splashscreen.dart';
 // import 'package:second_job_search/screens/login.dart';
 
 void main() {
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue, // Sets the primary color of your app
       ),
-      home: const HomeScreen(), // Sets LoginScreen as the home screen
+      home: const SplashScreen(), // Sets LoginScreen as the home screen
     );
   }
 }

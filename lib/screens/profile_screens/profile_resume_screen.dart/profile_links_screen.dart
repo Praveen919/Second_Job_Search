@@ -1,54 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/experience_skills_screen.dart';
-import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/profile_links_screen.dart';
 
-class QualificationScreen extends StatefulWidget {
-  const QualificationScreen({super.key});
+class ProfileLinksScreen extends StatefulWidget {
+  const ProfileLinksScreen({super.key});
 
   @override
-  State<QualificationScreen> createState() => _QualificationScreenState();
+  State<ProfileLinksScreen> createState() => _ProfileLinksScreenState();
 }
 
-class _QualificationScreenState extends State<QualificationScreen> {
-  bool isEditable = false;
-
+class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
+  // The fields are always editable, so no need for isEditable flag
   final Map<String, String> personalInfo = {
-    'Full Name': 'SAdf',
-    'Email': 'ujfythdth64@gmail.com',
-    'Phone': '+91 9881678837',
-    'Gender': 'Male',
-    'Nationality': 'India',
-    'Address': 'Dharavi',
+    'Portfolio Link': 'https://xyz.com',
+    'GitHub Link': 'https://github.com',
+    'LinkedIn Link': 'https://linkedin.com',
+    'Facebook Link': 'https://facebook.com',
+    'Twitter Link': 'https://twitter.com',
+    'Other Links': 'https://others.com',
   };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // Set background color of the screen
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            radius: 20,
-            backgroundImage: const AssetImage(
-                'assets/logo.png'), // Ensure this is correct in pubspec.yaml
+          child: Image.asset(
+            'assets/logo.png', // Replace with your actual image path
+            width: 40,
+            height: 40,
           ),
         ),
         title: const Text(
-          'Qualifications',
+          'Social Links',
           style: TextStyle(color: Colors.black, fontSize: 24),
         ),
         actions: [
           TextButton(
             onPressed: () {
-              setState(() {
-                isEditable = !isEditable;
-              });
+              // Handle Done action, you can save or submit changes here
             },
-            child: Text(
-              isEditable ? 'Save' : 'Edit',
-              style: const TextStyle(color: Colors.blue, fontSize: 16),
+            child: const Text(
+              'Done',
+              style: TextStyle(color: Colors.blue, fontSize: 16),
             ),
           ),
         ],
@@ -98,7 +94,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Personal Information',
+                      'Social Links',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -110,7 +106,6 @@ class _QualificationScreenState extends State<QualificationScreen> {
                             _buildEditableRow(
                               label: key,
                               value: personalInfo[key]!,
-                              isEditable: isEditable,
                               onChanged: (newValue) {
                                 setState(() {
                                   personalInfo[key] = newValue;
@@ -127,44 +122,41 @@ class _QualificationScreenState extends State<QualificationScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 2 -
+                        30, // Half of the screen width minus padding
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
-                    ),
-                    child: const Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                      child: Text(
+                      child: const Text(
                         'Back',
                         style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      //Navigate to next page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ProfileLinksScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 2 -
+                        30, // Half of the screen width minus padding
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Add navigation logic to the next page if required
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
-                    ),
-                    child: const Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                      child: Text(
+                      child: const Text(
                         'Next page',
                         style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
@@ -182,7 +174,6 @@ class _QualificationScreenState extends State<QualificationScreen> {
   Widget _buildEditableRow({
     required String label,
     required String value,
-    required bool isEditable,
     required Function(String) onChanged,
   }) {
     return Row(
@@ -197,29 +188,21 @@ class _QualificationScreenState extends State<QualificationScreen> {
         ),
         SizedBox(
           width: 200,
-          child: isEditable
-              ? TextFormField(
-                  initialValue: value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  onChanged: onChanged,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  ),
-                )
-              : Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+          child: TextFormField(
+            initialValue: value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            onChanged: onChanged,
+            decoration: const InputDecoration(
+              border: InputBorder.none, // Keep the border none
+              contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+            ),
+          ),
         ),
       ],
     );
   }
 }
+
