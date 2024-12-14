@@ -3,6 +3,8 @@ import 'package:second_job_search/screens/Bottom_navigation/find_jobs_page.dart'
 import 'package:second_job_search/screens/Bottom_navigation/home_page.dart';
 import 'package:second_job_search/screens/Bottom_navigation/my_blogs_page.dart';
 import 'package:second_job_search/screens/Bottom_navigation/my_profile_page.dart';
+import 'package:second_job_search/screens/login.dart';
+import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/saved_jobs_screen.dart';
 import 'package:second_job_search/screens/notifications_screen.dart';
 import 'package:second_job_search/screens/sms_screen.dart';
@@ -47,7 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
           width: 80.0,
           fit: BoxFit.cover,
         ),
-        actions: [  // Remove `const` from here
+        actions: [
+          // Remove `const` from here
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 15.0, 0),
             child: Row(
@@ -113,28 +116,81 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: const Color(0xFFBFDBFE),
       ),
       drawer: Drawer(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.blueGrey[50],
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            ListTile(
-              title: const Row(
-                children: [
-                  Icon(
-                    Icons.dashboard,
-                    color: Colors.black,
-                  ),
-                  Text(
-                    "Dashboard",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+            // Drawer header section for a more polished look
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color(0xFFBFDBFE),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              onTap: () {},
+              child: Center(
+                child: Text(
+                  'Menu',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
+            // Dashboard ListTile
+            ListTile(
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              leading: Icon(
+                Icons.dashboard,
+                color: Colors.blueGrey,
+                size: 30,
+              ),
+              title: Text(
+                "Dashboard",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () {
+                // Your navigation logic here
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const Profilescreen(),
+                  ),
+                );
+              },
+            ),
+            // Register/Login ListTile with added styling
+            ListTile(
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              leading: Icon(
+                Icons.login,
+                color: const Color.fromARGB(255, 3, 79, 117),
+                size: 24,
+              ),
+              title: Text(
+                "Register / Login",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () {
+                // Your navigation logic here
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LoginScreen(),
+                  ),
+                );
+              },
+            ),
+            // Add other ListTiles with similar design
           ],
         ),
       ),
