@@ -26,7 +26,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       Fluttertoast.showToast(
         msg: 'Current password is incorrect.',
         backgroundColor: Colors.red,
-        textColor: Colors.white,
+        textColor: Colors.blue,
       );
       return;
     }
@@ -35,7 +35,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       Fluttertoast.showToast(
         msg: 'Please fill in all fields.',
         backgroundColor: Colors.red,
-        textColor: Colors.white,
+        textColor: Colors.blue,
       );
       return;
     }
@@ -44,7 +44,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       Fluttertoast.showToast(
         msg: 'New passwords do not match.',
         backgroundColor: Colors.red,
-        textColor: Colors.white,
+        textColor: Colors.blue,
       );
       return;
     }
@@ -52,7 +52,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
     Fluttertoast.showToast(
       msg: 'Password updated successfully.',
       backgroundColor: Colors.green,
-      textColor: Colors.white,
+      textColor: Colors.blue,
     );
 
     _currentPasswordController.clear();
@@ -115,6 +115,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                       obscureText: true,
                       decoration: const InputDecoration(
                         labelText: 'Current Password',
+                        labelStyle: TextStyle(color: Colors.blue),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -124,6 +125,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                       obscureText: true,
                       decoration: const InputDecoration(
                         labelText: 'New Password',
+                        labelStyle: TextStyle(color: Colors.blue),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -133,6 +135,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                       obscureText: true,
                       decoration: const InputDecoration(
                         labelText: 'Confirm New Password',
+                        labelStyle: TextStyle(color: Colors.blue),
                         border: OutlineInputBorder(),
                       ),
                     ),
