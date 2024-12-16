@@ -3,7 +3,9 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import 'package:second_job_search/screens/login.dart';
+import 'package:second_job_search/screens/profile_screens/password_update_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
+import 'package:second_job_search/screens/profile_screens/profile_cand_faq_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/resume_screen.dart';
 
 class MyProfilePageScreen extends StatefulWidget {
@@ -135,13 +137,24 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   context,
                   icon: Icons.remove_red_eye_outlined,
                   text: 'Password Update',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const UpdatePasswordScreen()));
+                  },
                 ),
                 _buildOption(
                   context,
                   icon: Icons.add_comment_outlined,
                   text: 'FAQ',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const FAQScreen()));
+                  },
                 ),
                 _buildOption(
                   context,
