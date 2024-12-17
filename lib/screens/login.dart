@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:second_job_search/screens/create_account_screen.dart';
 import 'package:second_job_search/screens/change_password_screen.dart';
 import 'package:second_job_search/screens/main_home.dart';
+import 'package:second_job_search/Config/config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   // Replace this URL with your backend login endpoint
-  final String apiUrl = 'http://192.168.0.104:8000/api/users/login';
+  final String apiUrl = '${AppConfig.baseUrl}/api/users/login';
 
   void login() async {
     String email = emailController.text.trim();

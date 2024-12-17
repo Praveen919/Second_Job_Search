@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:second_job_search/Config/config.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -28,7 +29,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
     try {
       // Replace with your backend URL
-      const String apiUrl = 'http://192.168.0.104:8000/api/users/register';
+      const String apiUrl = '${AppConfig.baseUrl}/api/users/register';
 
       final response = await http.post(
         Uri.parse(apiUrl),
