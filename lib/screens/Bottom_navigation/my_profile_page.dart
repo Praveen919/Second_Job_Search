@@ -129,8 +129,8 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                 ),
                 _buildOption(
                   context,
-                  icon: Icons.notifications,
-                  text: 'Notification Settings',
+                  icon: Icons.local_offer_outlined,
+                  text: 'Packages',
                   onTap: () {},
                 ),
                 _buildOption(
