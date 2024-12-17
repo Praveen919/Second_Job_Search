@@ -23,14 +23,15 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
     return Scaffold(
       backgroundColor: Colors.white, // Set background color of the screen
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFBFDBFE),
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Image.asset(
             'assets/logo.png', // Replace with your actual image path
-            width: 40,
-            height: 40,
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
           ),
         ),
         title: const Text(
@@ -51,31 +52,9 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 100),
           child: Column(
             children: [
-              const SizedBox(height: 20),
-              Center(
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: const AssetImage('assets/logo.png'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () {
-                        // Handle Change Profile Photo action
-                      },
-                      child: const Text(
-                        'Change Profile Photo',
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
@@ -157,7 +136,7 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
                       child: const Text(
-                        'Next page',
+                        'Save',
                         style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
@@ -205,4 +184,3 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
     );
   }
 }
-
