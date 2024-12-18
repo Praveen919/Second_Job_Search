@@ -35,8 +35,8 @@ class _SplashScreenState extends State<SplashScreen> {
             children: [
               Image.asset(
                 'assets/logo.png',
-                width: 170,
-                height: 170,
+                width: 250,
+                height: 250,
               ),
               const Text(
                 "Second Job Search",
@@ -46,9 +46,10 @@ class _SplashScreenState extends State<SplashScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              const SizedBox(height: 5),
               const SpinKitWave(
                 color: Color.fromARGB(255, 5, 64, 146),
-                size: 35,
+                size: 30,
               )
             ],
           ),
