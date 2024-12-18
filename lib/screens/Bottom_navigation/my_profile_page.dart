@@ -8,6 +8,7 @@ import 'package:second_job_search/screens/profile_screens/password_update_screen
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_faq_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/resume_screen.dart';
+import 'package:second_job_search/screens/profile_screens/testinomials_screen.dart';
 
 class MyProfilePageScreen extends StatefulWidget {
   const MyProfilePageScreen({super.key});
@@ -166,7 +167,14 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   context,
                   icon: Icons.ballot_outlined,
                   text: 'Testimonials',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TestimonialsScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _buildOption(
                   context,

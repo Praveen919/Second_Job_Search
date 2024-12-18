@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/experience_skills_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/profile_links_screen.dart';
 
 class QualificationScreen extends StatefulWidget {
