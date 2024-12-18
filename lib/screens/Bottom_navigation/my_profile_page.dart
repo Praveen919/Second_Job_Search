@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import 'package:second_job_search/screens/login.dart';
+import 'package:second_job_search/screens/profile_screens/candidate_package_screen.dart';
 import 'package:second_job_search/screens/profile_screens/password_update_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_faq_screen.dart';
@@ -131,7 +132,12 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   context,
                   icon: Icons.local_offer_outlined,
                   text: 'Packages',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SubscriptionScreen()));
+                  },
                 ),
                 _buildOption(
                   context,
