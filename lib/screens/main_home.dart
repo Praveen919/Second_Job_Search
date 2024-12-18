@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 5.0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 0, 5.0, 0),
                   child: IconButton(
                     onPressed: () {
                       // Handle the button press action here
@@ -92,14 +92,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 5.0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 0, 5.0, 0),
                   child: IconButton(
                     onPressed: () {
                       // Handle the button press action here
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const SMSScreen(),
+                          builder: (context) => SmsScreen(),
                         ),
                       );
                     },
@@ -121,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: EdgeInsets.zero,
           children: [
             // Drawer header section for a more polished look
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(
                 color: Color(0xFFBFDBFE),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -140,13 +140,13 @@ class _HomeScreenState extends State<HomeScreen> {
             // Dashboard ListTile
             ListTile(
               contentPadding:
-                  EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              leading: Icon(
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              leading: const Icon(
                 Icons.dashboard,
                 color: Colors.blueGrey,
                 size: 30,
               ),
-              title: Text(
+              title: const Text(
                 "Dashboard",
                 style: TextStyle(
                   color: Colors.black,
@@ -167,13 +167,13 @@ class _HomeScreenState extends State<HomeScreen> {
             // Register/Login ListTile with added styling
             ListTile(
               contentPadding:
-                  EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              leading: Icon(
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              leading: const Icon(
                 Icons.login,
-                color: const Color.fromARGB(255, 3, 79, 117),
+                color: Color.fromARGB(255, 3, 79, 117),
                 size: 24,
               ),
-              title: Text(
+              title: const Text(
                 "Register / Login",
                 style: TextStyle(
                   color: Colors.black,
