@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/profile_links_screen.dart';
+import 'package:flutter_document_picker/flutter_document_picker.dart';
 
 class QualificationScreen extends StatefulWidget {
   const QualificationScreen({super.key});
@@ -9,216 +9,288 @@ class QualificationScreen extends StatefulWidget {
 }
 
 class _QualificationScreenState extends State<QualificationScreen> {
-  bool isEditable = false;
+  String? selectedCategory;
+  String? uploadedFileName;
 
-  final Map<String, String> personalInfo = {
-    'Full Name': 'SAdf',
-    'Email': 'ujfythdth64@gmail.com',
-    'Phone': '+91 9881678837',
-    'Gender': 'Male',
-    'Nationality': 'India',
-    'Address': 'Dharavi',
-  };
+  // List to store education details
+  List<Map<String, String>> educationDetails = [];
+
+  // Function to pick file (PDF)
+  Future<void> pickFile() async {
+    // Open the document picker and pick any document
+    final result = await FlutterDocumentPicker.openDocument();
+
+    if (result != null) {
+      setState(() {
+        uploadedFileName =
+            result.split('/').last; // Extract file name from path
+      });
+    }
+  }
+
+  // Function to show the popup for adding education details
+  void showAddEducationPopup() {
+    final degreeController = TextEditingController();
+    final universityController = TextEditingController();
+    final yearController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Add Education Details"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: degreeController,
+                decoration: const InputDecoration(labelText: 'Degree'),
+              ),
+              TextField(
+                controller: universityController,
+                decoration: const InputDecoration(labelText: 'University'),
+              ),
+              TextField(
+                controller: yearController,
+                decoration: const InputDecoration(labelText: 'Year'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Save the education details
+                setState(() {
+                  educationDetails.add({
+                    'degree': degreeController.text,
+                    'university': universityController.text,
+                    'year': yearController.text,
+                  });
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Function to edit education details
+  void showEditEducationPopup(int index) {
+    final degreeController =
+        TextEditingController(text: educationDetails[index]['degree']);
+    final universityController =
+        TextEditingController(text: educationDetails[index]['university']);
+    final yearController =
+        TextEditingController(text: educationDetails[index]['year']);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Edit Education Details"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: degreeController,
+                decoration: const InputDecoration(labelText: 'Degree'),
+              ),
+              TextField(
+                controller: universityController,
+                decoration: const InputDecoration(labelText: 'University'),
+              ),
+              TextField(
+                controller: yearController,
+                decoration: const InputDecoration(labelText: 'Year'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Update the education details
+                setState(() {
+                  educationDetails[index] = {
+                    'degree': degreeController.text,
+                    'university': universityController.text,
+                    'year': yearController.text,
+                  };
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Function to delete education details
+  void deleteEducationDetail(int index) {
+    setState(() {
+      educationDetails.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            radius: 20,
-            backgroundImage: const AssetImage(
-                'assets/logo.png'), // Ensure this is correct in pubspec.yaml
+          child: Image.asset(
+            'assets/logo.png',
+            fit: BoxFit.contain,
           ),
         ),
         title: const Text(
           'Qualifications',
           style: TextStyle(color: Colors.black, fontSize: 24),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                isEditable = !isEditable;
-              });
-            },
-            child: Text(
-              isEditable ? 'Save' : 'Edit',
-              style: const TextStyle(color: Colors.blue, fontSize: 16),
-            ),
-          ),
-        ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              Center(
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: const AssetImage('assets/logo.png'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () {
-                        // Handle Change Profile Photo action
-                      },
-                      child: const Text(
-                        'Change Profile Photo',
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      blurRadius: 8,
-                      spreadRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Personal Information',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    ...personalInfo.keys.map((key) => Column(
-                          children: [
-                            _buildEditableRow(
-                              label: key,
-                              value: personalInfo[key]!,
-                              isEditable: isEditable,
-                              onChanged: (newValue) {
-                                setState(() {
-                                  personalInfo[key] = newValue;
-                                });
-                              },
-                            ),
-                            const Divider(),
-                          ],
-                        )),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Select your job type:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: RadioListTile<String>(
+                    title: const Text('Technical'),
+                    value: 'Technical',
+                    groupValue: selectedCategory,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCategory = value;
+                      });
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                      child: Text(
-                        'Back',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      //Navigate to next page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ProfileLinksScreen()),
-                      );
+                ),
+                Expanded(
+                  child: RadioListTile<String>(
+                    title: const Text('Non-Technical'),
+                    value: 'Non-Technical',
+                    groupValue: selectedCategory,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCategory = value;
+                      });
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                      child: Text(
-                        'Next page',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Upload your resume:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: pickFile,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                child: Text(
+                  'Upload PDF File',
+                  style: TextStyle(fontSize: 14, color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            if (uploadedFileName != null)
+              Row(
+                children: [
+                  const Icon(Icons.insert_drive_file, color: Colors.blue),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      uploadedFileName!,
+                      style: const TextStyle(fontSize: 16),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Education Details:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add, color: Colors.green),
+                  onPressed: showAddEducationPopup,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            // Education details list and the + button
+            Column(
+              children: educationDetails.map((education) {
+                int index = educationDetails.indexOf(education);
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  elevation: 5,
+                  child: ListTile(
+                    title: Text(
+                        '${education['degree']} - ${education['university']}'),
+                    subtitle: Text('Year: ${education['year']}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () {
+                            showEditEducationPopup(index);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            deleteEducationDetail(index);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _buildEditableRow({
-    required String label,
-    required String value,
-    required bool isEditable,
-    required Function(String) onChanged,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
-          ),
-        ),
-        SizedBox(
-          width: 200,
-          child: isEditable
-              ? TextFormField(
-                  initialValue: value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  onChanged: onChanged,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  ),
-                )
-              : Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-        ),
-      ],
     );
   }
 }
