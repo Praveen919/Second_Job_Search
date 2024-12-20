@@ -9,22 +9,22 @@ class HomePage extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor:  Color(0xFFBFDBFE),
+      backgroundColor: Color(0xFFBFDBFE),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
               const SizedBox(height: 20),
               const Center(
-              child: Text(
-                "Hello Shakir, Good Day 👋",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                child: Text(
+                  "Hello Shakir, Good Day 👋",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
               ),
               const SizedBox(height: 10),
               const Center(
@@ -42,7 +42,6 @@ class HomePage extends StatelessWidget {
               Stack(
                 alignment: Alignment.topCenter,
                 children: [
-                  // White container for recommendations
                   Container(
                     margin: EdgeInsets.only(top: screenHeight * 0.1),
                     width: double.infinity,
@@ -84,11 +83,10 @@ class HomePage extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          // List of Recommendations
                           ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: 5, // Number of items
+                            itemCount: 5,
                             itemBuilder: (context, index) {
                               return Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -106,7 +104,15 @@ class HomePage extends StatelessWidget {
                                     subtitle: const Text("Company Name"),
                                     trailing: const Icon(Icons.arrow_forward),
                                     onTap: () {
-                                      // Handle card tap
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => JobDescriptionPage(
+                                            jobTitle: "Job Title ${index + 1}",
+                                            companyName: "Company Name",
+                                          ),
+                                        ),
+                                      );
                                     },
                                   ),
                                 ),
@@ -117,7 +123,6 @@ class HomePage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Search Box Container
                   Container(
                     width: screenWidth * 0.85,
                     height: screenHeight * 0.2,
@@ -162,6 +167,101 @@ class HomePage extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class JobDescriptionPage extends StatelessWidget {
+  final String jobTitle;
+  final String companyName;
+
+  const JobDescriptionPage({
+    super.key,
+    required this.jobTitle,
+    required this.companyName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(jobTitle),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.work, size: 50),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      jobTitle,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      companyName,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView(
+                children: [
+                  buildSection("Job Description",
+                      "We need a UI Designer who can work for us."),
+                  buildSection("Responsibilities",
+                      "Work with developers, meet deadlines."),
+                  buildSection("Qualifications", "Degree in Design."),
+                  buildSection("About the Company",
+                      "Soul Tech, an innovative tech company."),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Handle Apply button tap
+              },
+              child: const Text("Apply"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildSection(String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Card(
+        color: Colors.grey.shade100,
+        child: ListTile(
+          title: Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: title == "Job Description"
+                  ? Colors.blue
+                  : title == "Responsibilities"
+                      ? Colors.green
+                      : title == "Qualifications"
+                          ? Colors.orange
+                          : Colors.black,
+            ),
+          ),
+          subtitle: Text(content),
         ),
       ),
     );
