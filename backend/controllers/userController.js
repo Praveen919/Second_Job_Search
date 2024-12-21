@@ -60,4 +60,21 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser };
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find(); // Retrieve all users
+
+    // Exclude passwords from all users
+    const usersWithoutPasswords = users.map(user => {
+      const { password, ...otherDetails } = user._doc;
+      return otherDetails;
+    });
+
+    res.status(200).json(usersWithoutPasswords);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { registerUser, loginUser, getAllUsers };
