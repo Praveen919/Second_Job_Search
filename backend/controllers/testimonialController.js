@@ -1,4 +1,5 @@
 const Testimonial = require('../models/testimonialModel');
+const multer = require('multer');
 
 const getAllTestimonials = async (req, res) => {
   try {

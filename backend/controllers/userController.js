@@ -223,6 +223,17 @@ const deleteDnd = async (req, res) => {
   }
 };
 
+const userImageStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../public/users/images')); // Adjust path as needed
+  },
+  filename: (req, file, cb) => {
+    const extension = path.extname(file.originalname);
+    const filename = `${Date.now()}${extension}`; // Unique filename based on timestamp
+    cb(null, filename);
+  }
+});
+
 // Define multer upload settings
 const uploadUserImage = multer({
   storage: userImageStorage, // Correct variable name here
