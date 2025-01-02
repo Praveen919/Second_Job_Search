@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/qualification_screen.dart';
+import 'package:second_job_search/screens/candidate_screen/profile_screens/profile_resume_screen.dart/qualification_screen.dart';
 
 class ResumeScreen extends StatelessWidget {
   const ResumeScreen({super.key});

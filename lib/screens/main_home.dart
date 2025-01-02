@@ -190,6 +190,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+            ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              leading: const Icon(
+                Icons.group_work,
+                color: Color.fromARGB(255, 3, 79, 117),
+                size: 24,
+              ),
+              title: const Text(
+                "Employee",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () {
+                // Your navigation logic here
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HomePage(),
+                  ),
+                );
+              },
+            ),
             // Add other ListTiles with similar design
           ],
         ),

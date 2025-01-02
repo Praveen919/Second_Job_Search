@@ -15,9 +15,23 @@ class _QualificationScreenState extends State<QualificationScreen> {
   // List to store education details
   List<Map<String, String>> educationDetails = [];
 
+  List<String> months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
+
   // Function to pick file (PDF)
   Future<void> pickFile() async {
-    // Open the document picker and pick any document
     final result = await FlutterDocumentPicker.openDocument();
 
     if (result != null) {
@@ -27,54 +41,210 @@ class _QualificationScreenState extends State<QualificationScreen> {
       });
     }
   }
-
-  // Function to show the popup for adding education details
   void showAddEducationPopup() {
     final degreeController = TextEditingController();
     final universityController = TextEditingController();
-    final yearController = TextEditingController();
+    final startYearController = TextEditingController();
+    String? startMonth;
+    final endYearController = TextEditingController();
+    String? endMonth;
+    final cgpaController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Add Education Details"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: degreeController,
-                decoration: const InputDecoration(labelText: 'Degree'),
-              ),
-              TextField(
-                controller: universityController,
-                decoration: const InputDecoration(labelText: 'University'),
-              ),
-              TextField(
-                controller: yearController,
-                decoration: const InputDecoration(labelText: 'Year'),
-              ),
-            ],
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(20), // Rounded corners for elegance
+          ),
+          title: const Text(
+            "Add Education Details",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: degreeController,
+                  decoration: InputDecoration(
+                    labelText: 'Degree',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 15),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: universityController,
+                  decoration: InputDecoration(
+                    labelText: 'University',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 15),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: startYearController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Start Year',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: startMonth,
+                        onChanged: (value) {
+                          setState(() {
+                            startMonth = value;
+                          });
+                        },
+                        items: months.map((String month) {
+                          return DropdownMenuItem<String>(
+                            value: month,
+                            child: Text(month),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Start Month',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: endYearController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'End Year',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: endMonth,
+                        onChanged: (value) {
+                          setState(() {
+                            endMonth = value;
+                          });
+                        },
+                        items: months.map((String month) {
+                          return DropdownMenuItem<String>(
+                            value: month,
+                            child: Text(month),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          labelText: 'End Month',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: cgpaController,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: "CGPA or Percentage",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 15),
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
-                // Save the education details
-                setState(() {
-                  educationDetails.add({
-                    'degree': degreeController.text,
-                    'university': universityController.text,
-                    'year': yearController.text,
+                if (startMonth != null && endMonth != null) {
+                  setState(() {
+                    educationDetails.add({
+                      'degree': degreeController.text,
+                      'university': universityController.text,
+                      'startYear': startYearController.text,
+                      'startMonth': startMonth!,
+                      'endYear': endYearController.text,
+                      'endMonth': endMonth!,
+                      'cgpa': cgpaController.text,
+                    });
                   });
-                });
-                Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue, // Button color
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10), // Rounded button
+                ),
+              ),
               child: const Text('Save'),
             ),
           ],
@@ -89,50 +259,210 @@ class _QualificationScreenState extends State<QualificationScreen> {
         TextEditingController(text: educationDetails[index]['degree']);
     final universityController =
         TextEditingController(text: educationDetails[index]['university']);
-    final yearController =
-        TextEditingController(text: educationDetails[index]['year']);
+    final startYearController =
+        TextEditingController(text: educationDetails[index]['startYear']);
+    String? startMonth = educationDetails[index]['startMonth'];
+    final endYearController =
+        TextEditingController(text: educationDetails[index]['endYear']);
+    String? endMonth = educationDetails[index]['endMonth'];
+    final cgpaController =
+        TextEditingController(text: educationDetails[index]['cgpa']);
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Edit Education Details"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: degreeController,
-                decoration: const InputDecoration(labelText: 'Degree'),
-              ),
-              TextField(
-                controller: universityController,
-                decoration: const InputDecoration(labelText: 'University'),
-              ),
-              TextField(
-                controller: yearController,
-                decoration: const InputDecoration(labelText: 'Year'),
-              ),
-            ],
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(20), // Rounded corners for elegance
+          ),
+          title: const Text(
+            "Edit Education Details",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: degreeController,
+                  decoration: InputDecoration(
+                    labelText: 'Degree',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 15),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: universityController,
+                  decoration: InputDecoration(
+                    labelText: 'University',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 15),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: startYearController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Start Year',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: startMonth,
+                        onChanged: (value) {
+                          setState(() {
+                            startMonth = value;
+                          });
+                        },
+                        items: months.map((String month) {
+                          return DropdownMenuItem<String>(
+                            value: month,
+                            child: Text(month),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          labelText: 'Start Month',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: endYearController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'End Year',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: endMonth,
+                        onChanged: (value) {
+                          setState(() {
+                            endMonth = value;
+                          });
+                        },
+                        items: months.map((String month) {
+                          return DropdownMenuItem<String>(
+                            value: month,
+                            child: Text(month),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          labelText: 'End Month',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: cgpaController,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: 'CGPA or Percentage',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 15),
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
-                // Update the education details
-                setState(() {
-                  educationDetails[index] = {
-                    'degree': degreeController.text,
-                    'university': universityController.text,
-                    'year': yearController.text,
-                  };
-                });
-                Navigator.of(context).pop();
+                if (startMonth != null && endMonth != null) {
+                  setState(() {
+                    educationDetails[index] = {
+                      'degree': degreeController.text,
+                      'university': universityController.text,
+                      'startYear': startYearController.text,
+                      'startMonth': startMonth!,
+                      'endYear': endYearController.text,
+                      'endMonth': endMonth!,
+                      'cgpa': cgpaController.text,
+                    };
+                  });
+                  Navigator.of(context).pop();
+                }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue, // Button color
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10), // Rounded button
+                ),
+              ),
               child: const Text('Save'),
             ),
           ],
@@ -147,6 +477,8 @@ class _QualificationScreenState extends State<QualificationScreen> {
       educationDetails.removeAt(index);
     });
   }
+
+  bool showAllCards = false; // Flag to control if all cards should be shown
 
   @override
   Widget build(BuildContext context) {
@@ -256,38 +588,111 @@ class _QualificationScreenState extends State<QualificationScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            // Education details list and the + button
             Column(
-              children: educationDetails.map((education) {
-                int index = educationDetails.indexOf(education);
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  elevation: 5,
-                  child: ListTile(
-                    title: Text(
-                        '${education['degree']} - ${education['university']}'),
-                    subtitle: Text('Year: ${education['year']}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            showEditEducationPopup(index);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            deleteEducationDetail(index);
-                          },
-                        ),
-                      ],
+              children: [
+                // Show only the first 2 cards initially
+                ...(showAllCards
+                    ? educationDetails.map((education) {
+                        int index = educationDetails.indexOf(education);
+                        return Column(
+                          children: [
+                            Card(
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              color: Colors.transparent,
+                              elevation: 0,
+                              child: ListTile(
+                                title: Text(
+                                  '${education['degree']} - ${education['university']}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                subtitle: Text(
+                                  'Year: ${education['startYear']} - ${education['endYear']}',
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () =>
+                                          showEditEducationPopup(index),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () =>
+                                          deleteEducationDetail(index),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Divider(
+                              color: Colors.black26,
+                              thickness: 1,
+                            ),
+                          ],
+                        );
+                      }).toList()
+                    : educationDetails.take(2).map((education) {
+                        int index = educationDetails.indexOf(education);
+                        return Column(
+                          children: [
+                            Card(
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              color: Colors.transparent,
+                              elevation: 0,
+                              child: ListTile(
+                                title: Text(
+                                  '${education['degree']} - ${education['university']}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                subtitle: Text(
+                                  'Year: ${education['startYear']} - ${education['endYear']}',
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () =>
+                                          showEditEducationPopup(index),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () =>
+                                          deleteEducationDetail(index),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Divider(
+                              color: Colors.black26,
+                              thickness: 1,
+                            ),
+                          ],
+                        );
+                      }).toList()),
+                // Button to toggle between showing all cards and the first 2 cards
+                if (educationDetails.length > 2)
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        showAllCards = !showAllCards; // Toggle the view mode
+                      });
+                    },
+                    child: Text(
+                      showAllCards ? 'View Less' : 'View All',
+                      style: const TextStyle(color: Colors.blue),
                     ),
                   ),
-                );
-              }).toList(),
-            ),
+              ],
+            )
           ],
         ),
       ),
