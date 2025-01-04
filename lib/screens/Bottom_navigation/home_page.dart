@@ -1,7 +1,44 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:second_job_search/Config/config.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<dynamic> jobList = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchJobs();
+  }
+
+  Future<void> fetchJobs() async {
+    final url = "${AppConfig.baseUrl}/api/jobs";
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        setState(() {
+          jobList = json.decode(response.body);
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load jobs');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print("Error fetching jobs: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -9,33 +46,27 @@ class HomePage extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Color(0xFFBFDBFE),
+      backgroundColor: const Color(0xFFBFDBFE),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
               const SizedBox(height: 20),
-              const Center(
-                child: Text(
-                  "Hello Shakir, Good Day 👋",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+              const Text(
+                "Hello Shakir, Good Day 👋",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
-              const Center(
-                child: Text(
-                  "Search & Land on your dream job",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+              SizedBox(height: screenHeight * 0.05),
+              const Text(
+                "Search & Land on your dream job",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               SizedBox(height: screenHeight * 0.05),
@@ -44,7 +75,6 @@ class HomePage extends StatelessWidget {
                 children: [
                   Container(
                     margin: EdgeInsets.only(top: screenHeight * 0.1),
-                    width: double.infinity,
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.vertical(
@@ -54,15 +84,13 @@ class HomePage extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 90, 20, 20),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
-                                "Recommendation",
+                                "Recommendations",
                                 style: TextStyle(
-                                  color: Colors.black,
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -76,45 +104,43 @@ class HomePage extends StatelessWidget {
                                   style: TextStyle(
                                     color: Colors.blue,
                                     fontSize: 18,
-                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 20),
-                          ListView.builder(
+                          isLoading
+                              ? const CircularProgressIndicator()
+                              : ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: 5,
+                            itemCount: jobList.length,
                             itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Card(
-                                  elevation: 4,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                              final job = jobList[index];
+                              return Card(
+                                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                elevation: 5,
+                                child: ListTile(
+                                  leading: const Icon(
+                                    Icons.work_outline,
+                                    color: Colors.blue,
+                                    size: 30,
                                   ),
-                                  child: ListTile(
-                                    leading: Icon(
-                                      Icons.work,
-                                      color: Colors.blue.shade400,
-                                    ),
-                                    title: Text("Job Title ${index + 1}"),
-                                    subtitle: const Text("Company Name"),
-                                    trailing: const Icon(Icons.arrow_forward),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => JobDescriptionPage(
-                                            jobTitle: "Job Title ${index + 1}",
-                                            companyName: "Company Name",
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                  title: Text(job['jobTitle']),
+                                  subtitle: Text(job['companyName']),
+                                  trailing: const Icon(Icons.arrow_forward),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => JobDescriptionPage(job: job),
+                                      ),
+                                    );
+                                  },
                                 ),
                               );
                             },
@@ -140,23 +166,18 @@ class HomePage extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const TextField(
+                        children: const [
+                          TextField(
                             decoration: InputDecoration(
                               icon: Icon(Icons.search),
-                              iconColor: Colors.lightBlueAccent,
                               labelText: "Search Job",
-                              labelStyle: TextStyle(color: Colors.grey),
                             ),
                           ),
-                          const SizedBox(height: 7),
-                          const TextField(
+                          SizedBox(height: 7),
+                          TextField(
                             decoration: InputDecoration(
                               icon: Icon(Icons.room_outlined),
-                              iconColor: Colors.lightBlueAccent,
                               labelText: "Location",
-                              labelStyle: TextStyle(color: Colors.grey),
                             ),
                           ),
                         ],
@@ -174,94 +195,35 @@ class HomePage extends StatelessWidget {
 }
 
 class JobDescriptionPage extends StatelessWidget {
-  final String jobTitle;
-  final String companyName;
+  final dynamic job;
 
-  const JobDescriptionPage({
-    super.key,
-    required this.jobTitle,
-    required this.companyName,
-  });
+  const JobDescriptionPage({super.key, required this.job});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(jobTitle),
+        title: Text(job['jobTitle']),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
-            Row(
-              children: [
-                const Icon(Icons.work, size: 50),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      jobTitle,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      companyName,
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView(
-                children: [
-                  buildSection("Job Description",
-                      "We need a UI Designer who can work for us."),
-                  buildSection("Responsibilities",
-                      "Work with developers, meet deadlines."),
-                  buildSection("Qualifications", "Degree in Design."),
-                  buildSection("About the Company",
-                      "Soul Tech, an innovative tech company."),
-                ],
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Handle Apply button tap
-              },
-              child: const Text("Apply"),
-            ),
+            Text("Company: ${job['companyName']}", style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text("Category: ${job['jobCategory']}"),
+            Text("Description: ${job['jobDescription']}"),
+            Text("Responsibilities: ${job['keyResponsibilities']?.join(', ') ?? 'N/A'}"),
+            Text("Skills: ${job['skillsAndExperience']?.join(', ') ?? 'N/A'}"),
+            Text("Salary: \$${job['offeredSalary']}"),
+            Text("Career Level: ${job['careerLevel']}"),
+            Text("Location: ${job['city']}, ${job['country']}"),
+            Text("Vacancies: ${job['vacancies']}"),
+            Text("Employment Status: ${job['employmentStatus']}"),
+            Text("Gender Preference: ${job['gender']}"),
+            Text("Qualification: ${job['qualification']}"),
+            Text("Industry: ${job['industry']}"),
+            Text("Application Deadline: ${job['applicationDeadlineDate']}"),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildSection(String title, String content) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Card(
-        color: Colors.grey.shade100,
-        child: ListTile(
-          title: Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: title == "Job Description"
-                  ? Colors.blue
-                  : title == "Responsibilities"
-                      ? Colors.green
-                      : title == "Qualifications"
-                          ? Colors.orange
-                          : Colors.black,
-            ),
-          ),
-          subtitle: Text(content),
         ),
       ),
     );
