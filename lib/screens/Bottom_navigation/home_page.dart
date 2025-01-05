@@ -1,7 +1,44 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:second_job_search/Config/config.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<dynamic> jobList = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchJobs();
+  }
+
+  Future<void> fetchJobs() async {
+    final url = "${AppConfig.baseUrl}/api/jobs";
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        setState(() {
+          jobList = json.decode(response.body);
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load jobs');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print("Error fetching jobs: $e"); // Debugging
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -9,34 +46,31 @@ class HomePage extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Color(0xFFBFDBFE),
+      backgroundColor: const Color(0xFFBFDBFE),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
-              const Center(
-                child: Text(
-                  "Hello Shakir, Good Day 👋",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+              const Text(
+                "Hello Shakir, Good Day 👋",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
-              const Center(
-                child: Text(
-                  "Search & Land on your dream job",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+              SizedBox(height: screenHeight * 0.05),
+              const Text(
+                "Search & Land on your dream job",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: screenHeight * 0.05),
               Stack(
@@ -44,7 +78,6 @@ class HomePage extends StatelessWidget {
                 children: [
                   Container(
                     margin: EdgeInsets.only(top: screenHeight * 0.1),
-                    width: double.infinity,
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.vertical(
@@ -54,15 +87,14 @@ class HomePage extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 90, 20, 20),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
-                                "Recommendation",
+                                "Recommendations",
                                 style: TextStyle(
-                                  color: Colors.black,
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -76,93 +108,31 @@ class HomePage extends StatelessWidget {
                                   style: TextStyle(
                                     color: Colors.blue,
                                     fontSize: 18,
-                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 20),
-                          ListView.builder(
+                          isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : jobList.isEmpty
+                              ? const Text("Can't fetch jobs at the moment.",
+                              style: TextStyle(color: Colors.red))
+                              : ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            itemCount: 5,
+                            itemCount: jobList.length,
                             itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Card(
-                                  elevation: 4,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: ListTile(
-                                    leading: Icon(
-                                      Icons.work,
-                                      color: Colors.blue.shade400,
-                                    ),
-                                    title: Text("Job Title ${index + 1}"),
-                                    subtitle: const Text("Company Name"),
-                                    trailing: const Icon(Icons.arrow_forward),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => JobDescriptionPage(
-                                            jobTitle: "Job Title ${index + 1}",
-                                            companyName: "Company Name",
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              );
+                              final job = jobList[index];
+                              return JobCard(job: job);
                             },
                           ),
                         ],
                       ),
                     ),
                   ),
-                  Container(
-                    width: screenWidth * 0.85,
-                    height: screenHeight * 0.2,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 6,
-                          offset: const Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const TextField(
-                            decoration: InputDecoration(
-                              icon: Icon(Icons.search),
-                              iconColor: Colors.lightBlueAccent,
-                              labelText: "Search Job",
-                              labelStyle: TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                          const SizedBox(height: 7),
-                          const TextField(
-                            decoration: InputDecoration(
-                              icon: Icon(Icons.room_outlined),
-                              iconColor: Colors.lightBlueAccent,
-                              labelText: "Location",
-                              labelStyle: TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  SearchBox(screenWidth: screenWidth, screenHeight: screenHeight),
                 ],
               ),
             ],
@@ -173,96 +143,144 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class JobDescriptionPage extends StatelessWidget {
-  final String jobTitle;
-  final String companyName;
+class SearchBox extends StatelessWidget {
+  final double screenWidth;
+  final double screenHeight;
 
-  const JobDescriptionPage({
-    super.key,
-    required this.jobTitle,
-    required this.companyName,
-  });
+  const SearchBox({super.key, required this.screenWidth, required this.screenHeight});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(jobTitle),
+    return Container(
+      width: screenWidth * 0.85,
+      height: screenHeight * 0.2,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 6,
+            offset: const Offset(2, 2),
+          ),
+        ],
       ),
-      body: Padding(
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.work, size: 50),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      jobTitle,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      companyName,
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView(
-                children: [
-                  buildSection("Job Description",
-                      "We need a UI Designer who can work for us."),
-                  buildSection("Responsibilities",
-                      "Work with developers, meet deadlines."),
-                  buildSection("Qualifications", "Degree in Design."),
-                  buildSection("About the Company",
-                      "Soul Tech, an innovative tech company."),
-                ],
+          children: const [
+            TextField(
+              decoration: InputDecoration(
+                icon: Icon(Icons.search),
+                labelText: "Search Job",
               ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                // Handle Apply button tap
-              },
-              child: const Text("Apply"),
+            SizedBox(height: 7),
+            TextField(
+              decoration: InputDecoration(
+                icon: Icon(Icons.room_outlined),
+                labelText: "Location",
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget buildSection(String title, String content) {
+class JobCard extends StatelessWidget {
+  final dynamic job;
+
+  const JobCard({super.key, required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      elevation: 5,
+      child: ListTile(
+        leading: const Icon(
+          Icons.work_outline,
+          color: Colors.blue,
+          size: 30,
+        ),
+        title: Text(job['jobTitle'] ?? 'Job Title Not Available'),
+        subtitle: Text(job['companyName'] ?? 'Company Name Not Available'),
+        trailing: const Icon(Icons.arrow_forward),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => JobDescriptionPage(job: job),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class JobDescriptionPage extends StatelessWidget {
+  final dynamic job;
+
+  const JobDescriptionPage({super.key, required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(job['jobTitle'] ?? 'Job Details'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            DetailItem(label: "Company", value: job['companyName']),
+            DetailItem(label: "Category", value: job['jobCategory']),
+            DetailItem(label: "Description", value: job['jobDescription']),
+            DetailItem(label: "Responsibilities", value: job['keyResponsibilities']?.join(', ')),
+            DetailItem(label: "Skills", value: job['skillsAndExperience']?.join(', ')),
+            DetailItem(label: "Salary", value: "\$${job['offeredSalary']}"),
+            DetailItem(label: "Career Level", value: job['careerLevel']),
+            DetailItem(label: "Location", value: "${job['city']}, ${job['country']}"),
+            DetailItem(label: "Vacancies", value: "${job['vacancies']}"),
+            DetailItem(label: "Employment Status", value: job['employmentStatus']),
+            DetailItem(label: "Gender Preference", value: job['gender']),
+            DetailItem(label: "Qualification", value: job['qualification']),
+            DetailItem(label: "Industry", value: job['industry']),
+            DetailItem(label: "Application Deadline", value: job['applicationDeadlineDate']),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DetailItem extends StatelessWidget {
+  final String label;
+  final String? value;
+
+  const DetailItem({super.key, required this.label, this.value});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Card(
-        color: Colors.grey.shade100,
-        child: ListTile(
-          title: Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: title == "Job Description"
-                  ? Colors.blue
-                  : title == "Responsibilities"
-                      ? Colors.green
-                      : title == "Qualifications"
-                          ? Colors.orange
-                          : Colors.black,
-            ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          subtitle: Text(content),
-        ),
+          Expanded(
+            child: Text(value ?? "N/A"),
+          ),
+        ],
       ),
     );
   }
