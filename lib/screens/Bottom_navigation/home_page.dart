@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         isLoading = false;
       });
-      print("Error fetching jobs: $e");
+      print("Error fetching jobs: $e"); // Debugging
     }
   }
 
@@ -50,6 +50,7 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Center(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
               const Text(
@@ -59,6 +60,7 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: screenHeight * 0.05),
               const Text(
@@ -68,6 +70,7 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: screenHeight * 0.05),
               Stack(
@@ -84,6 +87,7 @@ class _HomePageState extends State<HomePage> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 90, 20, 20),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -111,84 +115,110 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const SizedBox(height: 20),
                           isLoading
-                              ? const CircularProgressIndicator()
+                              ? const Center(child: CircularProgressIndicator())
+                              : jobList.isEmpty
+                              ? const Text("Can't fetch jobs at the moment.",
+                              style: TextStyle(color: Colors.red))
                               : ListView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: jobList.length,
                             itemBuilder: (context, index) {
                               final job = jobList[index];
-                              return Card(
-                                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                elevation: 5,
-                                child: ListTile(
-                                  leading: const Icon(
-                                    Icons.work_outline,
-                                    color: Colors.blue,
-                                    size: 30,
-                                  ),
-                                  title: Text(job['jobTitle']),
-                                  subtitle: Text(job['companyName']),
-                                  trailing: const Icon(Icons.arrow_forward),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => JobDescriptionPage(job: job),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
+                              return JobCard(job: job);
                             },
                           ),
                         ],
                       ),
                     ),
                   ),
-                  Container(
-                    width: screenWidth * 0.85,
-                    height: screenHeight * 0.2,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 6,
-                          offset: const Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: const [
-                          TextField(
-                            decoration: InputDecoration(
-                              icon: Icon(Icons.search),
-                              labelText: "Search Job",
-                            ),
-                          ),
-                          SizedBox(height: 7),
-                          TextField(
-                            decoration: InputDecoration(
-                              icon: Icon(Icons.room_outlined),
-                              labelText: "Location",
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  SearchBox(screenWidth: screenWidth, screenHeight: screenHeight),
                 ],
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class SearchBox extends StatelessWidget {
+  final double screenWidth;
+  final double screenHeight;
+
+  const SearchBox({super.key, required this.screenWidth, required this.screenHeight});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: screenWidth * 0.85,
+      height: screenHeight * 0.2,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 6,
+            offset: const Offset(2, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: const [
+            TextField(
+              decoration: InputDecoration(
+                icon: Icon(Icons.search),
+                labelText: "Search Job",
+              ),
+            ),
+            SizedBox(height: 7),
+            TextField(
+              decoration: InputDecoration(
+                icon: Icon(Icons.room_outlined),
+                labelText: "Location",
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class JobCard extends StatelessWidget {
+  final dynamic job;
+
+  const JobCard({super.key, required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      elevation: 5,
+      child: ListTile(
+        leading: const Icon(
+          Icons.work_outline,
+          color: Colors.blue,
+          size: 30,
+        ),
+        title: Text(job['jobTitle'] ?? 'Job Title Not Available'),
+        subtitle: Text(job['companyName'] ?? 'Company Name Not Available'),
+        trailing: const Icon(Icons.arrow_forward),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => JobDescriptionPage(job: job),
+            ),
+          );
+        },
       ),
     );
   }
@@ -203,28 +233,54 @@ class JobDescriptionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(job['jobTitle']),
+        title: Text(job['jobTitle'] ?? 'Job Details'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            Text("Company: ${job['companyName']}", style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text("Category: ${job['jobCategory']}"),
-            Text("Description: ${job['jobDescription']}"),
-            Text("Responsibilities: ${job['keyResponsibilities']?.join(', ') ?? 'N/A'}"),
-            Text("Skills: ${job['skillsAndExperience']?.join(', ') ?? 'N/A'}"),
-            Text("Salary: \$${job['offeredSalary']}"),
-            Text("Career Level: ${job['careerLevel']}"),
-            Text("Location: ${job['city']}, ${job['country']}"),
-            Text("Vacancies: ${job['vacancies']}"),
-            Text("Employment Status: ${job['employmentStatus']}"),
-            Text("Gender Preference: ${job['gender']}"),
-            Text("Qualification: ${job['qualification']}"),
-            Text("Industry: ${job['industry']}"),
-            Text("Application Deadline: ${job['applicationDeadlineDate']}"),
+            DetailItem(label: "Company", value: job['companyName']),
+            DetailItem(label: "Category", value: job['jobCategory']),
+            DetailItem(label: "Description", value: job['jobDescription']),
+            DetailItem(label: "Responsibilities", value: job['keyResponsibilities']?.join(', ')),
+            DetailItem(label: "Skills", value: job['skillsAndExperience']?.join(', ')),
+            DetailItem(label: "Salary", value: "\$${job['offeredSalary']}"),
+            DetailItem(label: "Career Level", value: job['careerLevel']),
+            DetailItem(label: "Location", value: "${job['city']}, ${job['country']}"),
+            DetailItem(label: "Vacancies", value: "${job['vacancies']}"),
+            DetailItem(label: "Employment Status", value: job['employmentStatus']),
+            DetailItem(label: "Gender Preference", value: job['gender']),
+            DetailItem(label: "Qualification", value: job['qualification']),
+            DetailItem(label: "Industry", value: job['industry']),
+            DetailItem(label: "Application Deadline", value: job['applicationDeadlineDate']),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class DetailItem extends StatelessWidget {
+  final String label;
+  final String? value;
+
+  const DetailItem({super.key, required this.label, this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: Text(value ?? "N/A"),
+          ),
+        ],
       ),
     );
   }
