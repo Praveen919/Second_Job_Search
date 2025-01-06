@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:second_job_search/Config/config.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -118,22 +120,25 @@ class _HomePageState extends State<HomePage> {
                           isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : jobList.isEmpty
-                              ? const Text("Can't fetch jobs at the moment.",
-                              style: TextStyle(color: Colors.red))
-                              : ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: jobList.length,
-                            itemBuilder: (context, index) {
-                              final job = jobList[index];
-                              return JobCard(job: job);
-                            },
-                          ),
+                                  ? const Text(
+                                      "Can't fetch jobs at the moment.",
+                                      style: TextStyle(color: Colors.red))
+                                  : ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: jobList.length,
+                                      itemBuilder: (context, index) {
+                                        final job = jobList[index];
+                                        return JobCard(job: job);
+                                      },
+                                    ),
                         ],
                       ),
                     ),
                   ),
-                  SearchBox(screenWidth: screenWidth, screenHeight: screenHeight),
+                  SearchBox(
+                      screenWidth: screenWidth, screenHeight: screenHeight),
                 ],
               ),
             ],
@@ -148,7 +153,8 @@ class SearchBox extends StatelessWidget {
   final double screenWidth;
   final double screenHeight;
 
-  const SearchBox({super.key, required this.screenWidth, required this.screenHeight});
+  const SearchBox(
+      {super.key, required this.screenWidth, required this.screenHeight});
 
   @override
   Widget build(BuildContext context) {
@@ -340,7 +346,11 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
                   ),
                   child: Text(
                     _isApplied ? "Applied" : "Apply Now",
+<<<<<<< HEAD
                     style: const TextStyle(fontSize: 18),
+=======
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+>>>>>>> 818604f02ab1938a50e398d8668fbadd0043cd14
                   ),
                 ),
               ),
@@ -364,7 +374,11 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
           CircleAvatar(
             radius: 40,
             backgroundImage:
+<<<<<<< HEAD
             AssetImage('assets/logo.png'), // Placeholder for company logo
+=======
+                AssetImage('assets/logo.png'), // Placeholder for company logo
+>>>>>>> 818604f02ab1938a50e398d8668fbadd0043cd14
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -495,4 +509,8 @@ class _ReadMoreTextState extends State<ReadMoreText> {
       ),
     );
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 818604f02ab1938a50e398d8668fbadd0043cd14
