@@ -345,7 +345,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
                   ),
                   child: Text(
                     _isApplied ? "Applied" : "Apply Now",
-                    style: const TextStyle(fontSize: 18),
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
               ),
