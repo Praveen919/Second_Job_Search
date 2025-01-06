@@ -7,7 +7,7 @@ class SavedJobsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFFBFDBFE),
         elevation: 0,
         title: const Text(
           'Saved Jobs',

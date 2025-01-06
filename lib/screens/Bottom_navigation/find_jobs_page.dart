@@ -1,4 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:second_job_search/Config/config.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class FindJobsPageScreen extends StatefulWidget {
   const FindJobsPageScreen({super.key});
@@ -15,6 +19,32 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
   final List<String> jobOptions = ["All Jobs", "Full-Time", "Part-Time", "Remote"];
   final List<String> locationOptions = ["Location", "Paris", "New York", "London"];
   final List<String> salaryOptions = ["Salary", "<\$5K", "\$5K-\$10K", ">\$10K"];
+
+  List<dynamic> jobs = []; // List to store jobs data
+  bool isLoading = true; // State for loading spinner
+
+  @override
+  void initState() {
+    super.initState();
+    fetchJobs(); // Fetch jobs from API
+  }
+
+  Future<void> fetchJobs() async {
+    const apiUrl = '${AppConfig.baseUrl}/api/free-jobs'; // Update with your API URL
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        setState(() {
+          jobs = jsonDecode(response.body);
+          isLoading = false;
+        });
+      } else {
+        print('Error: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching jobs: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +96,12 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
 
           // Job Cards
           Expanded(
-            child: ListView.builder(
-              itemCount: 2, // Example count
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator()) // Show loader
+                : ListView.builder(
+              itemCount: jobs.length,
               itemBuilder: (context, index) {
-                return _buildJobCard();
+                return _buildJobCard(jobs[index]);
               },
             ),
           ),
@@ -108,7 +140,7 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
     );
   }
 
-  Widget _buildJobCard() {
+  Widget _buildJobCard(dynamic job) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -131,21 +163,21 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      "ESS Solutions Ltd.",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      job['companyName'] ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      "Sr. Backend Developer",
-                      style: TextStyle(color: Colors.grey),
+                      job['jobTitle'] ?? '',
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ],
                 ),
                 const Spacer(),
-                const Text(
-                  "\$12K/mo",
-                  style: TextStyle(
+                Text(
+                  "\$${job['offeredSalary'] ?? ''}/mo",
+                  style: const TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.black),
                 ),
               ],
@@ -155,16 +187,23 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  children: const [
-                    Icon(Icons.location_on_outlined, color: Colors.grey),
-                    Text("Paris, French (Remote)",
-                        style: TextStyle(color: Colors.grey)),
+                  children: [
+                    const Icon(Icons.location_on_outlined, color: Colors.grey),
+                    Text(job['city'] ?? '',
+                        style: const TextStyle(color: Colors.grey)),
                   ],
                 ),
                 Row(
                   children: [
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => JobDescriptionPage(job: job),
+                        ),
+                        );
+                        },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: const Color(0xFF2563EB), // Button blue
@@ -182,6 +221,278 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class JobDescriptionPage extends StatefulWidget {
+  final Map<String, dynamic> job;
+
+  const JobDescriptionPage({super.key, required this.job});
+
+  @override
+  _JobDescriptionPageState createState() => _JobDescriptionPageState();
+}
+
+class _JobDescriptionPageState extends State<JobDescriptionPage> {
+  bool _isApplied = false;
+
+  void _applyForJob() {
+    setState(() {
+      _isApplied = true;
+    });
+    Fluttertoast.showToast(
+      msg: "You have successfully applied for this job!",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final job = widget.job;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(job['jobTitle'] ?? 'Job Details'),
+        backgroundColor: const Color.fromARGB(255, 251, 251, 252),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Job Header Section
+              _buildJobHeader(job),
+
+              const SizedBox(height: 16),
+
+              // Job Details Section
+              _buildCardSection("Job Details", [
+                DetailItem(label: "Company", value: job['companyName']),
+                DetailItem(label: "Category", value: job['jobCategory']),
+                DetailItem(
+                    label: "Location",
+                    value: "${job['city']}, ${job['country']}"),
+                DetailItem(label: "Career Level", value: job['careerLevel']),
+                DetailItem(
+                    label: "Employment Status", value: job['employmentStatus']),
+                DetailItem(label: "Vacancies", value: "${job['vacancies']}"),
+              ]),
+
+              const SizedBox(height: 16),
+
+              // Job Description Section with Read More
+              _buildCardSection("Job Description", [
+                ReadMoreText(
+                  label: "Description",
+                  value: job['jobDescription'] ?? "No description available.",
+                ),
+                ReadMoreText(
+                  label: "Responsibilities",
+                  value: (job['keyResponsibilities']?.join(', ') ??
+                      "No responsibilities provided."),
+                ),
+              ]),
+
+              const SizedBox(height: 16),
+
+              // Skills & Requirements Section
+              _buildCardSection("Skills & Requirements", [
+                DetailItem(
+                  label: "Skills",
+                  value: job['skillsAndExperience']?.join(', '),
+                ),
+                DetailItem(label: "Qualification", value: job['qualification']),
+              ]),
+
+              const SizedBox(height: 16),
+
+              // Salary & Industry Details
+              _buildCardSection("Salary & Industry Details", [
+                DetailItem(label: "Salary", value: "\$${job['offeredSalary']}"),
+                DetailItem(label: "Industry", value: job['industry']),
+                DetailItem(
+                  label: "Application Deadline",
+                  value: job['applicationDeadlineDate'],
+                ),
+              ]),
+
+              const SizedBox(height: 30),
+
+              // Apply Button
+              Center(
+                child: ElevatedButton(
+                  onPressed: _isApplied ? null : _applyForJob,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40.0,
+                      vertical: 16.0,
+                    ),
+                    backgroundColor: _isApplied ? Colors.grey : Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    _isApplied ? "Applied" : "Apply Now",
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobHeader(Map<String, dynamic> job) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 40,
+            backgroundImage:
+            AssetImage('assets/logo.png'), // Placeholder for company logo
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  job['companyName'] ?? 'Company Name',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  job['jobCategory'] ?? 'Job Category',
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "${job['city']}, ${job['country']}",
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCardSection(String title, List<Widget> children) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DetailItem extends StatelessWidget {
+  final String label;
+  final String? value;
+
+  const DetailItem({super.key, required this.label, this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              "$label:",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            flex: 5,
+            child: Text(value ?? "N/A"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ReadMoreText extends StatefulWidget {
+  final String label;
+  final String value;
+
+  const ReadMoreText({super.key, required this.label, required this.value});
+
+  @override
+  _ReadMoreTextState createState() => _ReadMoreTextState();
+}
+
+class _ReadMoreTextState extends State<ReadMoreText> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final maxLines = _isExpanded ? null : 5;
+    final overflow = _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.value,
+            maxLines: maxLines,
+            overflow: overflow,
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Text(
+              _isExpanded ? "View Less" : "Read More",
+              style: const TextStyle(color: Colors.blueAccent),
+            ),
+          ),
+        ],
       ),
     );
   }

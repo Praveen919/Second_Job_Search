@@ -11,14 +11,13 @@ class Profilescreen extends StatelessWidget {
     required String count,
     required String label,
     required Color iconColor,
-    required double containerWidth,
     required Color backgroundColor,
   }) {
     return Container(
-      width: containerWidth,
       margin: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: backgroundColor, // Background color for the container
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.white, width: 1),
         boxShadow: [
@@ -31,38 +30,33 @@ class Profilescreen extends StatelessWidget {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15, 5, 10, 5),
-            child: Icon(
-              icon,
-              size: 35,
-              color: iconColor,
-            ),
+          Icon(
+            icon,
+            size: 35,
+            color: iconColor,
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 5, 15, 5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  count,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 24,
-                      color: iconColor),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                count,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 24,
+                  color: iconColor,
                 ),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14,
-                    color: Colors.black,
-                  ),
+              ),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  color: Colors.black,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -71,28 +65,27 @@ class Profilescreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get screen width for responsive layout
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
-      backgroundColor: Colors.white, // White background for the entire screen
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white, // White background for AppBar
-        elevation: 0, // Remove shadow
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.pop(context); // Go back to the previous screen
+            Navigator.pop(context);
           },
         ),
         title: const Text(
           'Dashboard',
           style: TextStyle(
-              color: Colors.black, fontSize: 24, fontWeight: FontWeight.w500),
+            color: Colors.black,
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
       body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
@@ -101,73 +94,79 @@ class Profilescreen extends StatelessWidget {
               const Text(
                 'Howdy User!!',
                 style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                    color: Color.fromARGB(255, 5, 64, 146)),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 28,
+                  color: Color.fromARGB(255, 5, 64, 146),
+                ),
               ),
               const Text(
                 'Last login: 7th October 2024, 1:25 pm - Unknown',
                 style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14,
-                    color: Colors.black),
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  color: Colors.black,
+                ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _buildInfoContainer(
-                      icon: Icons.work_outline_rounded,
-                      count: '1',
-                      label: 'Applied Jobs',
-                      iconColor: Colors.black,
-                      backgroundColor:
-                          const Color.fromARGB(255, 169, 210, 230)!,
-                      containerWidth: screenWidth * 0.4, // Responsive width
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _buildInfoContainer(
-                      icon: Icons.sticky_note_2_outlined,
-                      count: '4525',
-                      label: 'Job Alerts',
-                      iconColor: Colors.black,
-                      backgroundColor:
-                          const Color.fromARGB(255, 179, 233, 182)!,
-                      containerWidth: screenWidth * 0.4, // Responsive width
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _buildInfoContainer(
-                      icon: Icons.message_outlined,
-                      count: '0',
-                      label: 'Messages',
-                      iconColor: Colors.black,
-                      backgroundColor:
-                          const Color.fromARGB(255, 224, 189, 137)!,
-                      containerWidth: screenWidth * 0.4, // Responsive width
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _buildInfoContainer(
-                      icon: Icons.bookmark_outline,
-                      count: '0',
-                      label: 'Shortlist',
-                      iconColor: Colors.black,
-                      backgroundColor: Colors.pink[200]!,
-                      containerWidth: screenWidth * 0.4, // Responsive width
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 20),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final maxWidth = constraints.maxWidth;
+
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: _buildInfoContainer(
+                              icon: Icons.work_outline_rounded,
+                              count: '1',
+                              label: 'Applied Job',
+                              iconColor: Colors.black,
+                              backgroundColor: const Color.fromARGB(
+                                  255, 169, 210, 230),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: _buildInfoContainer(
+                              icon: Icons.sticky_note_2_outlined,
+                              count: '4525',
+                              label: 'Job Alerts',
+                              iconColor: Colors.black,
+                              backgroundColor: const Color.fromARGB(
+                                  255, 179, 233, 182),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: _buildInfoContainer(
+                              icon: Icons.message_outlined,
+                              count: '0',
+                              label: 'Messages',
+                              iconColor: Colors.black,
+                              backgroundColor: const Color.fromARGB(
+                                  255, 224, 189, 137),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: _buildInfoContainer(
+                              icon: Icons.bookmark_outline,
+                              count: '0',
+                              label: 'Shortlist',
+                              iconColor: Colors.black,
+                              backgroundColor: Colors.pink[200]!,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 10),
               const ProfileViewsChart(),
@@ -180,6 +179,8 @@ class Profilescreen extends StatelessWidget {
     );
   }
 }
+
+
 
 class ProfileViewsChart extends StatefulWidget {
   const ProfileViewsChart({super.key});

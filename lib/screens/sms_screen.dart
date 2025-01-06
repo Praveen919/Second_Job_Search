@@ -208,7 +208,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 const SizedBox(width: 10),
                 IconButton(
                   onPressed: _sendMessage,
-                  icon: const Icon(Icons.send, color: Colors.white),
+                  icon: const Icon(Icons.send, color: Colors.blueGrey),
                   tooltip: 'Send',
                   color: Colors.green,
                 ),

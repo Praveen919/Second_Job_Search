@@ -1,4 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // To handle JSON
+import 'package:second_job_search/Config/config.dart';
+
+// Blog model class
+class Blog {
+  final String title;
+  final String username;
+  final String content;
+  final String image;
+
+  Blog({
+    required this.title,
+    required this.username,
+    required this.content,
+    required this.image,
+  });
+
+  factory Blog.fromJson(Map<String, dynamic> json) {
+    return Blog(
+      title: json['title'] ?? 'No Title', // Fallback value if title is null
+      username: json['username'] ?? 'Anonymous', // Fallback value if username is null
+      content: json['content'] ?? 'No Content', // Fallback value if content is null
+      image: json['image'] ?? 'https://via.placeholder.com/150', // Fallback value for image URL
+    );
+  }
+}
 
 class MyBlogsPageScreen extends StatefulWidget {
   const MyBlogsPageScreen({super.key});
@@ -8,19 +35,10 @@ class MyBlogsPageScreen extends StatefulWidget {
 }
 
 class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
-  final List<Map<String, String>> blogs = [
-    {
-      "username": "Ruffles",
-      "content": "This is a blog post from another user.",
-      "image": "https://via.placeholder.com/150"
-    },
-    {
-      "username": "John",
-      "content": "Another user's blog content here.",
-      "image": "https://via.placeholder.com/150"
-    },
-  ];
+  // List of blogs fetched from backend
+  List<Blog> blogs = [];
 
+  // My Blogs data
   List<Map<String, String>> myBlogs = [
     {
       "content": "My first blog post.",
@@ -33,6 +51,32 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
   ];
 
   int selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch blogs from the backend when the screen is loaded
+    fetchBlogs();
+  }
+
+  // Function to fetch blogs from backend API
+  Future<void> fetchBlogs() async {
+    try {
+      final response = await http.get(Uri.parse('${AppConfig.baseUrl}/api/blogs'));
+
+      if (response.statusCode == 200) {
+        // If the server returns a successful response, parse the JSON
+        List<dynamic> blogJson = json.decode(response.body);
+        setState(() {
+          blogs = blogJson.map((json) => Blog.fromJson(json)).toList();
+        });
+      } else {
+        throw Exception('Failed to load blogs');
+      }
+    } catch (e) {
+      print('Error fetching blogs: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +149,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
     );
   }
 
+  // Display the Blogs section from the backend
   Widget _buildBlogsSection() {
     return ListView.builder(
       itemCount: blogs.length,
@@ -119,20 +164,20 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                 Row(
                   children: [
                     CircleAvatar(
-                      backgroundImage: NetworkImage(blogs[index]['image']!),
+                      backgroundImage: NetworkImage(blogs[index].image),
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      blogs[index]['username']!,
+                      blogs[index].username,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                Text(blogs[index]['content']!),
+                Text(blogs[index].content),
                 const SizedBox(height: 10),
                 Image.network(
-                  blogs[index]['image']!,
+                  blogs[index].image,
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -155,6 +200,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
     );
   }
 
+  // My Blogs section
   Widget _buildMyBlogsSection() {
     return ListView.builder(
       itemCount: myBlogs.length,
@@ -228,6 +274,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
     );
   }
 
+  // Function to add new blog
   void _addNewBlog() {
     final TextEditingController contentController = TextEditingController();
     final TextEditingController imageController = TextEditingController();
