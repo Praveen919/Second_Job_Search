@@ -346,11 +346,9 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
                   ),
                   child: Text(
                     _isApplied ? "Applied" : "Apply Now",
-<<<<<<< HEAD
-                    style: const TextStyle(fontSize: 18),
-=======
-                    style: TextStyle(fontSize: 18, color: Colors.white),
->>>>>>> 818604f02ab1938a50e398d8668fbadd0043cd14
+
+                    style: const TextStyle(fontSize: 18,color:Colors.white),
+
                   ),
                 ),
               ),
@@ -374,11 +372,9 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
           CircleAvatar(
             radius: 40,
             backgroundImage:
-<<<<<<< HEAD
+
             AssetImage('assets/logo.png'), // Placeholder for company logo
-=======
-                AssetImage('assets/logo.png'), // Placeholder for company logo
->>>>>>> 818604f02ab1938a50e398d8668fbadd0043cd14
+
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -509,8 +505,5 @@ class _ReadMoreTextState extends State<ReadMoreText> {
       ),
     );
   }
-<<<<<<< HEAD
+
 }
-=======
-}
->>>>>>> 818604f02ab1938a50e398d8668fbadd0043cd14
