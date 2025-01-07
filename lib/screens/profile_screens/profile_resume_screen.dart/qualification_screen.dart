@@ -57,7 +57,11 @@ class _QualificationScreenState extends State<QualificationScreen> {
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius:
+<<<<<<< HEAD
             BorderRadius.circular(20), // Rounded corners for elegance
+=======
+                BorderRadius.circular(20), // Rounded corners for elegance
+>>>>>>> 29042d470f00dc2d08357d61f438ddbfb4d21578
           ),
           title: const Text(
             "Add Education Details",
@@ -258,6 +262,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
     final degreeController =
     TextEditingController(text: educationDetails[index]['degree']);
     final universityController =
+<<<<<<< HEAD
     TextEditingController(text: educationDetails[index]['university']);
     final startYearController =
     TextEditingController(text: educationDetails[index]['startYear']);
@@ -267,6 +272,17 @@ class _QualificationScreenState extends State<QualificationScreen> {
     String? endMonth = educationDetails[index]['endMonth'];
     final cgpaController =
     TextEditingController(text: educationDetails[index]['cgpa']);
+=======
+        TextEditingController(text: educationDetails[index]['university']);
+    final startYearController =
+        TextEditingController(text: educationDetails[index]['startYear']);
+    String? startMonth = educationDetails[index]['startMonth'];
+    final endYearController =
+        TextEditingController(text: educationDetails[index]['endYear']);
+    String? endMonth = educationDetails[index]['endMonth'];
+    final cgpaController =
+        TextEditingController(text: educationDetails[index]['cgpa']);
+>>>>>>> 29042d470f00dc2d08357d61f438ddbfb4d21578
 
     showDialog(
       context: context,
@@ -275,7 +291,11 @@ class _QualificationScreenState extends State<QualificationScreen> {
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius:
+<<<<<<< HEAD
             BorderRadius.circular(20), // Rounded corners for elegance
+=======
+                BorderRadius.circular(20), // Rounded corners for elegance
+>>>>>>> 29042d470f00dc2d08357d61f438ddbfb4d21578
           ),
           title: const Text(
             "Edit Education Details",
@@ -593,6 +613,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 // Show only the first 2 cards initially
                 ...(showAllCards
                     ? educationDetails.map((education) {
+<<<<<<< HEAD
                   int index = educationDetails.indexOf(education);
                   return Column(
                     children: [
@@ -678,6 +699,93 @@ class _QualificationScreenState extends State<QualificationScreen> {
                     ],
                   );
                 }).toList()),
+=======
+                        int index = educationDetails.indexOf(education);
+                        return Column(
+                          children: [
+                            Card(
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              color: Colors.transparent,
+                              elevation: 0,
+                              child: ListTile(
+                                title: Text(
+                                  '${education['degree']} - ${education['university']}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                subtitle: Text(
+                                  'Year: ${education['startYear']} - ${education['endYear']}',
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () =>
+                                          showEditEducationPopup(index),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () =>
+                                          deleteEducationDetail(index),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Divider(
+                              color: Colors.black26,
+                              thickness: 1,
+                            ),
+                          ],
+                        );
+                      }).toList()
+                    : educationDetails.take(2).map((education) {
+                        int index = educationDetails.indexOf(education);
+                        return Column(
+                          children: [
+                            Card(
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              color: Colors.transparent,
+                              elevation: 0,
+                              child: ListTile(
+                                title: Text(
+                                  '${education['degree']} - ${education['university']}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
+                                ),
+                                subtitle: Text(
+                                  'Year: ${education['startYear']} - ${education['endYear']}',
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () =>
+                                          showEditEducationPopup(index),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () =>
+                                          deleteEducationDetail(index),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Divider(
+                              color: Colors.black26,
+                              thickness: 1,
+                            ),
+                          ],
+                        );
+                      }).toList()),
+>>>>>>> 29042d470f00dc2d08357d61f438ddbfb4d21578
                 // Button to toggle between showing all cards and the first 2 cards
                 if (educationDetails.length > 2)
                   TextButton(
