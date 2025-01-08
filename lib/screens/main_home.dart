@@ -3,10 +3,11 @@ import 'package:second_job_search/screens/Bottom_navigation/find_jobs_page.dart'
 import 'package:second_job_search/screens/Bottom_navigation/home_page.dart';
 import 'package:second_job_search/screens/Bottom_navigation/my_blogs_page.dart';
 import 'package:second_job_search/screens/Bottom_navigation/my_profile_page.dart';
+import 'package:second_job_search/screens/employeers/company_details_screen.dart';
 import 'package:second_job_search/screens/login.dart';
+import 'package:second_job_search/screens/notifications_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/saved_jobs_screen.dart';
-import 'package:second_job_search/screens/notifications_screen.dart';
 import 'package:second_job_search/screens/sms_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -186,6 +187,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const LoginScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              leading: const Icon(
+                Icons.group_work_rounded,
+                color: Color.fromARGB(255, 3, 79, 117),
+                size: 24,
+              ),
+              title: const Text(
+                "Employee",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () {
+                // Your navigation logic here
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CompanyDetailsScreen(),
                   ),
                 );
               },

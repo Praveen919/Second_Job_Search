@@ -1,4 +1,4 @@
 class AppConfig {
   static const String baseUrl =
-      'http://192.168.19.0:8000'; // Change IP as needed
+      'http://192.168.0.107:8000'; // Change IP as needed
 }
