@@ -2242,9 +2242,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                     ),
-                    onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (context) => const ResumeScreen())),
+                    onPressed: () => Navigator.pop(context),
                     child: const Text(
                       'Back',
                       style: TextStyle(color: Colors.white),
