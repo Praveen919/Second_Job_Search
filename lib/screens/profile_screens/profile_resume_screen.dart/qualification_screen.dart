@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_document_picker/flutter_document_picker.dart';
+import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/profile_links_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/resume_screen.dart';
 
 class QualificationScreen extends StatefulWidget {
@@ -2253,7 +2254,10 @@ class _QualificationScreenState extends State<QualificationScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const ProfileLinksScreen()));
+                    },
                     child: const Text(
                       'Next Page',
                       style: TextStyle(color: Colors.white),
