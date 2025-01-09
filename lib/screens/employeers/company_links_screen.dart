@@ -130,7 +130,7 @@ class _CompanyLinksScreenState extends State<CompanyLinksScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const CompanyContactScreen(),
+                            builder: (context) => const CompanyLinksScreen(),
                           ),
                         );
                       },
