@@ -78,6 +78,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: const Color(0xFFBFDBFE),
+      ),
       body: SafeArea(
         child: Stack(
           children: [

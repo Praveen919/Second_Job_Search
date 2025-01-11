@@ -126,6 +126,15 @@ class _CreateAccountEmployerScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: const Color(0xFFBFDBFE),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -160,7 +169,7 @@ class _CreateAccountEmployerScreenState
                     children: [
                       const Text(
                         'Create a free second Job Search Account'
-                            'Employer Registration',
+                        'Employer Registration',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
