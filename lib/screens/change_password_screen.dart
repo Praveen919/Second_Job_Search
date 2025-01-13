@@ -5,6 +5,15 @@ class ChangePasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: const Color(0xFFBFDBFE),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -84,8 +93,6 @@ class ChangePasswordScreen extends StatelessWidget {
                         ),
                         child: Text('Change Password'),
                       ),
-
-
                     ],
                   ),
                 ),
