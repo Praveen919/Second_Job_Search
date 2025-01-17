@@ -329,47 +329,58 @@ class _JobManagerState extends State<JobManager> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 30,
                           backgroundImage: AssetImage('assets/logo.png'),
                         ),
                         const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              job['title']!,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: screenWidth * 0.045,
-                                color: Colors.black87,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                job['title']!,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: screenWidth * 0.045,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                Text(
-                                  job['category']!,
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.038,
-                                    color: Colors.blueGrey,
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Flexible(
+                                    flex: 9,
+                                    child: Text(
+                                      job['category']!,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.038,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  " - ${job['location']}",
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.038,
-                                    color: Colors.blueGrey,
+                                  const SizedBox(width: 5),
+                                  Flexible(
+                                    flex: 8,
+                                    child: Text(
+                                      " - ${job['location']}",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.038,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                          ],
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                          ),
                         ),
-                        Padding(padding: EdgeInsets.only(left: 97)),
+                        //const Spacer(), // Push the 3 dots to the end of the row
                         PopupMenuButton<String>(
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.more_vert,
                             color: Colors.blueGrey,
                             size: 30,
@@ -459,20 +470,57 @@ class _JobManagerState extends State<JobManager> {
             },
           ),
           // Pagination Button
-          if (currentPage + 1 < (jobListings.length / recordsPerPage).ceil())
-            TextButton(
-              onPressed: loadMoreJobs,
-              child: Text('Load More',
-                  style: TextStyle(fontSize: screenWidth * 0.04)),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // "Load Previous" Button
+              if (currentPage > 0)
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      currentPage--; // Decrease the current page index
+                    });
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Load Previous',
+                    style: TextStyle(fontSize: screenWidth * 0.04),
+                  ),
                 ),
-              ),
-            ),
+
+              // "Load More" Button
+              if (currentPage + 1 <
+                  (jobListings.length / recordsPerPage).ceil())
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      currentPage++; // Increase the current page index
+                    });
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Load More',
+                    style: TextStyle(fontSize: screenWidth * 0.04),
+                  ),
+                ),
+            ],
+          )
         ],
       ),
     );

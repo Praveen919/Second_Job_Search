@@ -169,7 +169,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 color: Colors.grey,
               ),
             ))
-                .toList(),
+                ,
             const SizedBox(height: 16),
             Row(
               children: [

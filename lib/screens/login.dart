@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       otpTimer = 60;
     });
-    timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+    timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
       setState(() {
         if (otpTimer > 0) {
           otpTimer--;
@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => HomeScreen(),
+        builder: (context) => const HomeScreen(),
       ),
     );
   }
@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Sky-blue background section (Logo part)
                   Container(
                     width: double.infinity,
-                    color: Color(0xFFBFDBFE), // Sky-blue color
+                    color: const Color(0xFFBFDBFE), // Sky-blue color
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 30.0),
                       child: Column(
@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 200.0,
                             fit: BoxFit.cover, // Adjust logo height
                           ),
-                          SizedBox(height: 30),
+                          const SizedBox(height: 30),
                         ],
                       ),
                     ),
@@ -104,28 +104,28 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           // Login Title
-                          Text(
+                          const Text(
                             'Login',
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           // Email TextField
                           TextField(
                             controller: emailController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Email',
                               border: OutlineInputBorder(),
                             ),
                           ),
-                          SizedBox(height: 15),
+                          const SizedBox(height: 15),
                           // Password TextField
                           TextField(
                             controller: passwordController,
                             obscureText: true,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Password',
                               border: OutlineInputBorder(),
                             ),
@@ -138,68 +138,68 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ChangePasswordScreen(),
+                                    builder: (context) => const ChangePasswordScreen(),
                                   ),
                                 );
                               },
-                              child: Text('Forgot Password?'),
+                              child: const Text('Forgot Password?'),
                             ),
                           ),
                           // Forgot Username Section
 
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           // Login Button
                           ElevatedButton(
                             onPressed: isLoading ? null : handleLogin,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.black,
                               foregroundColor: Colors.white,
-                              minimumSize: Size(double.infinity, 50),
+                              minimumSize: const Size(double.infinity, 50),
                             ),
-                            child: Text('Log In'),
+                            child: const Text('Log In'),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           // Or Continue Section
-                          Text('Or continue with'),
-                          SizedBox(height: 15),
+                          const Text('Or continue with'),
+                          const SizedBox(height: 15),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () {},
-                                icon: FaIcon(FontAwesomeIcons.google, size: 25.0, color: Colors.red),
-                                label: Text('Google'),
+                                icon: const FaIcon(FontAwesomeIcons.google, size: 25.0, color: Colors.red),
+                                label: const Text('Google'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: Colors.black,
-                                  side: BorderSide(color: Colors.grey),
+                                  side: const BorderSide(color: Colors.grey),
                                 ),
                               ),
                               ElevatedButton.icon(
                                 onPressed: () {},
-                                icon: Icon(Icons.facebook, size: 25.0, color: Colors.blue),
-                                label: Text('Facebook'),
+                                icon: const Icon(Icons.facebook, size: 25.0, color: Colors.blue),
+                                label: const Text('Facebook'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: Colors.black,
-                                  side: BorderSide(color: Colors.grey),
+                                  side: const BorderSide(color: Colors.grey),
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 30),
+                          const SizedBox(height: 30),
                           // Create Account Section
                           TextButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CreateAccountScreen(),
+                                  builder: (context) => const CreateAccountScreen(),
                                 ),
                               );
                             },
                             child: RichText(
-                              text: TextSpan(
+                              text: const TextSpan(
                                 text: "Don't have an candidate account? ",
                                 style: TextStyle(color: Colors.black),
                                 children: [
@@ -219,12 +219,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CreateAccountEmployerScreen(),
+                                  builder: (context) => const CreateAccountEmployerScreen(),
                                 ),
                               );
                             },
                             child: RichText(
-                              text: TextSpan(
+                              text: const TextSpan(
                                 text: "Don't have an employer account? ",
                                 style: TextStyle(color: Colors.black),
                                 children: [
@@ -250,11 +250,11 @@ class _LoginScreenState extends State<LoginScreen> {
             if (isOtpPopupVisible)
               Center(
                 child: Container(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8.0),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
                         blurRadius: 10.0,
@@ -266,36 +266,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
+                      const Text(
                         'Enter OTP',
                         style: TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       TextField(
                         controller: otpController,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'OTP',
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Text(
                         'Time remaining: ${otpTimer}s',
-                        style: TextStyle(color: Colors.red),
+                        style: const TextStyle(color: Colors.red),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: otpTimer == 0 ? startOtpTimer : null,
-                        child: Text('Resend OTP'),
+                        child: const Text('Resend OTP'),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: submitOtp,
-                        child: Text('Submit OTP'),
+                        child: const Text('Submit OTP'),
                       ),
                     ],
                   ),

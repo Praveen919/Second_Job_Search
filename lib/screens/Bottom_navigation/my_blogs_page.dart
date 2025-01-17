@@ -183,8 +183,8 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                   fit: BoxFit.cover,
                 ),
                 const SizedBox(height: 10),
-                Row(
-                  children: const [
+                const Row(
+                  children: [
                     Icon(Icons.favorite_border),
                     SizedBox(width: 10),
                     Icon(Icons.comment_outlined),
@@ -205,7 +205,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
     return ListView.builder(
       itemCount: myBlogs.length,
       itemBuilder: (context, index) {
-        final TextEditingController _controller =
+        final TextEditingController controller =
         TextEditingController(text: myBlogs[index]['content']);
         bool isEditing = false;
 
@@ -220,7 +220,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                   children: [
                     isEditing
                         ? TextField(
-                      controller: _controller,
+                      controller: controller,
                       onChanged: (value) {
                         setState(() {
                           myBlogs[index]['content'] = value;
@@ -248,7 +248,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                               isEditing = !isEditing;
                               if (!isEditing) {
                                 setState(() {
-                                  myBlogs[index]['content'] = _controller.text;
+                                  myBlogs[index]['content'] = controller.text;
                                 });
                               }
                             });

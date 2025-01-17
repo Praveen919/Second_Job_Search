@@ -4,6 +4,7 @@ import 'package:second_job_search/screens/Bottom_navigation/home_page.dart';
 import 'package:second_job_search/screens/Bottom_navigation/my_blogs_page.dart';
 import 'package:second_job_search/screens/Bottom_navigation/my_profile_page.dart';
 import 'package:second_job_search/screens/employeers/company_details_screen.dart';
+import 'package:second_job_search/screens/employeers/employee_profile_screen.dart';
 import 'package:second_job_search/screens/employeers/manage_jobs_screen.dart';
 import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/screens/notifications_screen.dart';
@@ -212,32 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const CompanyDetailsScreen(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              leading: const Icon(
-                Icons.group_work_rounded,
-                color: Color.fromARGB(255, 3, 79, 117),
-                size: 24,
-              ),
-              title: const Text(
-                "Employee manage jobs ",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                ),
-              ),
-              onTap: () {
-                // Your navigation logic here
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ManageJobsScreen(),
+                    builder: (context) => const EmployeeProfileScreen(),
                   ),
                 );
               },

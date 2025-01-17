@@ -362,7 +362,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             radius: 40,
             backgroundImage:
             AssetImage('assets/logo.png'), // Placeholder for company logo

@@ -42,9 +42,9 @@ class CompanyDetailsScreen extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       radius: 50,
-                      backgroundImage: const AssetImage(
+                      backgroundImage: AssetImage(
                           'assets/logo.png'), // Replace with actual image
                     ),
                     const SizedBox(height: 10),

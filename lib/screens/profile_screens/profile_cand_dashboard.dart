@@ -293,7 +293,7 @@ class _ProfileViewsChartState extends State<ProfileViewsChart> {
             height: 250,
             child: LineChart(
               LineChartData(
-                gridData: FlGridData(show: false), // Remove grid lines
+                gridData: const FlGridData(show: false), // Remove grid lines
                 titlesData: FlTitlesData(
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(

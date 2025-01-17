@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchJobs() async {
-    final url = "${AppConfig.baseUrl}/api/jobs";
+    const url = "${AppConfig.baseUrl}/api/jobs";
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -164,18 +164,18 @@ class SearchBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 6,
-            offset: const Offset(2, 2),
+            offset: Offset(2, 2),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      child: const Padding(
+        padding: EdgeInsets.all(16.0),
         child: Column(
-          children: const [
+          children: [
             TextField(
               decoration: InputDecoration(
                 icon: Icon(Icons.search),
@@ -369,7 +369,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             radius: 40,
             backgroundImage:
 

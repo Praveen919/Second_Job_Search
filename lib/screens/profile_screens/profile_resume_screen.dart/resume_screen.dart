@@ -41,7 +41,7 @@ class ResumeScreen extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       radius: 50,
                       backgroundImage: AssetImage(
                           'assets/logo.png'), // Replace with actual image

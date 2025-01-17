@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:second_job_search/screens/employeers/allapplicant_screen.dart';
+import 'package:second_job_search/screens/employeers/candidate_screen.dart';
+import 'package:second_job_search/screens/employeers/company_details_screen.dart';
+import 'package:second_job_search/screens/employeers/manage_jobs_screen.dart';
 import 'dart:io';
 
 import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/screens/profile_screens/candidate_package_screen.dart';
 import 'package:second_job_search/screens/profile_screens/password_update_screen.dart';
-import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_faq_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/resume_screen.dart';
 import 'package:second_job_search/screens/profile_screens/testinomials_screen.dart';
 
-class MyProfilePageScreen extends StatefulWidget {
-  const MyProfilePageScreen({super.key});
+class EmployeeProfileScreen extends StatefulWidget {
+  const EmployeeProfileScreen({super.key});
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  _EmployeeProfileScreenState createState() => _EmployeeProfileScreenState();
 }
 
-class _ProfileScreenState extends State<MyProfilePageScreen> {
+class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   String profileName = "Raziul Shah";
   String location = "Dhaka, Bangladesh";
   File? profileImage; // Holds the uploaded image file
@@ -95,32 +98,34 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                 _buildOption(
                   context,
                   icon: Icons.person,
-                  text: 'Edit Profile',
+                  text: 'Company Details',
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => EditProfileScreen()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => CompanyDetailsScreen()));
                   },
                 ),
                 _buildOption(
                   context,
                   icon: Icons.dashboard,
-                  text: 'Dashboard',
+                  text: 'Manage Jobs',
                   onTap: () {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const Profilescreen()));
+                            builder: (context) => const ManageJobsScreen()));
                   },
                 ),
                 _buildOption(
                   context,
                   icon: Icons.article,
-                  text: 'My Resume',
+                  text: 'All Applications',
                   onTap: () {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const ResumeScreen()));
+                            builder: (context) => const ApplicantsDashboard()));
                   },
                 ),
                 _buildOption(
@@ -131,13 +136,14 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                 ),
                 _buildOption(
                   context,
-                  icon: Icons.local_offer_outlined,
-                  text: 'Packages',
+                  icon: Icons.person_2_outlined,
+                  text: 'All Candidates',
                   onTap: () {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const SubscriptionScreen()));
+                            builder: (context) =>
+                                const ManageCandidatesScreen()));
                   },
                 ),
                 _buildOption(
@@ -257,151 +263,6 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
           ),
         );
       },
-    );
-  }
-}
-
-class EditProfileScreen extends StatelessWidget {
-  const EditProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Edit Profile"),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        foregroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              _buildTextField(
-                label: "Full Name",
-                hintText: "Enter your full name",
-                icon: Icons.person,
-                initialValue: "Puerto Rico",
-              ),
-              const SizedBox(height: 14.0),
-              _buildTextField(
-                label: "Nickname",
-                hintText: "Enter your nickname",
-                icon: Icons.tag,
-                initialValue: "puerto.rico",
-              ),
-              const SizedBox(height: 14.0),
-              _buildTextField(
-                label: "Email",
-                hintText: "Enter your email",
-                icon: Icons.email,
-                initialValue: "youremail@domain.com",
-              ),
-              const SizedBox(height: 14.0),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      label: "Phone",
-                      hintText: "Enter your phone number",
-                      icon: Icons.phone,
-                      initialValue: "123-456-7890",
-                    ),
-                  ),
-                  const SizedBox(width: 14.0),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: "Gender",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                      ),
-                      value: "Female",
-                      items: const [
-                        DropdownMenuItem(value: "Male", child: Text("Male")),
-                        DropdownMenuItem(
-                            value: "Female", child: Text("Female")),
-                        DropdownMenuItem(value: "Other", child: Text("Other")),
-                      ],
-                      onChanged: (value) {},
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14.0),
-              _buildTextField(
-                label: "Address",
-                hintText: "Enter your address",
-                icon: Icons.location_on,
-                initialValue: "45 New Avenue, New York",
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Handle submit action
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: const Text(
-                    "SUBMIT",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String label,
-    required String hintText,
-    required IconData icon,
-    String? initialValue,
-  }) {
-    return TextField(
-      controller: TextEditingController(text: initialValue),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hintText,
-        prefixIcon: Icon(icon),
-        filled: true,
-        fillColor: Colors.grey[100],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.grey),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.blueAccent),
-        ),
-      ),
     );
   }
 }

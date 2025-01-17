@@ -7,7 +7,7 @@ class SavedJobsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFBFDBFE),
+        backgroundColor: const Color(0xFFBFDBFE),
         elevation: 0,
         title: const Text(
           'Saved Jobs',
@@ -65,8 +65,8 @@ class SavedJobsScreen extends StatelessWidget {
               child: ListView.builder(
                 itemCount: 2, // Replace with the number of saved jobs
                 itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 12.0),
                     child: JobCard(),
                   );
                 },

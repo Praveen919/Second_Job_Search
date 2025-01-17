@@ -21,7 +21,7 @@ class ChangePasswordScreen extends StatelessWidget {
               // Sky-blue background section (Logo part)
               Container(
                 width: double.infinity,
-                color: Color(0xFFBFDBFE), // Sky-blue color
+                color: const Color(0xFFBFDBFE), // Sky-blue color
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 30.0),
                   child: Column(
@@ -32,7 +32,7 @@ class ChangePasswordScreen extends StatelessWidget {
                         height: 200.0,
                         fit: BoxFit.cover, // Logo ki height adjust karein
                       ),
-                      SizedBox(height: 30),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
@@ -47,40 +47,40 @@ class ChangePasswordScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Change Password Title
-                      Text(
+                      const Text(
                         'Change Password',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       // Email TextField
-                      TextField(
+                      const TextField(
                         decoration: InputDecoration(
                           labelText: 'Email',
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       // OTP TextField
-                      TextField(
+                      const TextField(
                         obscureText: true,
                         decoration: InputDecoration(
                           labelText: 'OTP',
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       // Password TextField
-                      TextField(
+                      const TextField(
                         obscureText: true,
                         decoration: InputDecoration(
                           labelText: 'Create New Password',
                           border: OutlineInputBorder(),
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       // SignUp Button
                       ElevatedButton(
                         onPressed: () {
@@ -89,9 +89,9 @@ class ChangePasswordScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black, // Button color
                           foregroundColor: Colors.white,
-                          minimumSize: Size(double.infinity, 50),
+                          minimumSize: const Size(double.infinity, 50),
                         ),
-                        child: Text('Change Password'),
+                        child: const Text('Change Password'),
                       ),
                     ],
                   ),
