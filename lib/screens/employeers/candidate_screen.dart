@@ -363,8 +363,9 @@ class _CandidateState extends State<Candidate> {
                             .min, // Ensures the column takes only the space needed
                         children: [
                           Text(
-                            job['email'] ??
-                                'No email provided', // Handle null values safely
+                            'Email: ' +
+                                (job['email'] ??
+                                    'No email provided'), // Handle null values safely
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: screenWidth * 0.038,
@@ -375,8 +376,9 @@ class _CandidateState extends State<Candidate> {
                               height:
                                   4), // Add some spacing between the Text widgets
                           Text(
-                            job['skill'] ??
-                                'No skill provided', // Handle null values safely
+                            'Skills: ' +
+                                (job['skill'] ??
+                                    'No skill provided'), // Handle null values safely
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: screenWidth * 0.038,
