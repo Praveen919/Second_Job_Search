@@ -138,7 +138,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const ChangePasswordScreen(),
+                                    builder: (context) =>
+                                        const ChangePasswordScreen(),
                                   ),
                                 );
                               },
@@ -167,7 +168,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () {},
-                                icon: const FaIcon(FontAwesomeIcons.google, size: 25.0, color: Colors.red),
+                                icon: const FaIcon(FontAwesomeIcons.google,
+                                    size: 25.0, color: Colors.red),
                                 label: const Text('Google'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
@@ -177,7 +179,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               ElevatedButton.icon(
                                 onPressed: () {},
-                                icon: const Icon(Icons.facebook, size: 25.0, color: Colors.blue),
+                                icon: const Icon(Icons.facebook,
+                                    size: 25.0, color: Colors.blue),
                                 label: const Text('Facebook'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
@@ -194,7 +197,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const CreateAccountScreen(),
+                                  builder: (context) =>
+                                      const CreateAccountScreen(),
                                 ),
                               );
                             },
@@ -219,7 +223,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const CreateAccountEmployerScreen(),
+                                  builder: (context) =>
+                                      const CreateAccountEmployerScreen(),
                                 ),
                               );
                             },

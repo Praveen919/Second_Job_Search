@@ -131,6 +131,19 @@ class _CandidateState extends State<Candidate> {
     'Education'
   ];
 
+  final List<String> emailList = [
+    'it@yahoo.com',
+    'marketing@gmail.com',
+    'finance@microsoft.com',
+    'sales@yahoo.com',
+    'hr@gmail.com',
+    'engineering@microsoft.com',
+    'design@yahoo.com',
+    'customerservice@gmail.com',
+    'administration@microsoft.com',
+    'education@yahoo.com'
+  ];
+
   final List<String> locations = [
     'Mumbai',
     'Delhi',
@@ -142,6 +155,19 @@ class _CandidateState extends State<Candidate> {
     'Ahmedabad',
     'Chandigarh',
     'Goa'
+  ];
+
+  final List<String> skillsList = [
+    'coding, debugging',
+    'seo, marketing',
+    'accounting, budgeting',
+    'negotiation, sales',
+    'recruitment, HR',
+    'problem-solving, decision-making',
+    'design, branding',
+    'customer support, CRM',
+    'administration, multitasking',
+    'teaching, e-learning'
   ];
 
   late List<Map<String, String>> jobListings;
@@ -158,13 +184,15 @@ class _CandidateState extends State<Candidate> {
         final random = Random();
         final category = categories[random.nextInt(categories.length)];
         final location = locations[random.nextInt(locations.length)];
+        final skill = skillsList[random.nextInt(skillsList.length)];
+        final email = emailList[random.nextInt(emailList.length)];
 
         return {
           'title': 'Job Title ${index + 1}',
           'category': category,
           'location': location,
-          'applications': '${(index + 1) * 5}',
-          'expiryDate': '11/${(index + 1).toString().padLeft(2, '0')}/2025',
+          'email': email,
+          'skill': skill,
         };
       },
     );
@@ -186,7 +214,9 @@ class _CandidateState extends State<Candidate> {
     final filteredJobs = jobListings.where((job) {
       return job['title']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
           job['category']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          job['location']!.toLowerCase().contains(searchQuery.toLowerCase());
+          job['location']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
+          job['email']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
+          job['skill']!.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
 
     final startIndex = currentPage * recordsPerPage;
@@ -329,19 +359,28 @@ class _CandidateState extends State<Candidate> {
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize
+                            .min, // Ensures the column takes only the space needed
                         children: [
                           Text(
-                            "Applications: ${job['applications']}",
+                            job['email'] ??
+                                'No email provided', // Handle null values safely
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: screenWidth * 0.038,
-                              color: Colors.black54,
+                              color: Colors.blueGrey,
                             ),
                           ),
+                          SizedBox(
+                              height:
+                                  4), // Add some spacing between the Text widgets
                           Text(
-                            "Expiry Date: ${job['expiryDate']}",
+                            job['skill'] ??
+                                'No skill provided', // Handle null values safely
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: screenWidth * 0.038,
-                              color: Colors.black54,
+                              color: Colors.blueGrey,
                             ),
                           ),
                         ],
