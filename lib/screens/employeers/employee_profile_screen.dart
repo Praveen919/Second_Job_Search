@@ -4,6 +4,7 @@ import 'package:second_job_search/screens/employeers/allapplicant_screen.dart';
 import 'package:second_job_search/screens/employeers/candidate_screen.dart';
 import 'package:second_job_search/screens/employeers/company_details_screen.dart';
 import 'package:second_job_search/screens/employeers/manage_jobs_screen.dart';
+import 'package:second_job_search/screens/employeers/shorlist_resume_screen.dart';
 import 'dart:io';
 
 import 'package:second_job_search/screens/login.dart';
@@ -20,8 +21,8 @@ class EmployeeProfileScreen extends StatefulWidget {
 }
 
 class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
-  String profileName = "Raziul Shah";
-  String location = "Dhaka, Bangladesh";
+  String profileName = "Alok Kushwaha";
+  String location = "Mumbai, India";
   File? profileImage; // Holds the uploaded image file
 
   final ImagePicker _picker = ImagePicker();
@@ -97,7 +98,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
               children: [
                 _buildOption(
                   context,
-                  icon: Icons.person,
+                  icon: Icons.person_2_outlined,
                   text: 'Company Details',
                   onTap: () {
                     Navigator.push(
@@ -108,7 +109,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 ),
                 _buildOption(
                   context,
-                  icon: Icons.dashboard,
+                  icon: Icons.dashboard_customize_outlined,
                   text: 'Manage Jobs',
                   onTap: () {
                     Navigator.push(
@@ -119,7 +120,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 ),
                 _buildOption(
                   context,
-                  icon: Icons.article,
+                  icon: Icons.article_outlined,
                   text: 'All Applications',
                   onTap: () {
                     Navigator.push(
@@ -130,9 +131,15 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 ),
                 _buildOption(
                   context,
-                  icon: Icons.settings,
-                  text: 'Account Settings',
-                  onTap: () {},
+                  icon: Icons.sort_outlined,
+                  text: 'Shortlisted Resumes',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const ShortlistedResumeScreen()));
+                  },
                 ),
                 _buildOption(
                   context,
