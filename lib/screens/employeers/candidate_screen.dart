@@ -10,8 +10,9 @@ class ManageCandidatesScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white, // Set the background color to white
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
+        backgroundColor:
+            Colors.white, // Set the AppBar background color to white
+        elevation: 0, // Remove the AppBar shadow
         title: const Text(
           'Candidate',
           style: TextStyle(
@@ -25,18 +26,24 @@ class ManageCandidatesScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // Title for Pie Chart
+              Text(
+                'Skillset Analysis',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
               // Pie Chart with fixed height
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: SizedBox(
-                  height: 250, // Set a fixed height for the pie chart
-                  child: PieChart(
-                    PieChartData(
-                      sections: showingSections(),
-                      borderData: FlBorderData(show: false),
-                      sectionsSpace: 0,
-                      centerSpaceRadius: 50,
-                    ),
+              SizedBox(
+                height: 250, // Set a fixed height for the pie chart
+                child: PieChart(
+                  PieChartData(
+                    sections: showingSections(),
+                    borderData: FlBorderData(show: false),
+                    sectionsSpace: 0,
+                    centerSpaceRadius: 50,
                   ),
                 ),
               ),
