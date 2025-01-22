@@ -31,6 +31,7 @@ class _ApplicantsDashboardState extends State<ApplicantsDashboard> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFFBFDBFE),
         title: const Text(
           "All Applicants!",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

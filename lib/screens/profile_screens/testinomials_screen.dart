@@ -68,7 +68,8 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
       testimonials.add({
         'name': name,
         'message': feedback,
-        'createdAt': DateTime.now().toString().split(' ')[0], // Format: YYYY-MM-DD
+        'createdAt':
+            DateTime.now().toString().split(' ')[0], // Format: YYYY-MM-DD
       });
     });
 
@@ -87,7 +88,7 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFBFDBFE),
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -193,53 +194,53 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
               const SizedBox(height: 15),
               // Display testimonials
               ...testimonials.map((testimonial) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Container(
-                  width: double.infinity,
-                  constraints: const BoxConstraints(
-                      minHeight: 120), // Uniform height
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(
+                          minHeight: 120), // Uniform height
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            testimonial['name'] ?? 'Anonymous',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                testimonial['name'] ?? 'Anonymous',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                              Text(
+                                testimonial['createdAt']?.split('T')[0] ??
+                                    '', // Format: YYYY-MM-DD
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 8),
                           Text(
-                            testimonial['createdAt']?.split('T')[0] ??
-                                '', // Format: YYYY-MM-DD
+                            testimonial['message'] ?? 'No feedback provided.',
                             style: const TextStyle(
                               fontSize: 14,
-                              color: Colors.black54,
+                              color: Colors.black87,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        testimonial['message'] ?? 'No feedback provided.',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )),
+                    ),
+                  )),
             ],
           ),
         ),

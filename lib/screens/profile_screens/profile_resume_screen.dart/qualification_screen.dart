@@ -209,7 +209,8 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 const SizedBox(height: 15),
                 TextField(
                   controller: cgpaController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     labelText: "CGPA or Percentage",
                     border: OutlineInputBorder(
@@ -427,7 +428,8 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 const SizedBox(height: 15),
                 TextField(
                   controller: cgpaController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
                     labelText: 'CGPA or Percentage',
                     border: OutlineInputBorder(
@@ -1628,7 +1630,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFBFDBFE),
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),

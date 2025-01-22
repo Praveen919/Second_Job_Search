@@ -39,7 +39,7 @@ class _FAQScreenState extends State<FAQScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFBFDBFE),
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),

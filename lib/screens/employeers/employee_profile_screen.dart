@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:second_job_search/screens/employeers/allapplicant_screen.dart';
 import 'package:second_job_search/screens/employeers/candidate_screen.dart';
 import 'package:second_job_search/screens/employeers/company_details_screen.dart';
+import 'package:second_job_search/screens/employeers/employee_dashbord.dart';
 import 'package:second_job_search/screens/employeers/manage_jobs_screen.dart';
 import 'package:second_job_search/screens/employeers/shorlist_resume_screen.dart';
 import 'dart:io';
@@ -35,7 +36,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         title: const Text('Profile'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFBFDBFE),
         foregroundColor: Colors.black,
       ),
       body: Column(
@@ -96,6 +97,17 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           Expanded(
             child: ListView(
               children: [
+                _buildOption(
+                  context,
+                  icon: Icons.dashboard_outlined,
+                  text: 'Employee Dashboard',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => EmployeeDashboardscreen()));
+                  },
+                ),
                 _buildOption(
                   context,
                   icon: Icons.person_2_outlined,

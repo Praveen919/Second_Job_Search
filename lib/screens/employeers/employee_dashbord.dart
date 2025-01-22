@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:second_job_search/screens/notifications_screen.dart';
 
-class Profilescreen extends StatelessWidget {
-  const Profilescreen({super.key});
+class EmployeeDashboardscreen extends StatelessWidget {
+  const EmployeeDashboardscreen({super.key});
 
   // Reusable Container Widget
   Widget _buildInfoContainer({
@@ -69,7 +69,6 @@ class Profilescreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xFFBFDBFE),
-        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {

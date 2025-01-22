@@ -11,7 +11,7 @@ class ManageCandidatesScreen extends StatelessWidget {
       backgroundColor: Colors.white, // Set the background color to white
       appBar: AppBar(
         backgroundColor:
-            Colors.white, // Set the AppBar background color to white
+            const Color(0xFFBFDBFE), // Set the AppBar background color to white
         elevation: 0, // Remove the AppBar shadow
         title: const Text(
           'Candidate',
