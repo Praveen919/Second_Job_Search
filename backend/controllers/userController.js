@@ -7,7 +7,7 @@ const rateLimit = require('express-rate-limit');
 const { isEmail } = require('validator');
 const archivedUser = require('../models/archivedUserModel');  // Replace with correct path to archived model
 const Login = require('../models/loginModel');  // Replace with correct path to your login model
-const { parseUserAgent } = require('../utils/parseUserAgent'); 
+const { parseUserAgent } = require('../utils/parseUserAgent');
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -16,7 +16,7 @@ const generateToken = (id) => {
 
 // Register user
 const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { username, email, password, role } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
@@ -24,12 +24,13 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ username, email, password, role });
     if (user) {
       res.status(201).json({
         id: user._id,
-        name: user.name,
+        name: user.username,
         email: user.email,
+        role: user.role,
         token: generateToken(user._id),
       });
     } else {
@@ -53,7 +54,7 @@ const loginUser = async (req, res) => {
       if (match) {
         res.status(200).json({
           id: user._id,
-          name: user.name,
+          name: user.username,
           email: user.email,
           token: generateToken(user._id),
         });
@@ -127,11 +128,11 @@ const requestLoginOTP = async (req, res) => {
     // First, try finding the user by email
     if (isEmail(email)) {
       user = await User.findOne({ email, active: true });
-    } 
+    }
     // If it's not an email, check if it's a mobile number (mobile1 or mobile2)
     else if (email && email.length >= 7 && !isNaN(email)) {
       user = await User.findOne({ $or: [{ mobile1: email }, { mobile2: email }], active: true });
-    } 
+    }
     // Otherwise, treat it as a username
     else {
       user = await User.findOne({ username: email, active: true });

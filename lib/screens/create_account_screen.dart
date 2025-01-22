@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/Config/config.dart';
 
 class CreateAccountScreen extends StatefulWidget {
@@ -15,23 +16,36 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _otpController = TextEditingController();
 
-  bool _isOtpPopupVisible = false;
+  bool _isLoading = false;
 
-  // API Integration for SignUp
+  // Helper to show SnackBar
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  // API Call for Sign Up
   Future<void> _signUp() async {
     final String email = _emailController.text.trim();
     final String username = _usernameController.text.trim();
     final String password = _passwordController.text.trim();
 
     if (email.isEmpty || username.isEmpty || password.isEmpty) {
-      _showSnackBar('Please fill in all fields');
+      _showSnackBar('Please fill in all fields', isError: true);
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      const String apiUrl = '${AppConfig.baseUrl}/api/users/register';
+      final String apiUrl = '${AppConfig.baseUrl}/api/users/register';
 
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -40,39 +54,27 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           'email': email,
           'username': username,
           'password': password,
+          'role': 'candidate',  // Hardcoding the role as candidate
         }),
       );
 
       if (response.statusCode == 201) {
-        setState(() {
-          _isOtpPopupVisible = true;
-        });
+        _showSnackBar('Account created successfully!');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
       } else {
         final errorResponse = jsonDecode(response.body);
-        _showSnackBar(errorResponse['message'] ?? 'Failed to sign up');
+        _showSnackBar(errorResponse['message'] ?? 'Failed to sign up', isError: true);
       }
     } catch (e) {
-      _showSnackBar('Error: Unable to connect to the server');
+      _showSnackBar('Error: Unable to connect to the server', isError: true);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  void _verifyOtp() {
-    final String otp = _otpController.text.trim();
-    if (otp.isEmpty) {
-      _showSnackBar('Please enter the OTP');
-      return;
-    }
-    _showSnackBar('OTP Verified Successfully!');
-    setState(() {
-      _isOtpPopupVisible = false;
-    });
-    Navigator.pop(context); // Navigate back to login
   }
 
   @override
@@ -88,190 +90,136 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         backgroundColor: const Color(0xFFBFDBFE),
       ),
       body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Sky-blue background section (Logo part)
-                  Container(
-                    width: double.infinity,
-                    color: const Color(0xFFBFDBFE),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 30.0),
-                      child: Column(
-                        children: [
-                          Image.asset(
-                            'assets/logo.png',
-                            width: 300.0,
-                            height: 200.0,
-                            fit: BoxFit.cover,
-                          ),
-                          const SizedBox(height: 30),
-                        ],
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Sky-blue background section (Logo part)
+              Container(
+                width: double.infinity,
+                color: const Color(0xFFBFDBFE),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 30.0),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/logo.png',
+                        width: 300.0,
+                        height: 200.0,
+                        fit: BoxFit.cover,
                       ),
-                    ),
-                  ),
-
-                  // Rest of the screen (white background)
-                  Container(
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Create a free second Job Search Account\nCandidate Registration',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Email TextField
-                          TextField(
-                            controller: _emailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-
-                          // Your Name TextField
-                          TextField(
-                            controller: _usernameController,
-                            decoration: const InputDecoration(
-                              labelText: 'UserName',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-
-                          // Password TextField
-                          TextField(
-                            controller: _passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Create New Password',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // SignUp Button
-                          ElevatedButton(
-                            onPressed: _signUp,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                              minimumSize: const Size(double.infinity, 50),
-                            ),
-                            child: const Text('Register'),
-                          ),
-                          const SizedBox(height: 20),
-
-                          const Text('Or Register with'),
-                          const SizedBox(height: 15),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: () {},
-                                icon: const FaIcon(
-                                  FontAwesomeIcons.google,
-                                  size: 25.0,
-                                  color: Colors.red,
-                                ),
-                                label: const Text('Google'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.black,
-                                  side: const BorderSide(color: Colors.grey),
-                                ),
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: () {},
-                                icon: const Icon(
-                                  Icons.facebook,
-                                  size: 25.0,
-                                  color: Colors.blue,
-                                ),
-                                label: const Text('Facebook'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.black,
-                                  side: const BorderSide(color: Colors.grey),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // OTP Popup
-            if (_isOtpPopupVisible)
-              Center(
-                child: Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    padding: const EdgeInsets.all(20.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Enter OTP',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        TextField(
-                          controller: _otpController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'OTP',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _isOtpPopupVisible = false;
-                                });
-                              },
-                              child: const Text('Cancel'),
-                            ),
-                            ElevatedButton(
-                              onPressed: _verifyOtp,
-                              child: const Text('Verify'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      const SizedBox(height: 30),
+                    ],
                   ),
                 ),
               ),
-          ],
+
+              // Rest of the screen (white background)
+              Container(
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Create a free Second Job Search Account\nCandidate Registration',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Email TextField
+                      TextField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+
+                      // Username TextField
+                      TextField(
+                        controller: _usernameController,
+                        decoration: const InputDecoration(
+                          labelText: 'UserName',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+
+                      // Password TextField
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Create New Password',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Sign Up Button
+                      ElevatedButton(
+                        onPressed: _signUp,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
+                            : const Text('Register'),
+                      ),
+                      const SizedBox(height: 20),
+
+                      const Text('Or Register with'),
+                      const SizedBox(height: 15),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () {},
+                            icon: const FaIcon(
+                              FontAwesomeIcons.google,
+                              size: 25.0,
+                              color: Colors.red,
+                            ),
+                            label: const Text('Google'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              side: const BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(
+                              Icons.facebook,
+                              size: 25.0,
+                              color: Colors.blue,
+                            ),
+                            label: const Text('Facebook'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              side: const BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
