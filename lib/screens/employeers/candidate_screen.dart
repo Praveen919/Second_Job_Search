@@ -195,7 +195,7 @@ class _CandidateState extends State<Candidate> {
         final email = emailList[random.nextInt(emailList.length)];
 
         return {
-          'title': 'Job Title ${index + 1}',
+          'title': 'Developer ${index + 1}',
           'category': category,
           'location': location,
           'email': email,
@@ -238,7 +238,7 @@ class _CandidateState extends State<Candidate> {
       children: [
         // "My Job Listings" Header
         Text(
-          'My Job Listings',
+          'All Candidates',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: screenWidth * 0.05,
@@ -289,114 +289,122 @@ class _CandidateState extends State<Candidate> {
           itemBuilder: (context, index) {
             final job = jobsToShow[index];
 
-            return Container(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 8,
-                    spreadRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const CircleAvatar(
-                        radius: 30,
-                        backgroundImage: AssetImage('assets/logo.png'),
+            return GestureDetector(
+              onTap: () {
+                // Navigate to the job details page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CandidateDetailsScreen(
+                            job: job,
+                          )
+                      // Navigate to the JobDetailsPage
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 8,
+                      spreadRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const CircleAvatar(
+                          radius: 30,
+                          backgroundImage: AssetImage('assets/logo.png'),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                job['title']!,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: screenWidth * 0.045,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Flexible(
+                                    flex: 9,
+                                    child: Text(
+                                      job['category']!,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.038,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Flexible(
+                                    flex: 8,
+                                    child: Text(
+                                      " - ${job['location']}",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.038,
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(color: Colors.grey, height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              job['title']!,
+                              'Email: ' + (job['email'] ?? 'No email provided'),
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: screenWidth * 0.045,
-                                color: Colors.black87,
+                                fontSize: screenWidth * 0.038,
+                                color: Colors.blueGrey,
                               ),
                             ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                Flexible(
-                                  flex: 9,
-                                  child: Text(
-                                    job['category']!,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: screenWidth * 0.038,
-                                      color: Colors.blueGrey,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Flexible(
-                                  flex: 8,
-                                  child: Text(
-                                    " - ${job['location']}",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: screenWidth * 0.038,
-                                      color: Colors.blueGrey,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            SizedBox(height: 4),
+                            Text(
+                              'Skills: ' +
+                                  (job['skill'] ?? 'No skill provided'),
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.038,
+                                color: Colors.blueGrey,
+                              ),
                             ),
-                            const SizedBox(height: 8),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                  const Divider(color: Colors.grey, height: 5),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize
-                            .min, // Ensures the column takes only the space needed
-                        children: [
-                          Text(
-                            'Email: ' +
-                                (job['email'] ??
-                                    'No email provided'), // Handle null values safely
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.038,
-                              color: Colors.blueGrey,
-                            ),
-                          ),
-                          SizedBox(
-                              height:
-                                  4), // Add some spacing between the Text widgets
-                          Text(
-                            'Skills: ' +
-                                (job['skill'] ??
-                                    'No skill provided'), // Handle null values safely
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.038,
-                              color: Colors.blueGrey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -451,6 +459,170 @@ class _CandidateState extends State<Candidate> {
                 ),
               ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+class CandidateDetailsScreen extends StatelessWidget {
+  final Map<String, dynamic> job;
+
+  const CandidateDetailsScreen({required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(job['name'] ?? 'Candidate Details'),
+        backgroundColor: const Color(0xFFBFDBFE),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Image and Candidate Name Section
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundImage: NetworkImage(job['profileImage'] ??
+                        'https://via.placeholder.com/150'),
+                  ),
+                  SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        job['name'] ?? 'No name',
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Location: ${job['location'] ?? 'Not available'}',
+                        style: TextStyle(fontSize: 16, color: Colors.blueGrey),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+
+              // Resume Download Button
+              ElevatedButton(
+                onPressed: () {
+                  // Add your resume download functionality here
+                  print('Download resume clicked');
+                },
+                child: Text('Download Resume'),
+              ),
+              SizedBox(height: 20),
+
+              // Candidate Information Section
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'Candidate Information',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+              ),
+              _buildRowWithIcon(Icons.work, 'Experience', job['experience']),
+              _buildRowWithIcon(Icons.school, 'Education', job['education']),
+              _buildRowWithIcon(Icons.monetization_on, 'Expected Salary',
+                  job['expected_salary']),
+              _buildRowWithIcon(Icons.monetization_on, 'Current Salary',
+                  job['current_salary']),
+              _buildRowWithIcon(Icons.person, 'Role', job['role']),
+              _buildRowWithIcon(
+                  Icons.sell, 'Professional Skills', job['skills']),
+              SizedBox(height: 20),
+
+              // Divider
+              Divider(),
+
+              // Other Related Candidates Section (in cards)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'Other Related Candidates',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: 3, // Just a placeholder count for related candidates
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      // Navigate to related candidate details (if required)
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(16),
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 8,
+                            spreadRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 25,
+                            backgroundImage: NetworkImage(
+                                'https://via.placeholder.com/150'), // Placeholder image
+                          ),
+                          SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Candidate ${index + 1}',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Location: Some Location',
+                                style: TextStyle(
+                                    fontSize: 14, color: Colors.blueGrey),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper function to build rows with icons and text
+  Widget _buildRowWithIcon(IconData icon, String title, String? value) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.blueGrey),
+        SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            '$title: ${value ?? 'Not available'}',
+            style: TextStyle(fontSize: 16, color: Colors.blueGrey),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
