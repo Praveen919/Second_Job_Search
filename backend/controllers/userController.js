@@ -46,7 +46,7 @@ const registerUser = async (req, res) => {
 
 // Login user
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
   console.log('Entered password:', password);
 
   try {
@@ -59,6 +59,7 @@ const loginUser = async (req, res) => {
           id: user._id,
           name: user.username,
           email: user.email,
+          role: user.role,
           token: generateToken(user._id),
         });
       } else {
