@@ -8,6 +8,9 @@ const { isEmail } = require('validator');
 const archivedUser = require('../models/archivedUserModel');  // Replace with correct path to archived model
 const Login = require('../models/loginModel');  // Replace with correct path to your login model
 const { parseUserAgent } = require('../utils/parseUserAgent');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -303,4 +306,346 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getAllUsers, requestLoginOTP, loginWithOTP };
+const publicResumeDir = path.join(__dirname, '../public/resume/');
+
+if (!fs.existsSync(publicResumeDir)) {
+  fs.mkdirSync(publicResumeDir, { recursive: true });
+}
+
+// Setup multer storage for resumes
+const resumeStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, publicResumeDir); // Save files to the public/resume directory
+  },
+  filename: (req, file, cb) => {
+    const extension = path.extname(file.originalname);
+    cb(null, `resume_${Date.now()}${extension}`); // Ensure unique filenames
+  }
+});
+
+// Multer setup for resumes
+const resumeUploadMiddleware = multer({
+  storage: resumeStorage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB file size limit
+});
+
+// Function to handle the resume upload logic
+const uploadResume = async (req, res) => {
+  const { user_id } = req.params;
+  const { resumeType } = req.body;
+  const file = req.file;
+
+  console.log('User ID:', user_id);
+  console.log('Uploaded file:', file);
+  console.log('Resume Type:', resumeType);
+
+  if (!user_id) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  if (!file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  if (!resumeType) {
+    return res.status(400).json({ error: 'Resume type is required' });
+  }
+
+  try {
+    const user = await User.findById(user_id);
+    if (!user) {
+      fs.unlink(path.join(publicResumeDir, file.filename), (err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.resume = `/resume/${file.filename}`;
+    user.resumeType = resumeType;
+    console.log('Resume path to save:', user.resume);
+    console.log('Resume type to save:', user.resumeType);
+    await user.save();
+    console.log('User updated successfully');
+
+    res.status(200).json({ user_id, resume: user.resume, resumeType: user.resumeType });
+
+  } catch (error) {
+    console.error('Error uploading resume:', error);
+
+    if (file) {
+      fs.unlink(path.join(publicResumeDir, file.filename), (err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+    }
+
+    res.status(500).json({ error: 'An error occurred while uploading the resume' });
+  }
+};
+
+// Delete Resume Function
+const deleteResume = async (req, res) => {
+  const { user_id } = req.params;
+
+  if (!user_id) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  try {
+    const user = await User.findById(user_id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.resume) {
+      const fileName = path.basename(user.resume);
+      const filePath = path.join(publicResumeDir, fileName);
+
+      console.log('File path for deletion:', filePath);
+
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error('Error deleting file:', err);
+          return res.status(500).json({ error: 'An error occurred while deleting the resume file' });
+        }
+        console.log('File deleted successfully');
+      });
+
+      user.resume = '';
+      await user.save();
+      console.log('User resume cleared successfully');
+
+      res.status(200).json({ user_id, resume: user.resume });
+    } else {
+      res.status(404).json({ error: 'No resume found for this user' });
+    }
+  } catch (error) {
+    console.error('Error deleting resume:', error);
+    res.status(500).json({ error: 'An error occurred while deleting the resume' });
+  }
+}
+
+// Update User Image Function
+const updateUserImage = async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+
+  try {
+    const updateData = { ...req.body };
+
+    if (req.file) {
+      updateData.image = `/users/images/${req.file.filename}`;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
+
+// Change Password Function
+const changePassword = async (req, res) => {
+  const { newPassword } = req.body;
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).send({
+      message: 'Password updated successfully',
+      user: { name: user.name, email: user.email }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+}
+
+// Update User Data Function
+const updateUserData = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const updatedData = req.body;
+
+    if (!updatedData.companyEmail || !updatedData.mobile) {
+      return res.status(400).json({ message: 'Required fields are missing' });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// Update Notification Settings Function
+const updateNotificationSettings = async (req, res) => {
+  const { dndOption, startDate, endDate } = req.body;
+
+  if (!dndOption || (dndOption === 'custom' && (!startDate || !endDate))) {
+    return res.status(400).json({ message: 'Invalid input' });
+  }
+
+  try {
+    const userId = req.user.id;
+
+    const updateData = {
+      dndOption,
+      dndStartDate: null,
+      dndEndDate: null,
+    };
+
+    if (dndOption !== 'none') {
+      if (dndOption === 'custom') {
+        updateData.dndStartDate = new Date(startDate);
+        updateData.dndEndDate = new Date(endDate);
+      } else if (dndOption === '1week') {
+        updateData.dndStartDate = new Date();
+        updateData.dndEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      } else if (dndOption === '2weeks') {
+        updateData.dndStartDate = new Date();
+        updateData.dndEndDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: { notificationSettings: updateData } },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({ message: 'Notification settings updated successfully' });
+  } catch (error) {
+    console.error('Error updating notification settings:', error);
+    return res.status(500).json({ message: 'Failed to update notification settings' });
+  }
+}
+
+const saveJob = async (req, res) => {
+  const { user_id, post_id } = req.body;
+
+  if (!user_id || !post_id) {
+    return res.status(400).json({ error: 'user_id and post_id are required' });
+  }
+
+  try {
+    const user = await User.findById(user_id);
+
+    if (!user) {
+      return res.status(404).json({ valid: false, message: 'User not found' });
+    }
+
+    // Check if the job is already saved
+    if (user.jobPostIds.includes(post_id)) {
+      return res.status(400).json({ valid: false, message: 'Job is already saved' });
+    }
+
+    // Save the job
+    user.jobPostIds.push(post_id);
+    await user.save();
+
+    return res.status(200).json({ valid: true, message: 'Job Saved' });
+  } catch (error) {
+    console.error('Error saving job:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Function to get the count of saved jobs
+const getSavedJobsCount = async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Get the count of saved jobs
+    const savedJobsCount = user.jobPostIds.length;
+
+    return res.status(200).json(savedJobsCount);
+  } catch (error) {
+    console.error('Error fetching saved jobs count:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Function to remove a saved job
+const removeSavedJob = async (req, res) => {
+  const { user_id, post_id } = req.body;
+
+  if (!user_id || !post_id) {
+    return res.status(400).json({ error: 'user_id and post_id are required' });
+  }
+
+  try {
+    const user = await User.findById(user_id);
+
+    if (!user) {
+      return res.status(404).json({ valid: false, message: 'User not found' });
+    }
+
+    // Check if the job is saved
+    const jobIndex = user.jobPostIds.indexOf(post_id);
+
+    if (jobIndex === -1) {
+      return res.status(400).json({ valid: false, message: 'Job is not saved yet' });
+    }
+
+    // Remove the job post
+    user.jobPostIds.splice(jobIndex, 1);
+    await user.save();
+
+    return res.status(200).json({ valid: true, message: 'Job Removed' });
+  } catch (error) {
+    console.error('Error removing job:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getAllUsers,
+  requestLoginOTP,
+  loginWithOTP,
+  otpResendLimiter,
+  uploadResume,
+  deleteResume,
+  updateUserImage,
+  changePassword,
+  updateUserData,
+  updateNotificationSettings,
+  saveJob, getSavedJobsCount, removeSavedJob
+};
