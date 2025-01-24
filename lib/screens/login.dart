@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:second_job_search/screens/create_account_screen.dart';
 import 'package:second_job_search/screens/create_account_employer_screen.dart';
 import 'package:second_job_search/screens/change_password_screen.dart';
+import 'package:http/http.dart' as http;
 import 'package:second_job_search/screens/main_home.dart';
+import 'package:second_job_search/Config/config.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController otpController = TextEditingController();
   bool isLoading = false;
   bool isOtpPopupVisible = false;
-  int otpTimer = 60; // Timer in seconds
+  int otpTimer = 60;
   Timer? timer;
 
   void startOtpTimer() {
@@ -52,21 +55,90 @@ class _LoginScreenState extends State<LoginScreen> {
     timer?.cancel();
   }
 
-  void handleLogin() {
-    // Simulate login process or API call
-    showOtpPopup();
+  Future<void> handleLogin() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('${AppConfig.baseUrl}/api/users/login'), // Updated endpoint for simplicity
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': emailController.text,
+          'password': passwordController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        // Simplified: Directly navigate to HomeScreen after successful login
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed: ${response.body}')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
-  void submitOtp() {
-    closeOtpPopup();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const HomeScreen(),
-      ),
-    );
-  }
+/*  Future<void> submitOtp() async {
+    setState(() {
+      isLoading = true;
+    });
 
+    try {
+      final response = await http.post(
+        Uri.parse('${AppConfig.baseUrl}/api/users/login-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': emailController.text,
+          'otp': otpController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        closeOtpPopup();
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid OTP')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+  @override
+  void dispose() {
+    timer?.cancel();
+    emailController.dispose();
+    passwordController.dispose();
+    otpController.dispose();
+    super.dispose();
+  }
+*/
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
             SingleChildScrollView(
               child: Column(
                 children: [
-                  // Sky-blue background section (Logo part)
+                  // Sky-blue background section
                   Container(
                     width: double.infinity,
                     color: const Color(0xFFBFDBFE), // Sky-blue color
@@ -86,16 +158,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Image.asset(
                             'assets/logo.png', // Replace with your logo asset
-                            width: 300.0, // Adjust logo width
+                            width: 300.0,
                             height: 200.0,
-                            fit: BoxFit.cover, // Adjust logo height
+                            fit: BoxFit.cover,
                           ),
                           const SizedBox(height: 30),
                         ],
                       ),
                     ),
                   ),
-                  // Rest of the screen (white background)
+                  // Login Form  [Rest of the screen (white background)]
                   Container(
                     color: Colors.white,
                     child: Padding(
@@ -103,7 +175,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Login Title
                           const Text(
                             'Login',
                             style: TextStyle(
@@ -112,7 +183,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          // Email TextField
                           TextField(
                             controller: emailController,
                             decoration: const InputDecoration(
@@ -121,7 +191,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 15),
-                          // Password TextField
                           TextField(
                             controller: passwordController,
                             obscureText: true,
@@ -130,7 +199,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               border: OutlineInputBorder(),
                             ),
                           ),
-                          // Forgot Password Section
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
@@ -138,18 +206,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ChangePasswordScreen(),
+                                    builder: (context) => const ChangePasswordScreen(),
                                   ),
                                 );
                               },
                               child: const Text('Forgot Password?'),
                             ),
                           ),
-                          // Forgot Username Section
-
                           const SizedBox(height: 20),
-                          // Login Button
                           ElevatedButton(
                             onPressed: isLoading ? null : handleLogin,
                             style: ElevatedButton.styleFrom(
@@ -160,7 +224,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: const Text('Log In'),
                           ),
                           const SizedBox(height: 20),
-                          // Or Continue Section
                           const Text('Or continue with'),
                           const SizedBox(height: 15),
                           Row(
@@ -190,21 +253,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 30),
-                          // Create Account Section
+                          const SizedBox(height: 20),
                           TextButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CreateAccountScreen(),
+                                  builder: (context) => const CreateAccountScreen(),
                                 ),
                               );
                             },
                             child: RichText(
                               text: const TextSpan(
-                                text: "Don't have an candidate account? ",
+                                text: "Don't have a candidate account? ",
                                 style: TextStyle(color: Colors.black),
                                 children: [
                                   TextSpan(
@@ -217,20 +278,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                             ),
+
                           ),
+                          const SizedBox(height: 5),
                           TextButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CreateAccountEmployerScreen(),
+                                  builder: (context) => const CreateAccountEmployerScreen(),
                                 ),
                               );
                             },
                             child: RichText(
                               text: const TextSpan(
-                                text: "Don't have an employer account? ",
+                                text: "Don't have a employer account? ",
                                 style: TextStyle(color: Colors.black),
                                 children: [
                                   TextSpan(
@@ -243,6 +305,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                             ),
+
                           ),
                         ],
                       ),
@@ -251,14 +314,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-            // OTP Popup Overlay
+          /*  // OTP Popup Overlay
             if (isOtpPopupVisible)
               Center(
                 child: Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(15.0),
                     boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
@@ -267,37 +330,34 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                  width: 300.0,
+                  width: 320.0,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        'Enter OTP',
+                        'Verify Your Identity',
                         style: TextStyle(
-                          fontSize: 18.0,
+                          fontSize: 20.0,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 10),
+                      const Text(
+                        'Enter the OTP sent to your email.',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
                       TextField(
                         controller: otpController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'OTP',
-                          border: OutlineInputBorder(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0), // Correct way to set borderRadius
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Time remaining: ${otpTimer}s',
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: otpTimer == 0 ? startOtpTimer : null,
-                        child: const Text('Resend OTP'),
-                      ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: submitOtp,
                         child: const Text('Submit OTP'),
@@ -305,7 +365,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-              ),
+              ),*/
           ],
         ),
       ),
