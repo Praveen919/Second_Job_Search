@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:second_job_search/screens/Candidate_Bottom_Navigation/find_jobs_page.dart';
-import 'package:second_job_search/screens/Candidate_Bottom_Navigation/home_page.dart';
-import 'package:second_job_search/screens/Candidate_Bottom_Navigation/my_blogs_page.dart';
-import 'package:second_job_search/screens/Candidate_Bottom_Navigation/my_profile_page.dart';
+import 'package:second_job_search/screens/Candidate_Bottom_navigation/find_jobs_page.dart';
+import 'package:second_job_search/screens/employeers/Employer_Bottom_Navigation/employer_home_page.dart';
+import 'package:second_job_search/screens/Candidate_Bottom_navigation/my_blogs_page.dart';
+import 'package:second_job_search/screens/employeers/Employer_Bottom_Navigation/employer_home_page.dart';
+import 'package:second_job_search/screens/employeers/employee_profile_screen.dart';
 import 'package:second_job_search/screens/employeers/company_details_screen.dart';
 import 'package:second_job_search/screens/employeers/employee_profile_screen.dart';
 import 'package:second_job_search/screens/employeers/manage_jobs_screen.dart';
@@ -12,21 +13,21 @@ import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard
 import 'package:second_job_search/screens/saved_jobs_screen.dart';
 import 'package:second_job_search/screens/sms_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class EmployerHomeScreen extends StatefulWidget {
+  const EmployerHomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<EmployerHomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<EmployerHomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const HomePage(),
+    const EmployerHomePage(),
     const MyBlogsPageScreen(),
     const FindJobsPageScreen(),
-    const MyProfilePageScreen(),
+    const EmployeeProfileScreen(),
   ];
 
   @override

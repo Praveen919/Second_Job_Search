@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:second_job_search/screens/create_account_screen.dart';
 import 'package:second_job_search/screens/create_account_employer_screen.dart';
+import 'package:second_job_search/screens/employeers/employer_main_home.dart';
 import 'package:second_job_search/screens/change_password_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:second_job_search/screens/main_home.dart';
@@ -69,15 +70,33 @@ class _LoginScreenState extends State<LoginScreen> {
           'password': passwordController.text,
         }),
       );
+// Print the response body for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // Simplified: Directly navigate to HomeScreen after successful login
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+        // Extract the role from the response
+        final String role = data['role'];
+
+        // Navigate based on role
+        if (role == 'candidate') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        } else if (role == 'employer') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const EmployerHomeScreen()),
+          );
+        }else {
+          // Handle unexpected roles or errors
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unknown role')),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login failed: ${response.body}')),
@@ -314,7 +333,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-          /*  // OTP Popup Overlay
+            /*  // OTP Popup Overlay
             if (isOtpPopupVisible)
               Center(
                 child: Container(
