@@ -100,4 +100,9 @@ UserSchema.pre('save', function (next) {
   }
 });
 
+// Method to match password
+UserSchema.methods.matchPassword = async function (enteredPassword) {
+  return bcrypt.compare(enteredPassword, this.password);
+};
+
 module.exports = mongoose.model('User', UserSchema);
