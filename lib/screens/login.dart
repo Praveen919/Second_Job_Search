@@ -63,7 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('${AppConfig.baseUrl}/api/users/login'), // Updated endpoint for simplicity
+        Uri.parse(
+            '${AppConfig.baseUrl}/api/users/login'), // Updated endpoint for simplicity
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': emailController.text,
@@ -91,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
             context,
             MaterialPageRoute(builder: (context) => const EmployerHomeScreen()),
           );
-        }else {
+        } else {
           // Handle unexpected roles or errors
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Unknown role')),
@@ -225,7 +226,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const ChangePasswordScreen(),
+                                    builder: (context) =>
+                                        const ChangePasswordScreen(),
                                   ),
                                 );
                               },
@@ -278,7 +280,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const CreateAccountScreen(),
+                                  builder: (context) =>
+                                      const CreateAccountScreen(),
                                 ),
                               );
                             },
@@ -297,7 +300,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                             ),
-
                           ),
                           const SizedBox(height: 5),
                           TextButton(
@@ -305,7 +307,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const CreateAccountEmployerScreen(),
+                                  builder: (context) =>
+                                      const CreateAccountEmployerScreen(),
                                 ),
                               );
                             },
@@ -324,7 +327,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                             ),
-
                           ),
                         ],
                       ),

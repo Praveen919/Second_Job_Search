@@ -3,6 +3,7 @@ const {
   registerUser, 
   loginUser, 
   getAllUsers, 
+  getUser,
   requestLoginOTP, 
   loginWithOTP,
   uploadResume,
@@ -24,6 +25,7 @@ router.post('/login', loginUser);                    // Login with email and pas
 router.post('/request-login', requestLoginOTP);      // Request OTP for login
 router.post('/login-otp', loginWithOTP);             // Login with OTP
 router.get('', getAllUsers);                         // Get all users (no authentication needed)
+router.get('/:id', getUser);                        // Get single user
 router.post('/upload-resume/:user_id', uploadResume);        // Upload resume
 router.delete('/delete-resume/:user_id', deleteResume);      // Delete resume
 router.put('/update-image/:id', updateUserImage);           // Update user image

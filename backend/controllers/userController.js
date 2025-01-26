@@ -307,6 +307,23 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found 1' });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
 const publicResumeDir = path.join(__dirname, '../public/resume/');
 
 if (!fs.existsSync(publicResumeDir)) {
@@ -481,22 +498,30 @@ const changePassword = async (req, res) => {
 const updateUserData = async (req, res) => {
   try {
     const userId = req.params.id;
-    const updatedData = req.body;
+    const { name, username, email, mobile, address, gender } = req.body;
 
-    if (!updatedData.companyEmail || !updatedData.mobile) {
-      return res.status(400).json({ message: 'Required fields are missing' });
+    // Validate required fields
+    if (!email || !mobile) {
+      return res.status(400).json({ message: "Required fields are missing" });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+    // Find and update only specified fields
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: { name, username, email, mobile, address, gender },
+      },
+      { new: true } // Return the updated user object
+    );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.json(updatedUser);
   } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Server error" });
   }
 }
 
@@ -639,6 +664,7 @@ module.exports = {
   registerUser,
   loginUser,
   getAllUsers,
+  getUser,
   requestLoginOTP,
   loginWithOTP,
   otpResendLimiter,

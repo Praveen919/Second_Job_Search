@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/screens/profile_screens/candidate_package_screen.dart';
 import 'package:second_job_search/screens/profile_screens/password_update_screen.dart';
@@ -97,8 +100,13 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   icon: Icons.person,
                   text: 'Edit Profile',
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => EditProfileScreen()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EditProfileScreen(
+                            userId: '668f9f4abcef3772dc5ac80b'),
+                      ),
+                    );
                   },
                 ),
                 _buildOption(
@@ -261,8 +269,111 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
   }
 }
 
-class EditProfileScreen extends StatelessWidget {
-  const EditProfileScreen({super.key});
+class EditProfileScreen extends StatefulWidget {
+  final String userId;
+
+  const EditProfileScreen({super.key, required this.userId});
+
+  @override
+  _EditProfileScreenState createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends State<EditProfileScreen> {
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController nicknameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+
+  String? selectedGender = "Male";
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData(); // Fetch user data on screen load
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:8000/api/users/${widget.userId}'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          fullNameController.text = data['name'] ?? '';
+          nicknameController.text = data['username'] ?? '';
+          emailController.text = data['email'] ?? '';
+          phoneController.text = data['mobile'] ?? '';
+          addressController.text = data['address'] ?? '';
+          selectedGender = data['gender'] ?? 'Male';
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to fetch user data');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching user data: $e')),
+      );
+    }
+  }
+
+  Future<void> _updateUserData() async {
+    final apiUrl =
+        'http://localhost:8000/api/users/update-data/${widget.userId}';
+    final body = {
+      "name": fullNameController.text,
+      "username": nicknameController.text,
+      "email": emailController.text,
+      "mobile": phoneController.text,
+      "address": addressController.text,
+      "gender": selectedGender,
+    };
+
+    print("body content: $body");
+
+    try {
+      final response = await http.put(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final updatedUser = jsonDecode(response.body);
+        print("User updated successfully: $updatedUser");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile updated successfully")),
+        );
+      } else {
+        print("Failed to update user: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update profile")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("An error occurred")),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    fullNameController.dispose();
+    nicknameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    addressController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -279,110 +390,120 @@ class EditProfileScreen extends StatelessWidget {
           },
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              _buildTextField(
-                label: "Full Name",
-                hintText: "Enter your full name",
-                icon: Icons.person,
-                initialValue: "Puerto Rico",
-              ),
-              const SizedBox(height: 14.0),
-              _buildTextField(
-                label: "Nickname",
-                hintText: "Enter your nickname",
-                icon: Icons.tag,
-                initialValue: "puerto.rico",
-              ),
-              const SizedBox(height: 14.0),
-              _buildTextField(
-                label: "Email",
-                hintText: "Enter your email",
-                icon: Icons.email,
-                initialValue: "youremail@domain.com",
-              ),
-              const SizedBox(height: 14.0),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildTextField(
-                      label: "Phone",
-                      hintText: "Enter your phone number",
-                      icon: Icons.phone,
-                      initialValue: "123-456-7890",
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    _buildTextField(
+                      label: "Full Name",
+                      hintText: "Enter your full name",
+                      controller: fullNameController,
+                      icon: Icons.person,
                     ),
-                  ),
-                  const SizedBox(width: 14.0),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: "Gender",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    const SizedBox(height: 14.0),
+                    _buildTextField(
+                      label: "Nickname",
+                      hintText: "Enter your nickname",
+                      controller: nicknameController,
+                      icon: Icons.tag,
+                    ),
+                    const SizedBox(height: 14.0),
+                    _buildTextField(
+                      label: "Email",
+                      hintText: "Enter your email",
+                      controller: emailController,
+                      icon: Icons.email,
+                    ),
+                    const SizedBox(height: 14.0),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildTextField(
+                            label: "Phone",
+                            hintText: "Enter your phone number",
+                            controller: phoneController,
+                            icon: Icons.phone,
+                          ),
                         ),
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                      ),
-                      value: "Female",
-                      items: const [
-                        DropdownMenuItem(value: "Male", child: Text("Male")),
-                        DropdownMenuItem(
-                            value: "Female", child: Text("Female")),
-                        DropdownMenuItem(value: "Other", child: Text("Other")),
+                        const SizedBox(width: 14.0),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            decoration: InputDecoration(
+                              labelText: "Gender",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[100],
+                            ),
+                            value:
+                                "Female", // Ensure this matches one of the DropdownMenuItem values exactly
+                            items: const [
+                              DropdownMenuItem(
+                                  value: "Male", child: Text("Male")),
+                              DropdownMenuItem(
+                                  value: "Female", child: Text("Female")),
+                              DropdownMenuItem(
+                                  value: "Other", child: Text("Other")),
+                            ],
+                            onChanged: (value) {
+                              // Handle gender selection change
+                              print(value);
+                            },
+                          ),
+                        ),
                       ],
-                      onChanged: (value) {},
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14.0),
-              _buildTextField(
-                label: "Address",
-                hintText: "Enter your address",
-                icon: Icons.location_on,
-                initialValue: "45 New Avenue, New York",
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Handle submit action
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                    const SizedBox(height: 14.0),
+                    _buildTextField(
+                      label: "Address",
+                      hintText: "Enter your address",
+                      controller: addressController,
+                      icon: Icons.location_on,
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: const Text(
-                    "SUBMIT",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                    const SizedBox(height: 30),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Handle submit action
+                          _updateUserData();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: const Text(
+                          "SUBMIT",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
   Widget _buildTextField({
     required String label,
     required String hintText,
+    required TextEditingController controller,
     required IconData icon,
-    String? initialValue,
   }) {
     return TextField(
-      controller: TextEditingController(text: initialValue),
+      controller: controller,
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
