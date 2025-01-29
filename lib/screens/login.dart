@@ -9,6 +9,7 @@ import 'package:second_job_search/screens/change_password_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:second_job_search/screens/main_home.dart';
 import 'package:second_job_search/Config/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -57,6 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> handleLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       isLoading = true;
     });
@@ -80,7 +82,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Extract the role from the response
         final String role = data['role'];
-
+        await prefs.setString('userId', data['id'].toString());
+        await prefs.setString('name', data['name'].toString());
+        await prefs.setString('address', data['address'].toString());
+        await prefs.setString('country', data['country'].toString());
         // Navigate based on role
         if (role == 'candidate') {
           Navigator.push(
