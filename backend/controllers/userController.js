@@ -11,7 +11,6 @@ const { parseUserAgent } = require('../utils/parseUserAgent');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-const { countReset } = require('console');
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -60,8 +59,6 @@ const loginUser = async (req, res) => {
           id: user._id,
           name: user.username,
           email: user.email,
-          address: user.address,
-          country:user.country,
           role: user.role,
           token: generateToken(user._id),
         });
@@ -501,10 +498,10 @@ const changePassword = async (req, res) => {
 const updateUserData = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { name, username, email, mobile1, address, gender } = req.body;
+    const { name, username, email, mobile, address, gender } = req.body;
 
     // Validate required fields
-    if (!email || !mobile1) {
+    if (!email || !mobile) {
       return res.status(400).json({ message: "Required fields are missing" });
     }
 
@@ -512,7 +509,7 @@ const updateUserData = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        $set: { name, username, email, mobile1, address, gender },
+        $set: { name, username, email, mobile, address, gender },
       },
       { new: true } // Return the updated user object
     );
