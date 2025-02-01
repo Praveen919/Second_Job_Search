@@ -14,7 +14,8 @@ const {
   updateNotificationSettings,
   saveJob,
   getSavedJobsCount,
-  removeSavedJob
+  removeSavedJob,
+  getUserDetails
 } = require('../controllers/userController'); // Importing all necessary controllers
 
 const router = express.Router();
@@ -35,5 +36,6 @@ router.put('/update-notifications', updateNotificationSettings); // Update notif
 router.put('/save-jobs', saveJob);
 router.get('/save-jobs/:userId', getSavedJobsCount);
 router.put('/remove-save-job', removeSavedJob);
+router.get('/details/:id', getUserDetails)
 
 module.exports = router;  
