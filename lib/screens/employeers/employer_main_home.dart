@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:second_job_search/screens/Candidate_Bottom_navigation/find_jobs_page.dart';
+import 'package:second_job_search/screens/employeers/Employer_Bottom_Navigation/employer_postjobs_screen.dart';
 import 'package:second_job_search/screens/employeers/Employer_Bottom_Navigation/employer_home_page.dart';
 import 'package:second_job_search/screens/Candidate_Bottom_navigation/my_blogs_page.dart';
 import 'package:second_job_search/screens/employeers/Employer_Bottom_Navigation/employer_home_page.dart';
@@ -26,7 +26,7 @@ class _HomeScreenState extends State<EmployerHomeScreen> {
   final List<Widget> _pages = [
     const EmployerHomePage(),
     const MyBlogsPageScreen(),
-    const FindJobsPageScreen(),
+    const EmployerPostJobScreen(),
     const EmployeeProfileScreen(),
   ];
 
@@ -247,7 +247,7 @@ class _HomeScreenState extends State<EmployerHomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.card_travel),
-            label: "Find Jobs",
+            label: "Post Jobs",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
