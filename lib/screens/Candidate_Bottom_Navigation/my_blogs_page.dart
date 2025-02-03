@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // To handle JSON
-import 'package:second_job_search/Config/config.dart';
+import 'package:second_job_search/Config/config.dart'; // Replace with your config file
 
 // Blog model class
 class Blog {
@@ -18,10 +18,8 @@ class Blog {
   factory Blog.fromJson(Map<String, dynamic> json) {
     return Blog(
       title: json['title'] ?? 'No Title', // Fallback value if title is null
-      username:
-          json['username'] ?? 'Anonymous', // Fallback value if username is null
-      content:
-          json['content'] ?? 'No Content', // Fallback value if content is null
+      username: json['username'] ?? 'Anonymous', // Fallback value if username is null
+      content: json['content'] ?? 'No Content', // Fallback value if content is null
     );
   }
 }
@@ -39,12 +37,8 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
 
   // My Blogs data
   List<Map<String, String>> myBlogs = [
-    {
-      "content": "My first blog post.",
-    },
-    {
-      "content": "Another blog I wrote.",
-    },
+    {"content": "My first blog post."},
+    {"content": "Another blog I wrote."},
   ];
 
   int selectedIndex = 0;
@@ -59,8 +53,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
   // Function to fetch blogs from backend API
   Future<void> fetchBlogs() async {
     try {
-      final response =
-          await http.get(Uri.parse('${AppConfig.baseUrl}/api/blogs'));
+      final response = await http.get(Uri.parse('${AppConfig.baseUrl}/api/blogs'));
 
       if (response.statusCode == 200) {
         // If the server returns a successful response, parse the JSON
@@ -95,9 +88,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                       "BLOGS",
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: selectedIndex == 0
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                        fontWeight: selectedIndex == 0 ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                     if (selectedIndex == 0)
@@ -119,9 +110,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                       "My BLOGS",
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: selectedIndex == 1
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                        fontWeight: selectedIndex == 1 ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                     if (selectedIndex == 1)
@@ -138,17 +127,15 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
           const Divider(),
           // Content based on selected tab
           Expanded(
-            child: selectedIndex == 0
-                ? _buildBlogsSection()
-                : _buildMyBlogsSection(),
+            child: selectedIndex == 0 ? _buildBlogsSection() : _buildMyBlogsSection(),
           ),
         ],
       ),
       floatingActionButton: selectedIndex == 1
           ? FloatingActionButton(
-              onPressed: _addNewBlog,
-              child: const Icon(Icons.add),
-            )
+        onPressed: _addNewBlog,
+        child: const Icon(Icons.add),
+      )
           : null,
     );
   }
@@ -202,8 +189,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
     return ListView.builder(
       itemCount: myBlogs.length,
       itemBuilder: (context, index) {
-        final TextEditingController controller =
-            TextEditingController(text: myBlogs[index]['content']);
+        final TextEditingController controller = TextEditingController(text: myBlogs[index]['content']);
         bool isEditing = false;
 
         return StatefulBuilder(
@@ -217,17 +203,17 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                   children: [
                     isEditing
                         ? TextField(
-                            controller: controller,
-                            onChanged: (value) {
-                              setState(() {
-                                myBlogs[index]['content'] = value;
-                              });
-                            },
-                          )
+                      controller: controller,
+                      onChanged: (value) {
+                        setState(() {
+                          myBlogs[index]['content'] = value;
+                        });
+                      },
+                    )
                         : Text(
-                            myBlogs[index]['content']!,
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                      myBlogs[index]['content']!,
+                      style: const TextStyle(fontSize: 16),
+                    ),
                     const SizedBox(height: 10),
                     const Row(
                       children: [
@@ -274,8 +260,9 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
     );
   }
 
-  // Function to add new blog
+  // Function to add a new blog and upload it to the backend
   void _addNewBlog() {
+    final TextEditingController titleController = TextEditingController();
     final TextEditingController contentController = TextEditingController();
 
     showDialog(
@@ -287,8 +274,14 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: "Blog Title"),
+              ),
+              const SizedBox(height: 10),
+              TextField(
                 controller: contentController,
                 decoration: const InputDecoration(labelText: "Blog Content"),
+                maxLines: 5,
               ),
             ],
           ),
@@ -300,15 +293,26 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
               child: const Text("Cancel"),
             ),
             TextButton(
-              onPressed: () {
-                if (contentController.text.isNotEmpty) {
-                  setState(() {
-                    myBlogs.add({
-                      "content": contentController.text,
-                    });
-                  });
+              onPressed: () async {
+                if (titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
+                  // Call the function to upload the blog to the backend
+                  await _uploadBlogToBackend(
+                    title: titleController.text,
+                    content: contentController.text,
+                  );
+
+                  // Refresh the blogs list after uploading
+                  fetchBlogs();
+
+                  // Close the dialog
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please fill in both title and content"),
+                    ),
+                  );
                 }
-                Navigator.pop(context);
               },
               child: const Text("Add"),
             ),
@@ -316,5 +320,45 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
         );
       },
     );
+  }
+
+  // Function to upload the blog to the backend
+  Future<void> _uploadBlogToBackend({
+    required String title,
+    required String content,
+  }) async {
+    try {
+      // Replace 'userId' with the actual user ID (you can get it from your auth system)
+      const String userId = "current_user_id"; // Replace with dynamic user ID
+
+      // Prepare the request body
+      final Map<String, dynamic> requestBody = {
+        'title': title,
+        'userId': userId,
+        'content': content,
+      };
+
+      // Make the POST request to the backend
+      final response = await http.post(
+        Uri.parse('${AppConfig.baseUrl}/api/blogs'), // Replace with your API endpoint
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestBody),
+      );
+
+      // Check the response status
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Blog uploaded successfully!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload blog: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error uploading blog: $e')),
+      );
+    }
   }
 }
