@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../../../Config/config.dart';
 
 class ProfileLinksScreen extends StatefulWidget {
   const ProfileLinksScreen({super.key});
@@ -8,41 +11,70 @@ class ProfileLinksScreen extends StatefulWidget {
 }
 
 class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
-  // The fields are always editable, so no need for isEditable flag
-  final Map<String, String> personalInfo = {
-    'Portfolio Link': 'https://xyz.com',
-    'GitHub Link': 'https://github.com',
-    'LinkedIn Link': 'https://linkedin.com',
-    'Facebook Link': 'https://facebook.com',
-    'Twitter Link': 'https://twitter.com',
-    'Other Links': 'https://others.com',
+  final Map<String, TextEditingController> personalInfoControllers = {
+    'Portfolio Link': TextEditingController(),
+    'GitHub Link': TextEditingController(),
+    'LinkedIn Link': TextEditingController(),
+    'Facebook Link': TextEditingController(),
+    'Twitter Link': TextEditingController(),
+    'Other Links': TextEditingController(),
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileLinkData();
+  }
+
+  Future<void> _loadProfileLinkData() async {
+    String apiUrl = "${AppConfig.baseUrl}/api/users/676000e686328df24d5ad2b7";
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        setState(() {
+          personalInfoControllers['Portfolio Link']!.text =
+              data['portfolio'] ?? '';
+          personalInfoControllers['GitHub Link']!.text = data['github'] ?? '';
+          personalInfoControllers['LinkedIn Link']!.text =
+              data['linkedin'] ?? '';
+          personalInfoControllers['Facebook Link']!.text =
+              data['facebook'] ?? '';
+          personalInfoControllers['Twitter Link']!.text = data['twitter'] ?? '';
+          personalInfoControllers['Other Links']!.text =
+              data['googlePlus'] ?? '';
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in personalInfoControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Set background color of the screen
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xFFBFDBFE),
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Image.asset(
-            'assets/logo.png', // Replace with your actual image path
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-          ),
-        ),
         title: const Text(
           'Social Links',
           style: TextStyle(color: Colors.black, fontSize: 24),
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              // Handle Done action, you can save or submit changes here
-            },
+            onPressed: () {},
             child: const Text(
               'Done',
               style: TextStyle(color: Colors.blue, fontSize: 16),
@@ -50,137 +82,131 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 100),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      blurRadius: 8,
-                      spreadRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        blurRadius: 8,
+                        spreadRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Social Links',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 15),
+                      ...personalInfoControllers.entries.map((entry) => Column(
+                            children: [
+                              _buildEditableRow(
+                                label: entry.key,
+                                controller: entry.value,
+                              ),
+                              const Divider(),
+                            ],
+                          )),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Social Links',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    _buildButton(
+                      label: 'Back',
+                      color: Colors.grey,
+                      onTap: () => Navigator.pop(context),
                     ),
-                    const SizedBox(height: 15),
-                    ...personalInfo.keys.map((key) => Column(
-                          children: [
-                            _buildEditableRow(
-                              label: key,
-                              value: personalInfo[key]!,
-                              onChanged: (newValue) {
-                                setState(() {
-                                  personalInfo[key] = newValue;
-                                });
-                              },
-                            ),
-                            const Divider(),
-                          ],
-                        )),
+                    _buildButton(
+                      label: 'Save',
+                      color: Colors.blue,
+                      onTap: () {
+                        final updatedLinks = personalInfoControllers.map(
+                          (key, controller) => MapEntry(key, controller.text),
+                        );
+                        print(updatedLinks);
+                      },
+                    ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 2 -
-                        30, // Half of the screen width minus padding
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      child: const Text(
-                        'Back',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 2 -
-                        30, // Half of the screen width minus padding
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Add navigation logic to the next page if required
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      child: const Text(
-                        'Save',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
+  /// **Editable Row (Prevents Overflow)**
   Widget _buildEditableRow({
     required String label,
-    required String value,
-    required Function(String) onChanged,
+    required TextEditingController controller,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
-          ),
-        ),
-        SizedBox(
-          width: 200,
-          child: TextFormField(
-            initialValue: value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-            onChanged: onChanged,
-            decoration: const InputDecoration(
-              border: InputBorder.none, // Keep the border none
-              contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 2, // Adjusts label width dynamically
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
           ),
+          const SizedBox(width: 10), // Space between label and text field
+          Expanded(
+            flex: 3, // Adjusts text field width dynamically
+            child: TextField(
+              controller: controller,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              decoration: InputDecoration(
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// **Reusable Button**
+  Widget _buildButton({
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 15),
         ),
-      ],
+        child: Text(label,
+            style: const TextStyle(fontSize: 16, color: Colors.white)),
+      ),
     );
   }
 }

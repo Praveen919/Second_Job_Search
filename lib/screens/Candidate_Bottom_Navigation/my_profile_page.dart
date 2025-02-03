@@ -303,7 +303,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
 
-  String? selectedGender = "";
+  String? selectedGender = "Male";
   bool isLoading = true;
 
   @override
@@ -326,7 +326,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           emailController.text = data['email'] ?? '';
           phoneController.text = data['mobile1'] ?? '';
           addressController.text = data['address'] ?? '';
-          selectedGender = data['gender'] ?? '';
+          selectedGender = data['gender'] ?? 'Female';
           isLoading = false;
         });
       } else {

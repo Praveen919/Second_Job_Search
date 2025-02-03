@@ -12,6 +12,12 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { countReset } = require('console');
+const mongoose = require('mongoose');
+const Education = require('../models/educationModel');
+const Experience = require('../models/experienceModel');
+const Award = require('../models/awardModel');
+const Skill = require('../models/skillModel');
+
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -528,6 +534,41 @@ const updateUserData = async (req, res) => {
   }
 }
 
+const getUserDetails = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid user ID' });
+  }
+  try {
+    // Find user by ObjectId
+    const user = await User.findById(id);
+    if (user) {
+      const { password, ...otherDetails } = user._doc; // Exclude password from response
+      // Fetch the user's skills from the Skill model
+      const skills = await Skill.find({ userId: id });
+      // Fetch the user's education from the Education model
+      const education = await Education.find({ user_id: id });
+      // Fetch the user's experience from the Experience model
+      const experience = await Experience.find({ user_id: id });
+      // Fetch the user's awards from the Award model
+      const awards = await Award.find({ user_id: id });
+      // Return all the data including user details, skills, education, experience, and awards
+      res.status(200).json({
+        ...otherDetails, // user details without password
+        skills,
+        education,
+        experience,
+        awards,
+      });
+    } else {
+      res.status(404).json({ message: "No such user exists" });
+    }
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Update Notification Settings Function
 const updateNotificationSettings = async (req, res) => {
   const { dndOption, startDate, endDate } = req.body;
@@ -673,6 +714,7 @@ module.exports = {
   otpResendLimiter,
   uploadResume,
   deleteResume,
+  getUserDetails,
   updateUserImage,
   changePassword,
   updateUserData,

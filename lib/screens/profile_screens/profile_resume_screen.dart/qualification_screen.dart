@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_document_picker/flutter_document_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/profile_links_screen.dart';
-import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/resume_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+import '../../../Config/config.dart';
 
 class QualificationScreen extends StatefulWidget {
   const QualificationScreen({super.key});
@@ -15,16 +20,73 @@ class _QualificationScreenState extends State<QualificationScreen> {
   String? uploadedFileName;
 
   // List to store education details
-  List<Map<String, String>> educationDetails = [];
+  // Lists to store user details
+  List<Map<String, dynamic>> educationDetails = [];
+  List<Map<String, dynamic>> workExperienceDetails = [];
+  List<Map<String, dynamic>> certificationDetails = [];
+  List<Map<String, dynamic>> skillsDetails = [];
 
-  // List to store work experience details
-  List<Map<String, String>> workExperienceDetails = [];
+  @override
+  void initState() {
+    super.initState();
+    _loadQualificationData();
+  }
 
-  // List to store certifications details
-  List<Map<String, String>> certificationDetails = [];
+  Future<void> _loadQualificationData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String apiUrl =
+        "${AppConfig.baseUrl}/api/users/details/${prefs.getString("userId")}";
 
-  // List to store skills details
-  List<Map<String, String>> skillsDetails = [];
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        setState(() {
+          if (data['resumeType'] == "non-technical") {
+            selectedCategory = "Non-Technical";
+          } else {
+            selectedCategory = "Technical";
+          }
+          educationDetails = (data['education'] as List)
+              .map((education) => {
+                    "degree": education["course"],
+                    "university": education["institution"],
+                    "startYear": education["startDate"],
+                    "endYear": education["endDate"]
+                  })
+              .toList();
+          workExperienceDetails = (data['experience'] as List)
+              .map((experience) => {
+                    "jobTitle": experience["title"],
+                    "companyName": experience["company"],
+                    "startYear": experience["year"],
+                    "description": experience["description"]
+                  })
+              .toList();
+          certificationDetails = (data['awards'] as List)
+              .map((certification) => {
+                    "certificationName": certification["title"],
+                    "issuingOrganization": certification["organization"],
+                    "issueYear": certification["year"],
+                    "description": certification["description"]
+                  })
+              .toList();
+
+          skillsDetails = (data['skills'] as List)
+              .map((skill) => {
+                    "skillName": skill["skillName"],
+                    "knowledgeLevel": skill["knowledgeLevel"],
+                    "experienceWeeks": skill["experienceWeeks"]
+                  })
+              .toList();
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+  }
 
   List<String> months = [
     'January',
@@ -41,14 +103,12 @@ class _QualificationScreenState extends State<QualificationScreen> {
     'December'
   ];
 
-  // Function to pick file (PDF)
   Future<void> pickFile() async {
-    final result = await FlutterDocumentPicker.openDocument();
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
 
-    if (result != null) {
+    if (result != null && result.files.isNotEmpty) {
       setState(() {
-        uploadedFileName =
-            result.split('/').last; // Extract file name from path
+        uploadedFileName = result.files.single.name; // Get the file name
       });
     }
   }
@@ -707,8 +767,8 @@ class _QualificationScreenState extends State<QualificationScreen> {
   void showEditWorkExperiencePopup(int index) {
     final jobTitleController =
         TextEditingController(text: workExperienceDetails[index]['jobTitle']);
-    final companyController =
-        TextEditingController(text: workExperienceDetails[index]['company']);
+    final companyController = TextEditingController(
+        text: workExperienceDetails[index]['companyName']);
     final startYearController =
         TextEditingController(text: workExperienceDetails[index]['startYear']);
     String? startMonth = workExperienceDetails[index]['startMonth'];
@@ -896,7 +956,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                   setState(() {
                     workExperienceDetails[index] = {
                       'jobTitle': jobTitleController.text,
-                      'company': companyController.text,
+                      'companyName': companyController.text,
                       'startYear': startYearController.text,
                       'startMonth': startMonth!,
                       'endYear': endYearController.text,
@@ -1370,7 +1430,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
     String? skillLevel; // Dropdown for skill level
 
     // Skill levels
-    List<String> skillLevels = ['Beginner', 'Intermediate', 'Advanced'];
+    List<String> skillLevels = ['beginner', 'intermediate', 'advanced'];
 
     showDialog(
       context: context,
@@ -1464,8 +1524,8 @@ class _QualificationScreenState extends State<QualificationScreen> {
                   setState(() {
                     skillsDetails.add({
                       'skillName': skillNameController.text,
-                      'experience': experienceController.text,
-                      'level': skillLevel!,
+                      'experienceWeeks': experienceController.text,
+                      'knowledgeLevel': skillLevel!,
                     });
                   });
                   Navigator.of(context).pop();
@@ -1490,8 +1550,8 @@ class _QualificationScreenState extends State<QualificationScreen> {
     final skillNameController =
         TextEditingController(text: skillsDetails[index]['skillName']);
     final experienceController = TextEditingController(
-        text: skillsDetails[index]['experience'].toString());
-    String? level = skillsDetails[index]['level'];
+        text: skillsDetails[index]['experienceWeeks'].toString());
+    String? level = skillsDetails[index]['knowledgeLevel'];
 
     showDialog(
       context: context,
@@ -1550,7 +1610,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                       level = value;
                     });
                   },
-                  items: ['Beginner', 'Intermediate', 'Advanced']
+                  items: ['beginner', 'intermediate', 'advanced']
                       .map((String level) {
                     return DropdownMenuItem<String>(
                       value: level,
@@ -1587,8 +1647,8 @@ class _QualificationScreenState extends State<QualificationScreen> {
                   setState(() {
                     skillsDetails[index] = {
                       'skillName': skillNameController.text,
-                      'experience': experienceController.text,
-                      'level': level!,
+                      'experienceWeeks': experienceController.text,
+                      'knowledgeLevel': level!,
                     };
                   });
                   Navigator.of(context).pop();
@@ -1632,17 +1692,23 @@ class _QualificationScreenState extends State<QualificationScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFBFDBFE),
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Image.asset(
-            'assets/logo.png',
-            fit: BoxFit.contain,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Qualifications',
           style: TextStyle(color: Colors.black, fontSize: 24),
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Handle Done action
+            },
+            child: const Text('Done',
+                style: TextStyle(color: Colors.blue, fontSize: 16)),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -1732,7 +1798,6 @@ class _QualificationScreenState extends State<QualificationScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
               Column(
                 children: [
                   // Show only the first 2 cards initially
@@ -2138,13 +2203,13 @@ class _QualificationScreenState extends State<QualificationScreen> {
                                 elevation: 0,
                                 child: ListTile(
                                   title: Text(
-                                    '${skill['skillName']} - ${skill['level']}',
+                                    '${skill['skillName']} - ${skill['knowledgeLevel']}',
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16),
                                   ),
                                   subtitle: Text(
-                                    'Experience: ${skill['experience']} weeks',
+                                    'Experience: ${skill['experienceWeeks']} weeks',
                                     style: const TextStyle(fontSize: 14),
                                   ),
                                   trailing: Row(
@@ -2186,13 +2251,13 @@ class _QualificationScreenState extends State<QualificationScreen> {
                                 elevation: 0,
                                 child: ListTile(
                                   title: Text(
-                                    '${skill['skillName']} - ${skill['level']}',
+                                    '${skill['skillName']} - ${skill['knowledgeLevel']}',
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16),
                                   ),
                                   subtitle: Text(
-                                    'Experience: ${skill['experience']} weeks',
+                                    'Experience: ${skill['experienceWeeks']} weeks',
                                     style: const TextStyle(fontSize: 14),
                                   ),
                                   trailing: Row(
@@ -2237,36 +2302,60 @@ class _QualificationScreenState extends State<QualificationScreen> {
                     ),
                 ],
               ),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      'Back',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  _buildButton(
+                    label: 'Back',
+                    color: Colors.grey,
+                    navigateTo: null, // Back button just pops the page
+                    context: context,
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const ProfileLinksScreen()));
-                    },
-                    child: const Text(
-                      'Next Page',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  _buildButton(
+                    label: 'Next Page',
+                    color: Colors.blue,
+                    navigateTo:
+                        ProfileLinksScreen(), // Replace with your actual next screen
+                    context: context,
                   ),
                 ],
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildButton({
+    required String label,
+    required Color color,
+    required BuildContext context,
+    Widget? navigateTo, // Nullable: If null, it pops; otherwise, it navigates
+  }) {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: () {
+          if (navigateTo == null) {
+            Navigator.pop(context); // Go back
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => navigateTo),
+            ); // Navigate to next page
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 15),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 16, color: Colors.white),
         ),
       ),
     );
