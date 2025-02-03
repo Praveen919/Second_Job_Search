@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:second_job_search/Config/config.dart';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -12,6 +13,7 @@ import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard
 import 'package:second_job_search/screens/profile_screens/profile_cand_faq_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/resume_screen.dart';
 import 'package:second_job_search/screens/profile_screens/testinomials_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyProfilePageScreen extends StatefulWidget {
   const MyProfilePageScreen({super.key});
@@ -25,6 +27,21 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
   File? profileImage; // Holds the uploaded image file
 
   final ImagePicker _picker = ImagePicker();
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData(); // Load the saved data on initialization
+  }
+
+  Future<void> _loadProfileData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      profileName = prefs.getString('name') ?? profileName;
+      String address = prefs.getString('address') ?? "Unknown Address";
+      String country = prefs.getString('country') ?? "Unknown Country";
+      location = "$address, $country";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +116,14 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   context,
                   icon: Icons.person,
                   text: 'Edit Profile',
-                  onTap: () {
+                  onTap: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const EditProfileScreen(
-                            userId: '668f9f4abcef3772dc5ac80b'),
+                        builder: (_) => EditProfileScreen(
+                            userId: '${prefs.getString("userId")}'),
                       ),
                     );
                   },
@@ -297,8 +316,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> fetchUserData() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/users/${widget.userId}'),
-      );
+          Uri.parse('${AppConfig.baseUrl}/api/users/${widget.userId}'),
+          headers: {'Content-Type': 'application/json'});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -306,7 +325,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           fullNameController.text = data['name'] ?? '';
           nicknameController.text = data['username'] ?? '';
           emailController.text = data['email'] ?? '';
-          phoneController.text = data['mobile'] ?? '';
+          phoneController.text = data['mobile1'] ?? '';
           addressController.text = data['address'] ?? '';
           selectedGender = data['gender'] ?? 'Female';
           isLoading = false;
@@ -326,17 +345,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _updateUserData() async {
     final apiUrl =
-        'http://localhost:8000/api/users/update-data/${widget.userId}';
+        '${AppConfig.baseUrl}/api/users/update-data/${widget.userId}';
     final body = {
       "name": fullNameController.text,
       "username": nicknameController.text,
       "email": emailController.text,
-      "mobile": phoneController.text,
+      "mobile1": phoneController.text,
       "address": addressController.text,
       "gender": selectedGender,
     };
-
-    print("body content: $body");
 
     try {
       final response = await http.put(
@@ -407,8 +424,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     const SizedBox(height: 14.0),
                     _buildTextField(
-                      label: "Nickname",
-                      hintText: "Enter your nickname",
+                      label: "Username",
+                      hintText: "Enter your username",
                       controller: nicknameController,
                       icon: Icons.tag,
                     ),
@@ -442,7 +459,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               fillColor: Colors.grey[100],
                             ),
                             value:
-                                "Female", // Ensure this matches one of the DropdownMenuItem values exactly
+                                selectedGender, // Ensure this matches one of the DropdownMenuItem values exactly
                             items: const [
                               DropdownMenuItem(
                                   value: "Male", child: Text("Male")),
@@ -453,7 +470,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ],
                             onChanged: (value) {
                               // Handle gender selection change
-                              print(value);
+                              selectedGender = value;
                             },
                           ),
                         ),
