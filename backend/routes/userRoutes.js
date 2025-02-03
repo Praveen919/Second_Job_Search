@@ -36,10 +36,6 @@ router.put('/update-notifications', updateNotificationSettings); // Update notif
 router.put('/save-jobs', saveJob);
 router.get('/save-jobs/:userId', getSavedJobsCount);
 router.put('/remove-save-job', removeSavedJob);
-<<<<<<< HEAD
 router.get('/details/:id', getUserDetails);
-=======
-router.get('/details/:id', getUserDetails)
->>>>>>> 4f593bdf8cd0029b31dd556c15a0c9873b21f0de
 
 module.exports = router;  
