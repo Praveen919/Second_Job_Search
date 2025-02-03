@@ -8,21 +8,20 @@ class Blog {
   final String title;
   final String username;
   final String content;
-  final String image;
 
   Blog({
     required this.title,
     required this.username,
     required this.content,
-    required this.image,
   });
 
   factory Blog.fromJson(Map<String, dynamic> json) {
     return Blog(
       title: json['title'] ?? 'No Title', // Fallback value if title is null
-      username: json['username'] ?? 'Anonymous', // Fallback value if username is null
-      content: json['content'] ?? 'No Content', // Fallback value if content is null
-      image: json['image'] ?? 'https://via.placeholder.com/150', // Fallback value for image URL
+      username:
+          json['username'] ?? 'Anonymous', // Fallback value if username is null
+      content:
+          json['content'] ?? 'No Content', // Fallback value if content is null
     );
   }
 }
@@ -42,11 +41,9 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
   List<Map<String, String>> myBlogs = [
     {
       "content": "My first blog post.",
-      "image": "https://via.placeholder.com/150"
     },
     {
       "content": "Another blog I wrote.",
-      "image": "https://via.placeholder.com/150"
     },
   ];
 
@@ -62,7 +59,8 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
   // Function to fetch blogs from backend API
   Future<void> fetchBlogs() async {
     try {
-      final response = await http.get(Uri.parse('${AppConfig.baseUrl}/api/blogs'));
+      final response =
+          await http.get(Uri.parse('${AppConfig.baseUrl}/api/blogs'));
 
       if (response.statusCode == 200) {
         // If the server returns a successful response, parse the JSON
@@ -97,7 +95,9 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                       "BLOGS",
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: selectedIndex == 0 ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: selectedIndex == 0
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                     if (selectedIndex == 0)
@@ -119,7 +119,9 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                       "My BLOGS",
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: selectedIndex == 1 ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: selectedIndex == 1
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                     if (selectedIndex == 1)
@@ -136,15 +138,17 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
           const Divider(),
           // Content based on selected tab
           Expanded(
-            child: selectedIndex == 0 ? _buildBlogsSection() : _buildMyBlogsSection(),
+            child: selectedIndex == 0
+                ? _buildBlogsSection()
+                : _buildMyBlogsSection(),
           ),
         ],
       ),
       floatingActionButton: selectedIndex == 1
           ? FloatingActionButton(
-        onPressed: _addNewBlog,
-        child: const Icon(Icons.add),
-      )
+              onPressed: _addNewBlog,
+              child: const Icon(Icons.add),
+            )
           : null,
     );
   }
@@ -164,7 +168,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                 Row(
                   children: [
                     CircleAvatar(
-                      backgroundImage: NetworkImage(blogs[index].image),
+                      backgroundColor: Colors.blue, // Placeholder color
                     ),
                     const SizedBox(width: 10),
                     Text(
@@ -175,13 +179,6 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(blogs[index].content),
-                const SizedBox(height: 10),
-                Image.network(
-                  blogs[index].image,
-                  height: 150,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
                 const SizedBox(height: 10),
                 const Row(
                   children: [
@@ -206,7 +203,7 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
       itemCount: myBlogs.length,
       itemBuilder: (context, index) {
         final TextEditingController controller =
-        TextEditingController(text: myBlogs[index]['content']);
+            TextEditingController(text: myBlogs[index]['content']);
         bool isEditing = false;
 
         return StatefulBuilder(
@@ -220,23 +217,26 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                   children: [
                     isEditing
                         ? TextField(
-                      controller: controller,
-                      onChanged: (value) {
-                        setState(() {
-                          myBlogs[index]['content'] = value;
-                        });
-                      },
-                    )
+                            controller: controller,
+                            onChanged: (value) {
+                              setState(() {
+                                myBlogs[index]['content'] = value;
+                              });
+                            },
+                          )
                         : Text(
-                      myBlogs[index]['content']!,
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                            myBlogs[index]['content']!,
+                            style: const TextStyle(fontSize: 16),
+                          ),
                     const SizedBox(height: 10),
-                    Image.network(
-                      myBlogs[index]['image']!,
-                      height: 150,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
+                    const Row(
+                      children: [
+                        Icon(Icons.favorite_border),
+                        SizedBox(width: 10),
+                        Icon(Icons.comment_outlined),
+                        SizedBox(width: 10),
+                        Icon(Icons.share),
+                      ],
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -277,7 +277,6 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
   // Function to add new blog
   void _addNewBlog() {
     final TextEditingController contentController = TextEditingController();
-    final TextEditingController imageController = TextEditingController();
 
     showDialog(
       context: context,
@@ -291,10 +290,6 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
                 controller: contentController,
                 decoration: const InputDecoration(labelText: "Blog Content"),
               ),
-              TextField(
-                controller: imageController,
-                decoration: const InputDecoration(labelText: "Image URL"),
-              ),
             ],
           ),
           actions: [
@@ -306,12 +301,10 @@ class _MyBlogsPageScreenState extends State<MyBlogsPageScreen> {
             ),
             TextButton(
               onPressed: () {
-                if (contentController.text.isNotEmpty &&
-                    imageController.text.isNotEmpty) {
+                if (contentController.text.isNotEmpty) {
                   setState(() {
                     myBlogs.add({
                       "content": contentController.text,
-                      "image": imageController.text,
                     });
                   });
                 }
