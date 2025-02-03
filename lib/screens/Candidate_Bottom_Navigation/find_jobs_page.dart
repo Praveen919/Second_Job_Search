@@ -30,7 +30,7 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
   }
 
   Future<void> fetchJobs() async {
-    const apiUrl = '${AppConfig.baseUrl}/api/free-jobs'; // Update with your API URL
+    const apiUrl = '${AppConfig.baseUrl}/api/jobs'; // Update with your API URL
     try {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
