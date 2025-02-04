@@ -18,6 +18,7 @@ const Experience = require('../models/experienceModel');
 const Award = require('../models/awardModel');
 const Skill = require('../models/skillModel');
 
+
 // Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -65,6 +66,8 @@ const loginUser = async (req, res) => {
           id: user._id,
           name: user.username,
           email: user.email,
+          address: user.address,
+          country:user.country,
           role: user.role,
           token: generateToken(user._id),
         });
@@ -504,10 +507,10 @@ const changePassword = async (req, res) => {
 const updateUserData = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { name, username, email, mobile, address, gender } = req.body;
+    const { name, username, email, mobile1, address, gender } = req.body;
 
     // Validate required fields
-    if (!email || !mobile) {
+    if (!email || !mobile1) {
       return res.status(400).json({ message: "Required fields are missing" });
     }
 
@@ -515,7 +518,7 @@ const updateUserData = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        $set: { name, username, email, mobile, address, gender },
+        $set: { name, username, email, mobile1, address, gender },
       },
       { new: true } // Return the updated user object
     );
@@ -716,6 +719,5 @@ module.exports = {
   changePassword,
   updateUserData,
   updateNotificationSettings,
-  getUserDetails,
   saveJob, getSavedJobsCount, removeSavedJob
 };
