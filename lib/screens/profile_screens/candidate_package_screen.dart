@@ -1,5 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+import '../../Config/config.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -9,6 +15,47 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
+  List<Map<String, dynamic>> activePackages = [];
+  @override
+  void initState() {
+    super.initState();
+    _loadPackageData();
+  }
+
+  Future<void> _loadPackageData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      final response = await http.get(
+          Uri.parse(
+              '${AppConfig.baseUrl}/api/plans/user/671cc6d7d0d9916137c2fdae'),
+          headers: {'Content-Type': 'application/json'});
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print(data);
+        setState(() {
+          activePackages = (data['plans'] as List)
+              .map((package) => {
+                    "title": package["plan_name"],
+                    "description": "Access to ${package["plan_name"]} features",
+                    "price": "₹${package["plan_price"]}/monthly",
+                    "feature1": "${package["paid_jobs"]} paid job applied",
+                    "feature2": "${package["free_jobs"]} free job applied",
+                    "feature3": "Premium Support 24/7",
+                  })
+              .toList();
+        });
+      } else {
+        throw Exception('Failed to fetch user data');
+      }
+    } catch (e) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching user data: $e')),
+      );
+    }
+  }
+
   final List<Map<String, String>> packages = [
     {
       'title': 'Basic Plan',
@@ -32,17 +79,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       'price': '₹800/monthly',
       'feature1': '30 paid job applied',
       'feature2': '15 free job applied',
-      'feature3': 'Premium Support 24/7',
-    },
-  ];
-
-  final List<Map<String, String>> activePackages = [
-    {
-      'title': 'Basic Plan',
-      'description': 'Access to basic features',
-      'price': '₹100/monthly',
-      'feature1': '5 paid job applied',
-      'feature2': '2 free job applied',
       'feature3': 'Premium Support 24/7',
     },
   ];
@@ -88,14 +124,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   children: [
                     const Text(
                       'Currently Active Package',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     ...activePackages.map((package) => _buildPackageCard(
-                      package,
-                      screenWidth,
-                      isActive: true,
-                    )),
+                          package,
+                          screenWidth,
+                          isActive: true,
+                        )),
                     const SizedBox(height: 30),
                   ],
                 ),
@@ -106,10 +143,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               ),
               const SizedBox(height: 16),
               ...packages.map((package) => _buildPackageCard(
-                package,
-                screenWidth,
-                isActive: false,
-              )),
+                    package,
+                    screenWidth,
+                    isActive: false,
+                  )),
             ],
           ),
         ),
@@ -117,7 +154,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  Widget _buildPackageCard(Map<String, String> package, double screenWidth, {bool isActive = false}) {
+  Widget _buildPackageCard(Map<String, dynamic> package, double screenWidth,
+      {bool isActive = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Container(
@@ -161,15 +199,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               style: const TextStyle(fontSize: 16, color: Colors.black),
             ),
             const SizedBox(height: 8),
-            ...['feature1', 'feature2', 'feature3']
-                .map((key) => Text(
-              package[key]!,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ))
-                ,
+            ...['feature1', 'feature2', 'feature3'].map((key) => Text(
+                  package[key]!,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                )),
             const SizedBox(height: 16),
             Row(
               children: [
