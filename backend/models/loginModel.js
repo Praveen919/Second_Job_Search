@@ -4,8 +4,8 @@ const Schema = mongoose.Schema;
 const loginInfoSchema = new Schema({
   location: { type: String, required: true },
   date: { type: Date, default: Date.now, required: true },
-  browser: { type: String, required: true },
-  operatingSystem: { type: String, required: true }
+  //browser: { type: String, required: true },
+  //operatingSystem: { type: String, required: true }
 }, { _id: false }); // Disable _id generation for embedded documents
 
 const loginSchema = new Schema({
