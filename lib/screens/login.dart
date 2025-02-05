@@ -12,7 +12,8 @@ import 'package:second_job_search/Config/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String userId;
+  const LoginScreen({super.key,required this.userId});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -64,45 +65,56 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
+      // Step 1: Request OTP (API 1)
       final response = await http.post(
-        Uri.parse(
-            '${AppConfig.baseUrl}/api/users/login'), // Updated endpoint for simplicity
+        Uri.parse('${AppConfig.baseUrl}/api/users/request-login'), // Send OTP request
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': emailController.text,
           'password': passwordController.text,
         }),
       );
-// Print the response body for debugging
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+  final data = json.decode(response.body);
+  final String userId = data['id'].toString();
 
-        // Extract the role from the response
-        final String role = data['role'];
-        await prefs.setString('userId', data['id'].toString());
-        await prefs.setString('name', data['name'].toString());
-        await prefs.setString('address', data['address'].toString());
-        await prefs.setString('country', data['country'].toString());
-        // Navigate based on role
-        if (role == 'candidate') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        } else if (role == 'employer') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const EmployerHomeScreen()),
-          );
-        } else {
-          // Handle unexpected roles or errors
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Unknown role')),
-          );
-        }
+  // Step 2: Fetch the user role (API 3)
+  final String userEmail = emailController.text; 
+  final roleResponse = await http.get(
+    Uri.parse('${AppConfig.baseUrl}/api/users/email/$userEmail'),
+    headers: {'Content-Type': 'application/json'},
+  );
+
+  if (roleResponse.statusCode == 200) {
+    final roleData = json.decode(roleResponse.body);
+
+    // Print the full role data to debug
+    print("Role response data: $roleData"); // This will print the whole response object
+
+    // Now print specific role details
+    if (roleData != null) {
+      print("Role fetched: ${roleData['role']}"); // Print the role
+      print("User details fetched: ${roleData['name']}"); // Print user name or any other details
+    }
+
+    // Continue with the role
+    final String role = roleData['role'].toString();
+
+    // Show OTP Popup
+    showOtpPopup();
+
+    // Save user data and role to preferences for later use
+    await prefs.setString('userId', userId);
+    await prefs.setString('role', role);
+    await prefs.setString('name', data['name'].toString());
+    await prefs.setString('address', data['address'].toString());
+    await prefs.setString('country', data['country'].toString());
+
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to fetch user role')),
+    );
+  }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login failed: ${response.body}')),
@@ -119,14 +131,25 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-/*  Future<void> submitOtp() async {
+  Future<void> submitOtp() async {
     setState(() {
       isLoading = true;
     });
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? role = prefs.getString('role'); // Ensure role is saved correctly
+
+    if (role == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Role not found in preferences')),
+      );
+      return;
+    }
+
     try {
+      // Step 2: Validate OTP (API 2)
       final response = await http.post(
-        Uri.parse('${AppConfig.baseUrl}/api/users/login-otp'),
+        Uri.parse('${AppConfig.baseUrl}/api/users/login-otp'), // Validate OTP request
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': emailController.text,
@@ -136,10 +159,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         closeOtpPopup();
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+
+        // Navigate based on the role after OTP validation
+        if (role == 'candidate') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        } else if (role == 'employer') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const EmployerHomeScreen()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unknown role')),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Invalid OTP')),
@@ -155,6 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     }
   }
+
   @override
   void dispose() {
     timer?.cancel();
@@ -163,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
     otpController.dispose();
     super.dispose();
   }
-*/
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -173,16 +210,15 @@ class _LoginScreenState extends State<LoginScreen> {
             SingleChildScrollView(
               child: Column(
                 children: [
-                  // Sky-blue background section
                   Container(
                     width: double.infinity,
-                    color: const Color(0xFFBFDBFE), // Sky-blue color
+                    color: const Color(0xFFBFDBFE),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 30.0),
                       child: Column(
                         children: [
                           Image.asset(
-                            'assets/logo.png', // Replace with your logo asset
+                            'assets/logo.png',
                             width: 300.0,
                             height: 200.0,
                             fit: BoxFit.cover,
@@ -192,7 +228,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  // Login Form  [Rest of the screen (white background)]
                   Container(
                     color: Colors.white,
                     child: Padding(
@@ -260,28 +295,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                 icon: const FaIcon(FontAwesomeIcons.google,
                                     size: 25.0, color: Colors.red),
                                 label: const Text('Google'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.black,
-                                  side: const BorderSide(color: Colors.grey),
-                                ),
                               ),
                               ElevatedButton.icon(
                                 onPressed: () {},
-                                icon: const Icon(Icons.facebook,
-                                    size: 25.0, color: Colors.blue),
-                                label: const Text('Facebook'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.black,
-                                  side: const BorderSide(color: Colors.grey),
-                                ),
+                                icon: const FaIcon(FontAwesomeIcons.apple,
+                                    size: 25.0, color: Colors.black),
+                                label: const Text('Apple'),
                               ),
                             ],
                           ),
                           const SizedBox(height: 20),
-                          TextButton(
-                            onPressed: () {
+                          GestureDetector(
+                            onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -292,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             child: RichText(
                               text: const TextSpan(
-                                text: "Don't have a candidate account? ",
+                                text: "Don't have an account? ",
                                 style: TextStyle(color: Colors.black),
                                 children: [
                                   TextSpan(
@@ -306,9 +331,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 5),
-                          TextButton(
-                            onPressed: () {
+                          const SizedBox(height: 20),
+                          GestureDetector(
+                            onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -319,7 +344,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             child: RichText(
                               text: const TextSpan(
-                                text: "Don't have a employer account? ",
+                                text: "Don't have an employer account? ",
                                 style: TextStyle(color: Colors.black),
                                 children: [
                                   TextSpan(
@@ -340,58 +365,36 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-            /*  // OTP Popup Overlay
             if (isOtpPopupVisible)
               Center(
-                child: Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15.0),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 10.0,
-                        spreadRadius: 1.0,
-                      ),
-                    ],
-                  ),
-                  width: 320.0,
-                  child: Column(
+                child: AlertDialog(
+                  title: const Text('Enter OTP'),
+                  content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Verify Your Identity',
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Enter the OTP sent to your email.',
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
                       TextField(
                         controller: otpController,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'OTP',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0), // Correct way to set borderRadius
-                          ),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: submitOtp,
-                        child: const Text('Submit OTP'),
-                      ),
+                      const SizedBox(height: 10),
+                      Text('Time Remaining: $otpTimer seconds'),
                     ],
                   ),
+                  actions: [
+                    TextButton(
+                      onPressed: closeOtpPopup,
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: isLoading ? null : submitOtp,
+                      child: const Text('Submit OTP'),
+                    ),
+                  ],
                 ),
-              ),*/
+              ),
           ],
         ),
       ),
