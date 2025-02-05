@@ -272,9 +272,9 @@ const loginWithOTP = async (req, res) => {
       // Add a new loginfo entry to the existing login record
       login.loginfo.push({
         location,
-        date: formattedDate,
-        browser,
-        operatingSystem: os
+        date: formattedDate
+        //browser,
+        //operatingSystem: os
       });
       await login.save();
     } else {
@@ -283,9 +283,9 @@ const loginWithOTP = async (req, res) => {
         userId: user._id,
         loginfo: [{
           location,
-          date: formattedDate,
-          browser,
-          operatingSystem: os
+          date: formattedDate
+          //browser,
+          //operatingSystem: os
         }]
       });
       await login.save();
