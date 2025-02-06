@@ -18,22 +18,15 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
 
   final List<String> jobOptions = [
     "All Jobs",
-    "Full-Time",
-    "Part-Time",
-    "Remote"
+    "Full-time",
+    "Part-time",
+    "Flexible",
+    "Contract",
+    "Internship",
+    "Temporary"
   ];
-  final List<String> locationOptions = [
-    "Location",
-    "Paris",
-    "New York",
-    "London"
-  ];
-  final List<String> salaryOptions = [
-    "Salary",
-    "<\$5K",
-    "\$5K-\$10K",
-    ">\$10K"
-  ];
+  List<String> locationOptions = [];
+  List<String> salaryOptions = ["Salary"];
 
   List<dynamic> allJobs = []; // Stores all jobs from API
   List<dynamic> filteredJobs = []; // Stores filtered jobs
@@ -48,6 +41,37 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
     fetchJobs();
   }
 
+  List<String> extractCities(List<dynamic> jsonData) {
+    List<dynamic> jobs = jsonData;
+    Set<String> cities = {"Location"};
+
+    for (var job in jobs) {
+      if (job['city'] != null) {
+        cities.add(job['city']);
+      }
+    }
+
+    return cities.toList();
+  }
+
+  List<String> getSortedSalaries(List<dynamic> jobData) {
+    // Extract offeredSalary values
+    List<int> salaries = jobData.map((job) {
+      // Cast each job to Map<String, dynamic>
+      Map<String, dynamic> jobMap = job as Map<String, dynamic>;
+      return jobMap['offeredSalary'] as int;
+    }).toList();
+
+    // Sort salaries in ascending order
+    salaries.sort();
+
+    // Convert sorted salaries to a list of strings
+    List<String> sortedSalariesAsString =
+        salaries.map((salary) => salary.toString()).toList();
+
+    return sortedSalariesAsString;
+  }
+
   Future<void> fetchJobs() async {
     const apiUrl = '${AppConfig.baseUrl}/api/jobs'; // Replace with your API URL
     try {
@@ -56,6 +80,9 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
         setState(() {
           allJobs = jsonDecode(response.body);
           filteredJobs = allJobs; // Initially show all jobs
+          locationOptions = extractCities(allJobs);
+          salaryOptions = salaryOptions + getSortedSalaries(allJobs);
+
           isLoading = false;
         });
       } else {

@@ -92,15 +92,6 @@ class _ResumeScreenState extends State<ResumeScreen> {
           'Resume',
           style: TextStyle(color: Colors.black, fontSize: 24),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // Handle Done action
-            },
-            child: const Text('Done',
-                style: TextStyle(color: Colors.blue, fontSize: 16)),
-          ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -169,10 +160,23 @@ class _ResumeScreenState extends State<ResumeScreen> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
+                      // Collect user data into a Map
+                      Map<String, dynamic> userData = {
+                        "Full Name": _nameController.text,
+                        "Email": _emailController.text,
+                        "Phone": _phoneController.text,
+                        "Gender": _selectedGender,
+                        "Nationality": _nationalityController.text,
+                        "Address": _addressController.text,
+                      };
+
+                      // Navigate to QualificationScreen and pass userData
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const QualificationScreen()),
+                          builder: (context) =>
+                              QualificationScreen(userData: userData),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(

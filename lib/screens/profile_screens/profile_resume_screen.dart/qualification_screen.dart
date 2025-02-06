@@ -9,7 +9,8 @@ import 'package:http/http.dart' as http;
 import '../../../Config/config.dart';
 
 class QualificationScreen extends StatefulWidget {
-  const QualificationScreen({super.key});
+  Map<String, dynamic> userData;
+  QualificationScreen({super.key, required this.userData});
 
   @override
   State<QualificationScreen> createState() => _QualificationScreenState();
@@ -34,6 +35,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
 
   Future<void> _loadQualificationData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     String apiUrl =
         "${AppConfig.baseUrl}/api/users/details/${prefs.getString("userId")}";
 
@@ -1700,15 +1702,6 @@ class _QualificationScreenState extends State<QualificationScreen> {
           'Qualifications',
           style: TextStyle(color: Colors.black, fontSize: 24),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // Handle Done action
-            },
-            child: const Text('Done',
-                style: TextStyle(color: Colors.blue, fontSize: 16)),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -2312,12 +2305,37 @@ class _QualificationScreenState extends State<QualificationScreen> {
                     navigateTo: null, // Back button just pops the page
                     context: context,
                   ),
-                  _buildButton(
-                    label: 'Next Page',
-                    color: Colors.blue,
-                    navigateTo:
-                        ProfileLinksScreen(), // Replace with your actual next screen
-                    context: context,
+                  ElevatedButton(
+                    onPressed: () {
+                      // Collect user data into a Map
+                      Map<String, dynamic> qualification = {
+                        "selected_category": selectedCategory ?? " ",
+                        "education": educationDetails,
+                        "experience": workExperienceDetails,
+                        "certificate": certificationDetails,
+                        "skills": skillsDetails
+                      };
+                      widget.userData.addAll(qualification);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ProfileLinksScreen(userData: widget.userData),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                      child: Text('Next page',
+                          style: TextStyle(fontSize: 16, color: Colors.white)),
+                    ),
                   ),
                 ],
               ),

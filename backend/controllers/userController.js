@@ -241,7 +241,7 @@ const loginWithOTP = async (req, res) => {
     const location = geo ? `${geo.city}, ${geo.region}, ${geo.country}` : 'Unknown';
 
     // Parse user agent to get browser and operating system
-    const { browser, os } = parseUserAgent(userAgent);
+    //const { browser, os } = parseUserAgent(userAgent);
 
     // Clear OTP and expiration
     user.otp = undefined;
@@ -319,12 +319,18 @@ const getAllUsers = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     const userId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID format' });
+    }
+
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found 1' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
+    console.log("User data:", user);  // Log user data
     res.status(200).json(user);
   } catch (error) {
     console.error('Error fetching user:', error.message);
@@ -704,6 +710,24 @@ const removeSavedJob = async (req, res) => {
   }
 };
 
+//Function to get user by email
+const getUserByEmail = async (req, res) => {
+  try {
+    const email = req.params.email;
+    const user = await User.findOne({ email: email }); // Find user by email
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
@@ -719,5 +743,6 @@ module.exports = {
   changePassword,
   updateUserData,
   updateNotificationSettings,
+  getUserByEmail,
   saveJob, getSavedJobsCount, removeSavedJob
 };

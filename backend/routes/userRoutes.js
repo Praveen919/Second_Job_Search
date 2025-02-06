@@ -13,6 +13,7 @@ const {
   updateUserData,
   updateNotificationSettings,
   saveJob,
+  getUserByEmail,
   getSavedJobsCount,
   removeSavedJob,
   getUserDetails
@@ -34,6 +35,7 @@ router.put('/change-password/:id', changePassword);         // Change user passw
 router.put('/update-data/:id', updateUserData);             // Update user data
 router.put('/update-notifications', updateNotificationSettings); // Update notification settings
 router.put('/save-jobs', saveJob);
+router.get('/email/:email', getUserByEmail);
 router.get('/save-jobs/:userId', getSavedJobsCount);
 router.put('/remove-save-job', removeSavedJob);
 router.get('/details/:id', getUserDetails);

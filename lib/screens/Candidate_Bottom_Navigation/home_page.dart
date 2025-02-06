@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:second_job_search/Config/config.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,6 +15,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String? name = "";
   List<dynamic> jobList = [];
   List<dynamic> filteredJobList = [];
   bool isLoading = true;
@@ -26,6 +28,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> fetchJobs() async {
     const url = "${AppConfig.baseUrl}/api/jobs";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    name = prefs.getString("name");
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -82,9 +86,9 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                "Hello Shakir, Good Day 👋",
-                style: TextStyle(
+              Text(
+                "Hello $name, Good Day 👋",
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

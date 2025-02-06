@@ -27,7 +27,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     try {
       final response = await http.get(
           Uri.parse(
-              '${AppConfig.baseUrl}/api/plans/user/671cc6d7d0d9916137c2fdae'),
+              '${AppConfig.baseUrl}/api/plans/user/${prefs.getString("userId")}'),
           headers: {'Content-Type': 'application/json'});
 
       if (response.statusCode == 200) {

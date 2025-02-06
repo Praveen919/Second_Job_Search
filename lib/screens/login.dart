@@ -12,8 +12,7 @@ import 'package:second_job_search/Config/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
-  final String userId;
-  const LoginScreen({super.key,required this.userId});
+  const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -67,7 +66,8 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // Step 1: Request OTP (API 1)
       final response = await http.post(
-        Uri.parse('${AppConfig.baseUrl}/api/users/request-login'), // Send OTP request
+        Uri.parse(
+            '${AppConfig.baseUrl}/api/users/request-login'), // Send OTP request
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': emailController.text,
@@ -75,46 +75,48 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
       if (response.statusCode == 200) {
-  final data = json.decode(response.body);
-  final String userId = data['id'].toString();
+        final data = json.decode(response.body);
+        final String userId = data['id'].toString();
+        print(data);
 
-  // Step 2: Fetch the user role (API 3)
-  final String userEmail = emailController.text; 
-  final roleResponse = await http.get(
-    Uri.parse('${AppConfig.baseUrl}/api/users/email/$userEmail'),
-    headers: {'Content-Type': 'application/json'},
-  );
+        // Step 2: Fetch the user role (API 3)
+        final String userEmail = emailController.text;
+        final roleResponse = await http.get(
+          Uri.parse('${AppConfig.baseUrl}/api/users/email/$userEmail'),
+          headers: {'Content-Type': 'application/json'},
+        );
 
-  if (roleResponse.statusCode == 200) {
-    final roleData = json.decode(roleResponse.body);
+        if (roleResponse.statusCode == 200) {
+          final roleData = json.decode(roleResponse.body);
 
-    // Print the full role data to debug
-    print("Role response data: $roleData"); // This will print the whole response object
+          // Print the full role data to debug
+          print(
+              "Role response data: $roleData"); // This will print the whole response object
 
-    // Now print specific role details
-    if (roleData != null) {
-      print("Role fetched: ${roleData['role']}"); // Print the role
-      print("User details fetched: ${roleData['name']}"); // Print user name or any other details
-    }
+          // Now print specific role details
+          if (roleData != null) {
+            print("Role fetched: ${roleData['role']}"); // Print the role
+            print(
+                "User details fetched: ${roleData['name']}"); // Print user name or any other details
+          }
 
-    // Continue with the role
-    final String role = roleData['role'].toString();
+          // Continue with the role
+          final String role = roleData['role'].toString();
 
-    // Show OTP Popup
-    showOtpPopup();
+          // Show OTP Popup
+          showOtpPopup();
 
-    // Save user data and role to preferences for later use
-    await prefs.setString('userId', userId);
-    await prefs.setString('role', role);
-    await prefs.setString('name', data['name'].toString());
-    await prefs.setString('address', data['address'].toString());
-    await prefs.setString('country', data['country'].toString());
-
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to fetch user role')),
-    );
-  }
+          // Save user data and role to preferences for later use
+          await prefs.setString('userId', roleData['_id']);
+          await prefs.setString('role', role);
+          await prefs.setString('name', roleData['name'].toString());
+          await prefs.setString('address', roleData['address'].toString());
+          await prefs.setString('country', roleData['country'].toString());
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to fetch user role')),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login failed: ${response.body}')),
@@ -137,7 +139,8 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? role = prefs.getString('role'); // Ensure role is saved correctly
+    final String? role =
+        prefs.getString('role'); // Ensure role is saved correctly
 
     if (role == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -149,7 +152,8 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // Step 2: Validate OTP (API 2)
       final response = await http.post(
-        Uri.parse('${AppConfig.baseUrl}/api/users/login-otp'), // Validate OTP request
+        Uri.parse(
+            '${AppConfig.baseUrl}/api/users/login-otp'), // Validate OTP request
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': emailController.text,

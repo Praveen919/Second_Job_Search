@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../Config/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileLinksScreen extends StatefulWidget {
-  const ProfileLinksScreen({super.key});
+  Map<String, dynamic> userData;
+  ProfileLinksScreen({super.key, required this.userData});
 
   @override
   State<ProfileLinksScreen> createState() => _ProfileLinksScreenState();
@@ -27,7 +29,9 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
   }
 
   Future<void> _loadProfileLinkData() async {
-    String apiUrl = "${AppConfig.baseUrl}/api/users/676000e686328df24d5ad2b7";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String apiUrl =
+        "${AppConfig.baseUrl}/api/users/${prefs.getString("userId")}";
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -72,15 +76,6 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
           'Social Links',
           style: TextStyle(color: Colors.black, fontSize: 24),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              'Done',
-              style: TextStyle(color: Colors.blue, fontSize: 16),
-            ),
-          ),
-        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -136,10 +131,7 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
                       label: 'Save',
                       color: Colors.blue,
                       onTap: () {
-                        final updatedLinks = personalInfoControllers.map(
-                          (key, controller) => MapEntry(key, controller.text),
-                        );
-                        print(updatedLinks);
+                        print(widget.userData);
                       },
                     ),
                   ],
