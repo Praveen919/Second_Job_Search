@@ -1,10 +1,10 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:second_job_search/Config/config.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EmployerHomePage extends StatefulWidget {
   const EmployerHomePage({super.key});
@@ -14,7 +14,9 @@ class EmployerHomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<EmployerHomePage> {
+  String? name = "";
   List<dynamic> jobList = [];
+  List<dynamic> filteredJobList = [];
   bool isLoading = true;
 
   @override
@@ -25,11 +27,14 @@ class _HomePageState extends State<EmployerHomePage> {
 
   Future<void> fetchJobs() async {
     const url = "${AppConfig.baseUrl}/api/jobs";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    name = prefs.getString("name");
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         setState(() {
           jobList = json.decode(response.body);
+          filteredJobList = jobList;
           isLoading = false;
         });
       } else {
@@ -41,6 +46,30 @@ class _HomePageState extends State<EmployerHomePage> {
       });
       print("Error fetching jobs: $e"); // Debugging
     }
+  }
+
+  void filterJobs(String query, String locationQuery) {
+    setState(() {
+      if (query.isEmpty && locationQuery.isEmpty) {
+        filteredJobList = jobList;
+      } else {
+        filteredJobList = jobList.where((job) {
+          String jobTitle = (job['jobTitle'] ?? '').toLowerCase();
+          String companyName = (job['companyName'] ?? '').toLowerCase();
+          String location = (job['city'] ?? '').toLowerCase();
+
+          // Check if job title or company name matches query
+          bool matchesQuery = jobTitle.contains(query.toLowerCase()) ||
+              companyName.contains(query.toLowerCase());
+
+          // Check if location matches the location query
+          bool matchesLocation = location.contains(locationQuery.toLowerCase());
+
+          return (matchesQuery || query.isEmpty) &&
+              (matchesLocation || locationQuery.isEmpty);
+        }).toList();
+      }
+    });
   }
 
   @override
@@ -56,9 +85,9 @@ class _HomePageState extends State<EmployerHomePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                "Hello Employer, Good Day 👋",
-                style: TextStyle(
+              Text(
+                "Hello $name, Good Day 👋",
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -127,9 +156,9 @@ class _HomePageState extends State<EmployerHomePage> {
                             shrinkWrap: true,
                             physics:
                             const NeverScrollableScrollPhysics(),
-                            itemCount: jobList.length,
+                            itemCount: filteredJobList.length,
                             itemBuilder: (context, index) {
-                              final job = jobList[index];
+                              final job = filteredJobList[index];
                               return JobCard(job: job);
                             },
                           ),
@@ -138,7 +167,10 @@ class _HomePageState extends State<EmployerHomePage> {
                     ),
                   ),
                   SearchBox(
-                      screenWidth: screenWidth, screenHeight: screenHeight),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                    onSearch: filterJobs,
+                  ),
                 ],
               ),
             ],
@@ -149,18 +181,38 @@ class _HomePageState extends State<EmployerHomePage> {
   }
 }
 
-class SearchBox extends StatelessWidget {
+class SearchBox extends StatefulWidget {
   final double screenWidth;
   final double screenHeight;
+  final Function(String, String) onSearch;
 
-  const SearchBox(
-      {super.key, required this.screenWidth, required this.screenHeight});
+  const SearchBox({
+    super.key,
+    required this.screenWidth,
+    required this.screenHeight,
+    required this.onSearch,
+  });
+
+  @override
+  _SearchBoxState createState() => _SearchBoxState();
+}
+
+class _SearchBoxState extends State<SearchBox> {
+  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _locationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: screenWidth * 0.85,
-      height: screenHeight * 0.2,
+      width: widget.screenWidth * 0.85,
+      height: widget.screenHeight * 0.2,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
@@ -172,22 +224,30 @@ class SearchBox extends StatelessWidget {
           ),
         ],
       ),
-      child: const Padding(
-        padding: EdgeInsets.all(16.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              decoration: InputDecoration(
+              controller: _searchController,
+              decoration: const InputDecoration(
                 icon: Icon(Icons.search),
                 labelText: "Search Job",
               ),
+              onChanged: (query) {
+                widget.onSearch(query, _locationController.text);
+              },
             ),
-            SizedBox(height: 7),
+            const SizedBox(height: 7),
             TextField(
-              decoration: InputDecoration(
+              controller: _locationController,
+              decoration: const InputDecoration(
                 icon: Icon(Icons.room_outlined),
                 labelText: "Location",
               ),
+              onChanged: (locationQuery) {
+                widget.onSearch(_searchController.text, locationQuery);
+              },
             ),
           ],
         ),
@@ -346,9 +406,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
                   ),
                   child: Text(
                     _isApplied ? "Applied" : "Apply Now",
-
-                    style: const TextStyle(fontSize: 18,color:Colors.white),
-
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
               ),
@@ -372,9 +430,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
           const CircleAvatar(
             radius: 40,
             backgroundImage:
-
             AssetImage('assets/logo.png'), // Placeholder for company logo
-
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -505,5 +561,4 @@ class _ReadMoreTextState extends State<ReadMoreText> {
       ),
     );
   }
-
 }
