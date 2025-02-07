@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
-        backgroundColor: const Color(0xFFBFDBFE),
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
       ),
       drawer: Drawer(
         backgroundColor: Colors.blueGrey[50],
@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Dashboard ListTile
             ListTile(
               contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               leading: const Icon(
                 Icons.dashboard,
                 color: Colors.blueGrey,
@@ -170,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Register/Login ListTile with added styling
             ListTile(
               contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               leading: const Icon(
                 Icons.login,
                 color: Color.fromARGB(255, 3, 79, 117),
@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               leading: const Icon(
                 Icons.group_work_rounded,
                 color: Color.fromARGB(255, 3, 79, 117),
@@ -222,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      backgroundColor: const Color(0xFFBFDBFE),
+      backgroundColor: const Color.fromARGB(255, 100, 176, 238),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white,

@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:second_job_search/screens/login.dart';
+import 'package:second_job_search/screens/profile_screens/account_setting_screen.dart';
 import 'package:second_job_search/screens/profile_screens/candidate_package_screen.dart';
 import 'package:second_job_search/screens/profile_screens/password_update_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
@@ -154,7 +155,13 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   context,
                   icon: Icons.settings,
                   text: 'Account Settings',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const AccountSettingsScreen()));
+                  },
                 ),
                 _buildOption(
                   context,
@@ -396,120 +403,112 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Profile"),
+        title: const Text("Edit Profile",
+            style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 1,
         foregroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                _buildTextField(
+                    label: "Full Name",
+                    hintText: "Enter your full name",
+                    controller: fullNameController,
+                    icon: Icons.person),
+                const SizedBox(height: 16),
+                _buildTextField(
+                    label: "Username",
+                    hintText: "Enter your username",
+                    controller: nicknameController,
+                    icon: Icons.tag),
+                const SizedBox(height: 16),
+                _buildTextField(
+                    label: "Email",
+                    hintText: "Enter your email",
+                    controller: emailController,
+                    icon: Icons.email),
+                const SizedBox(height: 16),
+                Row(
                   children: [
-                    const SizedBox(height: 10),
-                    _buildTextField(
-                      label: "Full Name",
-                      hintText: "Enter your full name",
-                      controller: fullNameController,
-                      icon: Icons.person,
+                    Expanded(
+                      child: _buildTextField(
+                          label: "Phone",
+                          hintText: "Enter your phone number",
+                          controller: phoneController,
+                          icon: Icons.phone),
                     ),
-                    const SizedBox(height: 14.0),
-                    _buildTextField(
-                      label: "Username",
-                      hintText: "Enter your username",
-                      controller: nicknameController,
-                      icon: Icons.tag,
-                    ),
-                    const SizedBox(height: 14.0),
-                    _buildTextField(
-                      label: "Email",
-                      hintText: "Enter your email",
-                      controller: emailController,
-                      icon: Icons.email,
-                    ),
-                    const SizedBox(height: 14.0),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildTextField(
-                            label: "Phone",
-                            hintText: "Enter your phone number",
-                            controller: phoneController,
-                            icon: Icons.phone,
-                          ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: "Gender",
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 18, horizontal: 12),
                         ),
-                        const SizedBox(width: 14.0),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              labelText: "Gender",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey[100],
-                            ),
-                            value:
-                                selectedGender, // Ensure this matches one of the DropdownMenuItem values exactly
-                            items: const [
-                              DropdownMenuItem(
-                                  value: "Male", child: Text("Male")),
-                              DropdownMenuItem(
-                                  value: "Female", child: Text("Female")),
-                              DropdownMenuItem(
-                                  value: "Other", child: Text("Other")),
-                            ],
-                            onChanged: (value) {
-                              // Handle gender selection change
-                              selectedGender = value;
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14.0),
-                    _buildTextField(
-                      label: "Address",
-                      hintText: "Enter your address",
-                      controller: addressController,
-                      icon: Icons.location_on,
-                    ),
-                    const SizedBox(height: 30),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Handle submit action
-                          _updateUserData();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        child: const Text(
-                          "SUBMIT",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                        value: selectedGender,
+                        items: const [
+                          DropdownMenuItem(value: "Male", child: Text("Male")),
+                          DropdownMenuItem(
+                              value: "Female", child: Text("Female")),
+                          DropdownMenuItem(
+                              value: "Other", child: Text("Other")),
+                        ],
+                        onChanged: (value) =>
+                            setState(() => selectedGender = value),
                       ),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                    label: "Address",
+                    hintText: "Enter your address",
+                    controller: addressController,
+                    icon: Icons.location_on),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : _updateUserData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text("SUBMIT",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
             ),
+          ),
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                  child: CircularProgressIndicator(color: Colors.white)),
+            ),
+        ],
+      ),
     );
   }
 

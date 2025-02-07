@@ -117,7 +117,7 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFBFDBFE), // Light blue background
+      color: const Color.fromARGB(255, 100, 176, 238), // Light blue background
       child: Column(
         children: [
           // Search Bar and Filters

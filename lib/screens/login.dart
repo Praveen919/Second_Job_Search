@@ -22,10 +22,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController otpController = TextEditingController();
+  bool _isPasswordVisible = false;
   bool isLoading = false;
   bool isOtpPopupVisible = false;
   int otpTimer = 60;
+  int otpAttempts = 0;
+  bool isLocked = false;
   Timer? timer;
+  Timer? lockTimer;
 
   void startOtpTimer() {
     setState(() {
@@ -120,6 +124,43 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login failed: ${response.body}')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> resendOtp() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(
+            '${AppConfig.baseUrl}/api/users/request-login'), // Same API as login
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': emailController.text,
+          'password': passwordController.text, // If required
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('OTP resent successfully!')),
+        );
+        startOtpTimer(); // Restart OTP timer if needed
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to resend OTP: ${response.body}')),
         );
       }
     } catch (error) {
@@ -257,10 +298,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 15),
                           TextField(
                             controller: passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
+                            obscureText:
+                                !_isPasswordVisible, // Toggle visibility
+                            decoration: InputDecoration(
                               labelText: 'Password',
-                              border: OutlineInputBorder(),
+                              border: const OutlineInputBorder(),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible =
+                                        !_isPasswordVisible; // Toggle state
+                                  });
+                                },
+                              ),
                             ),
                           ),
                           Align(
@@ -372,31 +427,120 @@ class _LoginScreenState extends State<LoginScreen> {
             if (isOtpPopupVisible)
               Center(
                 child: AlertDialog(
-                  title: const Text('Enter OTP'),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20), // Rounded Dialog
+                  ),
+                  title: const Text(
+                    'Enter OTP',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue, // Consistent with theme
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextField(
                         controller: otpController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                        decoration: InputDecoration(
                           labelText: 'OTP',
+                          labelStyle: const TextStyle(color: Colors.blue),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.blue),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                const BorderSide(color: Colors.blue, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: Colors.blue.shade50,
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 16),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text('Time Remaining: $otpTimer seconds'),
+                      const SizedBox(height: 15),
+                      Text(
+                        'Time Remaining: $otpTimer seconds',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: otpTimer > 10 ? Colors.black87 : Colors.red,
+                        ),
+                      ),
                     ],
                   ),
                   actions: [
-                    TextButton(
-                      onPressed: closeOtpPopup,
-                      child: const Text('Cancel'),
-                    ),
-                    ElevatedButton(
-                      onPressed: isLoading ? null : submitOtp,
-                      child: const Text('Submit OTP'),
+                    Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ElevatedButton(
+                              onPressed: closeOtpPopup,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey, // Grey for Cancel
+                                foregroundColor: Colors.white,
+                                textStyle: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 20),
+                              ),
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: otpTimer == 0
+                                  ? resendOtp
+                                  : null, // Enable only when timer is 0
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                textStyle: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 20),
+                              ),
+                              child: const Text('Resend OTP'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                            height: 10), // Adds space before Submit button
+                        ElevatedButton(
+                          onPressed: isLoading ? null : submitOtp,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue, // Blue for Submit
+                            foregroundColor: Colors.white,
+                            textStyle: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 20),
+                          ),
+                          child: isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
+                              : const Text('Submit'),
+                        ),
+                      ],
                     ),
                   ],
+                  elevation: 10, // Adds shadow for a premium look
                 ),
               ),
           ],

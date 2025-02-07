@@ -110,7 +110,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                             label: 'Applied Job',
                             iconColor: Colors.black,
                             backgroundColor:
-                                const Color.fromARGB(255, 169, 210, 230),
+                                const Color.fromARGB(255, 77, 177, 223),
                           ),
                           const SizedBox(width: 10),
                           _buildInfoContainer(
@@ -119,7 +119,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                             label: 'Job Alerts',
                             iconColor: Colors.black,
                             backgroundColor:
-                                const Color.fromARGB(255, 179, 233, 182),
+                                const Color.fromARGB(255, 18, 149, 209),
                           ),
                         ],
                       ),
@@ -132,7 +132,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                             label: 'Messages',
                             iconColor: Colors.black,
                             backgroundColor:
-                                const Color.fromARGB(255, 224, 189, 137),
+                                const Color.fromARGB(255, 18, 149, 209),
                           ),
                           const SizedBox(width: 10),
                           _buildInfoContainer(
@@ -140,7 +140,8 @@ class _ProfilescreenState extends State<Profilescreen> {
                             count: '$saved_job_count',
                             label: 'Saved',
                             iconColor: Colors.black,
-                            backgroundColor: Colors.pink[200]!,
+                            backgroundColor:
+                                const Color.fromARGB(255, 77, 177, 223),
                           ),
                         ],
                       ),

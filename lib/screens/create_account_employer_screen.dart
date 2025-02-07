@@ -20,6 +20,7 @@ class _CreateAccountEmployerScreenState
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
 
   // Helper to show SnackBar
   void _showSnackBar(String message, {bool isError = false}) {
@@ -69,7 +70,8 @@ class _CreateAccountEmployerScreenState
         );
       } else {
         final errorResponse = jsonDecode(response.body);
-        _showSnackBar(errorResponse['message'] ?? 'Failed to sign up', isError: true);
+        _showSnackBar(errorResponse['message'] ?? 'Failed to sign up',
+            isError: true);
       }
     } catch (e) {
       _showSnackBar('Error: Unable to connect to the server', isError: true);
@@ -157,10 +159,23 @@ class _CreateAccountEmployerScreenState
                       // Password TextField
                       TextField(
                         controller: _passwordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(
+                        obscureText: !_isPasswordVisible, // Toggle visibility
+                        decoration: InputDecoration(
                           labelText: 'Create New Password',
-                          border: OutlineInputBorder(),
+                          border: const OutlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible =
+                                    !_isPasswordVisible; // Toggle state
+                              });
+                            },
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -175,9 +190,9 @@ class _CreateAccountEmployerScreenState
                         ),
                         child: _isLoading
                             ? const CircularProgressIndicator(
-                          valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
-                        )
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              )
                             : const Text('Register'),
                       ),
                       const SizedBox(height: 20),

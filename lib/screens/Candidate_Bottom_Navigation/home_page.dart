@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFBFDBFE),
+      backgroundColor: const Color.fromARGB(255, 100, 176, 238),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
@@ -325,7 +325,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(job['jobTitle'] ?? 'Job Details'),
-        backgroundColor: const Color.fromARGB(255, 251, 251, 252),
+        backgroundColor: const Color.fromARGB(255, 251, 252, 252),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -422,7 +422,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: const Color.fromARGB(255, 54, 155, 238),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -448,7 +448,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
                 const SizedBox(height: 4),
                 Text(
                   job['jobCategory'] ?? 'Job Category',
-                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -467,6 +467,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       elevation: 3,
+      color: const Color.fromARGB(255, 230, 231, 231),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -477,7 +478,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
+                color: Color.fromARGB(255, 54, 155, 238),
               ),
             ),
             const SizedBox(height: 8),
@@ -506,7 +507,8 @@ class DetailItem extends StatelessWidget {
             flex: 2,
             child: Text(
               "$label:",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.black87),
             ),
           ),
           Expanded(
@@ -555,7 +557,9 @@ class _ReadMoreTextState extends State<ReadMoreText> {
             },
             child: Text(
               _isExpanded ? "View Less" : "Read More",
-              style: const TextStyle(color: Colors.blueAccent),
+              style: const TextStyle(
+                color: Color.fromARGB(255, 54, 155, 238),
+              ),
             ),
           ),
         ],
