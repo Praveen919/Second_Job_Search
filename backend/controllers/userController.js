@@ -727,6 +727,28 @@ const getUserByEmail = async (req, res) => {
   }
 };
 
+const editUserProfile = async (req, res) => {
+  try {
+    const { user_id } = req.params; // Get user_id from URL params
+    const updateData = { ...req.body }; // Copy request body to updateData
+
+    // Update the user document and return the modified user
+    const updatedUser = await User.findByIdAndUpdate(
+      user_id, 
+      { $set: updateData }, 
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 
 module.exports = {
   registerUser,
@@ -744,5 +766,6 @@ module.exports = {
   updateUserData,
   updateNotificationSettings,
   getUserByEmail,
+  editUserProfile,
   saveJob, getSavedJobsCount, removeSavedJob
 };

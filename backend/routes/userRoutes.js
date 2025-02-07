@@ -16,7 +16,8 @@ const {
   getUserByEmail,
   getSavedJobsCount,
   removeSavedJob,
-  getUserDetails
+  getUserDetails,
+  editUserProfile
 } = require('../controllers/userController'); // Importing all necessary controllers
 
 const router = express.Router();
@@ -39,5 +40,6 @@ router.get('/email/:email', getUserByEmail);
 router.get('/save-jobs/:userId', getSavedJobsCount);
 router.put('/remove-save-job', removeSavedJob);
 router.get('/details/:id', getUserDetails);
+router.put('/edit/:user_id', editUserProfile);
 
 module.exports = router;  
