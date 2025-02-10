@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -63,6 +65,49 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  Future<void> _uploadResumeData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String apiUrl =
+        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
+    print(apiUrl);
+    final body = {
+      "username": widget.userData["Full Name"],
+      "email": widget.userData["Email"],
+      "mobile1": widget.userData["Phone"],
+      "gender": widget.userData["Gender"],
+      "nationality": widget.userData["Nationality"],
+      "address": widget.userData["Address"],
+      "resumeType": widget.userData["selected_category"],
+    };
+
+    try {
+      final response = await http.put(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final updatedUser = jsonDecode(response.body);
+        print("User updated successfully: $updatedUser");
+        prefs.setString("address", widget.userData["Address"]);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile updated successfully")),
+        );
+      } else {
+        print("Failed to update user: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update profile")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("An error occurred")),
+      );
+    }
   }
 
   @override
@@ -131,7 +176,7 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
                       label: 'Save',
                       color: Colors.blue,
                       onTap: () {
-                        print(widget.userData);
+                        _uploadResumeData();
                       },
                     ),
                   ],
