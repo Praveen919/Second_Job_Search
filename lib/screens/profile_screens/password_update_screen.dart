@@ -26,7 +26,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       Fluttertoast.showToast(
         msg: 'Current password is incorrect.',
         backgroundColor: Colors.red,
-        textColor: Colors.blue,
+        textColor: Colors.white,
       );
       return;
     }
@@ -35,7 +35,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       Fluttertoast.showToast(
         msg: 'Please fill in all fields.',
         backgroundColor: Colors.red,
-        textColor: Colors.blue,
+        textColor: Colors.white,
       );
       return;
     }
@@ -44,7 +44,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       Fluttertoast.showToast(
         msg: 'New passwords do not match.',
         backgroundColor: Colors.red,
-        textColor: Colors.blue,
+        textColor: Colors.white,
       );
       return;
     }
@@ -52,7 +52,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
     Fluttertoast.showToast(
       msg: 'Password updated successfully.',
       backgroundColor: Colors.green,
-      textColor: Colors.blue,
+      textColor: Colors.white,
     );
 
     _currentPasswordController.clear();
@@ -65,15 +65,11 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFBFDBFE),
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Image.asset(
-            'assets/logo.png',
-            width: 40,
-            height: 40,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Update Password',
@@ -140,46 +136,22 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                       ),
                     ),
                     const SizedBox(height: 30),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                            ),
-                            child: const Text(
-                              'Back',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
-                            ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _updatePassword,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _updatePassword,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                            ),
-                            child: const Text(
-                              'Update',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
-                            ),
-                          ),
+                        child: const Text(
+                          'Update Password',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),

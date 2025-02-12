@@ -257,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Container(
                     width: double.infinity,
-                    color: const Color(0xFFBFDBFE),
+                    color: const Color.fromARGB(255, 100, 176, 238),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 30.0),
                       child: Column(

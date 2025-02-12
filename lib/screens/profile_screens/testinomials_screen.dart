@@ -16,16 +16,14 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _feedbackController = TextEditingController();
 
-  // Base URL of your backend
   final String apiUrl = '${AppConfig.baseUrl}/api/testimonials';
 
   @override
   void initState() {
     super.initState();
-    fetchTestimonials(); // Fetch testimonials when the screen loads
+    fetchTestimonials();
   }
 
-  // Fetch testimonials from the backend
   Future<void> fetchTestimonials() async {
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -68,8 +66,7 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
       testimonials.add({
         'name': name,
         'message': feedback,
-        'createdAt':
-            DateTime.now().toString().split(' ')[0], // Format: YYYY-MM-DD
+        'createdAt': DateTime.now().toString().split(' ')[0],
       });
     });
 
@@ -88,15 +85,11 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFBFDBFE),
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Image.asset(
-            'assets/logo.png',
-            width: 40,
-            height: 40,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Testimonials',
@@ -108,7 +101,6 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
           child: Column(
             children: [
-              // Feedback form
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
@@ -162,7 +154,7 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
                     Align(
                       alignment: Alignment.center,
                       child: SizedBox(
-                        width: 200, // Increased button width
+                        width: 200,
                         child: ElevatedButton(
                           onPressed: _submitTestimonial,
                           style: ElevatedButton.styleFrom(
@@ -192,13 +184,11 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
                 ),
               ),
               const SizedBox(height: 15),
-              // Display testimonials
               ...testimonials.map((testimonial) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Container(
                       width: double.infinity,
-                      constraints: const BoxConstraints(
-                          minHeight: 120), // Uniform height
+                      constraints: const BoxConstraints(minHeight: 120),
                       padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         color: Colors.blue.withOpacity(0.1),
@@ -220,8 +210,7 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
                                 ),
                               ),
                               Text(
-                                testimonial['createdAt']?.split('T')[0] ??
-                                    '', // Format: YYYY-MM-DD
+                                testimonial['createdAt']?.split('T')[0] ?? '',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.black54,

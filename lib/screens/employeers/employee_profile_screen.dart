@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:second_job_search/screens/Candidate_Bottom_Navigation/my_profile_page.dart';
 import 'package:second_job_search/screens/employeers/allapplicant_screen.dart';
 import 'package:second_job_search/screens/employeers/candidate_screen.dart';
 import 'package:second_job_search/screens/employeers/company_details_screen.dart';
@@ -7,13 +8,14 @@ import 'package:second_job_search/screens/employeers/employee_dashbord.dart';
 import 'package:second_job_search/screens/employeers/manage_jobs_screen.dart';
 import 'package:second_job_search/screens/employeers/shorlist_resume_screen.dart';
 import 'dart:io';
-
+import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/screens/profile_screens/candidate_package_screen.dart';
 import 'package:second_job_search/screens/profile_screens/password_update_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_faq_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/resume_screen.dart';
 import 'package:second_job_search/screens/profile_screens/testinomials_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EmployeeProfileScreen extends StatefulWidget {
   const EmployeeProfileScreen({super.key});
@@ -23,10 +25,25 @@ class EmployeeProfileScreen extends StatefulWidget {
 
 class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   String profileName = "Alok Kushwaha";
-  String location = "Mumbai, India";
+  String location = "India";
   File? profileImage; // Holds the uploaded image file
 
   final ImagePicker _picker = ImagePicker();
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData(); // Load the saved data on initialization
+  }
+
+  Future<void> _loadProfileData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      profileName = prefs.getString('name') ?? profileName;
+      String address = prefs.getString('address') ?? "Unknown Address";
+      String country = prefs.getString('country') ?? "India";
+      location = "$address, $location";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +53,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         title: const Text('Profile'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: const Color(0xFFBFDBFE),
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         foregroundColor: Colors.black,
       ),
       body: Column(
@@ -106,6 +123,22 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (_) => EmployeeDashboardscreen()));
+                  },
+                ),
+                _buildOption(
+                  context,
+                  icon: Icons.dashboard_outlined,
+                  text: 'Edit Profile',
+                  onTap: () async {
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EditProfileScreen(
+                            userId: '${prefs.getString("userId")}'),
+                      ),
+                    );
                   },
                 ),
                 _buildOption(

@@ -39,15 +39,11 @@ class _FAQScreenState extends State<FAQScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFBFDBFE),
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Image.asset(
-            'assets/logo.png',
-            width: 40,
-            height: 40,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'FAQ',
@@ -94,59 +90,30 @@ class _FAQScreenState extends State<FAQScreen> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    ...faqData.map((faq) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildFAQItem(
-                              question: faq['question']!,
-                              answer: faq['answer']!,
-                            ),
-                          ],
+                    ...faqData.map((faq) => _buildFAQItem(
+                          question: faq['question']!,
+                          answer: faq['answer']!,
                         )),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 2 - 30,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      child: const Text(
-                        'Back',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 2 - 30,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      child: const Text(
-                        'Contact Support',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
+                  child: const Text(
+                    'Contact Support',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
-                ],
+                ),
               ),
             ],
           ),

@@ -24,7 +24,7 @@ class _CompanyContactScreenState extends State<CompanyContactScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFBFDBFE),
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),

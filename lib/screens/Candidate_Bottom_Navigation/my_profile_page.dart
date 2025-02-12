@@ -351,6 +351,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _updateUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     final apiUrl =
         '${AppConfig.baseUrl}/api/users/update-data/${widget.userId}';
     final body = {
@@ -375,6 +376,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profile updated successfully")),
         );
+        prefs.setString("name", fullNameController.text);
+        prefs.setString("address", addressController.text);
       } else {
         print("Failed to update user: ${response.body}");
         ScaffoldMessenger.of(context).showSnackBar(

@@ -152,7 +152,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
         title: const Text('Account Settings'),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         elevation: 0,
       ),
       body: Stack(

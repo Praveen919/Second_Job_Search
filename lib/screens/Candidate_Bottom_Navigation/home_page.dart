@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:second_job_search/Config/config.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -201,6 +202,8 @@ class SearchBox extends StatefulWidget {
 class _SearchBoxState extends State<SearchBox> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
+  final stt.SpeechToText _speech = stt.SpeechToText(); // ✅ Fix: Initialize here
+  bool _isListening = false;
 
   @override
   void dispose() {
@@ -209,11 +212,35 @@ class _SearchBoxState extends State<SearchBox> {
     super.dispose();
   }
 
+  void _startListening() async {
+    bool available = await _speech.initialize(
+      onStatus: (status) => print('Status: $status'),
+      onError: (error) => print('Error: $error'),
+    );
+
+    if (available) {
+      setState(() => _isListening = true);
+      _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _searchController.text = result.recognizedWords;
+          });
+          widget.onSearch(result.recognizedWords, _locationController.text);
+        },
+      );
+    }
+  }
+
+  void _stopListening() {
+    _speech.stop();
+    setState(() => _isListening = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: widget.screenWidth * 0.85,
-      height: widget.screenHeight * 0.2,
+      height: widget.screenHeight * 0.22,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
@@ -229,15 +256,25 @@ class _SearchBoxState extends State<SearchBox> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                icon: Icon(Icons.search),
-                labelText: "Search Job",
-              ),
-              onChanged: (query) {
-                widget.onSearch(query, _locationController.text);
-              },
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      icon: Icon(Icons.search),
+                      labelText: "Search Job",
+                    ),
+                    onChanged: (query) {
+                      widget.onSearch(query, _locationController.text);
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
+                  onPressed: _isListening ? _stopListening : _startListening,
+                ),
+              ],
             ),
             const SizedBox(height: 7),
             TextField(

@@ -78,7 +78,7 @@ class _HomePageState extends State<EmployerHomePage> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFBFDBFE),
+      backgroundColor: const Color.fromARGB(255, 100, 176, 238),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
@@ -149,19 +149,19 @@ class _HomePageState extends State<EmployerHomePage> {
                           isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : jobList.isEmpty
-                              ? const Text(
-                              "Can't fetch jobs at the moment.",
-                              style: TextStyle(color: Colors.red))
-                              : ListView.builder(
-                            shrinkWrap: true,
-                            physics:
-                            const NeverScrollableScrollPhysics(),
-                            itemCount: filteredJobList.length,
-                            itemBuilder: (context, index) {
-                              final job = filteredJobList[index];
-                              return JobCard(job: job);
-                            },
-                          ),
+                                  ? const Text(
+                                      "Can't fetch jobs at the moment.",
+                                      style: TextStyle(color: Colors.red))
+                                  : ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: filteredJobList.length,
+                                      itemBuilder: (context, index) {
+                                        final job = filteredJobList[index];
+                                        return JobCard(job: job);
+                                      },
+                                    ),
                         ],
                       ),
                     ),
@@ -430,7 +430,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
           const CircleAvatar(
             radius: 40,
             backgroundImage:
-            AssetImage('assets/logo.png'), // Placeholder for company logo
+                AssetImage('assets/logo.png'), // Placeholder for company logo
           ),
           const SizedBox(width: 16),
           Expanded(

@@ -9,7 +9,6 @@ class CompanyLinksScreen extends StatefulWidget {
 }
 
 class _CompanyLinksScreenState extends State<CompanyLinksScreen> {
-  // The fields are always editable, so no need for isEditable flag
   final Map<String, String> personalInfo = {
     'LinkedIn Link': 'https://linkedin.com',
     'Facebook Link': 'https://facebook.com',
@@ -21,18 +20,13 @@ class _CompanyLinksScreenState extends State<CompanyLinksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Set background color of the screen
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFBFDBFE),
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Image.asset(
-            'assets/logo.png', // Replace with your actual image path
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Company Links',
@@ -41,7 +35,7 @@ class _CompanyLinksScreenState extends State<CompanyLinksScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              // Handle Done action, you can save or submit changes here
+              // Handle Done action
             },
             child: const Text(
               'Done',
@@ -52,7 +46,7 @@ class _CompanyLinksScreenState extends State<CompanyLinksScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 100),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
           child: Column(
             children: [
               Container(
@@ -98,56 +92,29 @@ class _CompanyLinksScreenState extends State<CompanyLinksScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 2 -
-                        30, // Half of the screen width minus padding
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CompanyContactScreen(),
                       ),
-                      child: const Text(
-                        'Back',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width / 2 -
-                        30, // Half of the screen width minus padding
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Add navigation logic to the next page if required
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CompanyContactScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      child: const Text(
-                        'Next',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
+                  child: const Text(
+                    'Next',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
-                ],
+                ),
               ),
             ],
           ),
@@ -181,7 +148,7 @@ class _CompanyLinksScreenState extends State<CompanyLinksScreen> {
             ),
             onChanged: onChanged,
             decoration: const InputDecoration(
-              border: InputBorder.none, // Keep the border none
+              border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
             ),
           ),
