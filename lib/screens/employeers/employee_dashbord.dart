@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:second_job_search/screens/notifications_screen.dart';
 
-class EmployeeDashboardscreen extends StatelessWidget {
+class EmployeeDashboardscreen extends StatefulWidget {
   const EmployeeDashboardscreen({super.key});
 
+  @override
+  State<EmployeeDashboardscreen> createState() =>
+      _EmployeeDashboardscreenState();
+}
+
+class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
   // Reusable Container Widget
   Widget _buildInfoContainer({
     required IconData icon,

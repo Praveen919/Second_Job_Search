@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:second_job_search/screens/employeers/employer_main_home.dart';
 import 'package:second_job_search/screens/login.dart';
+import 'package:second_job_search/screens/main_home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,16 +14,37 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  Future<void> _checkUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.getString("role") == "candidate") {
+      Future.delayed(const Duration(milliseconds: 4000), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      });
+    } else if (prefs.getString("role") == "employer") {
+      Future.delayed(const Duration(milliseconds: 4000), () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const EmployerHomeScreen()),
+        );
+      });
+    } else {
+      Future.delayed(const Duration(milliseconds: 4000), () {
+        Navigator.pushReplacement(
+          // ignore: use_build_context_synchronously
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 4000), () {
-      Navigator.pushReplacement(
-        // ignore: use_build_context_synchronously
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    });
+    _checkUser();
   }
 
   @override

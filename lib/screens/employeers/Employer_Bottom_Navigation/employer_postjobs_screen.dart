@@ -1,6 +1,13 @@
+import 'dart:convert';
+
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
+import '../../../Config/config.dart';
+
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EmployerPostJobScreen extends StatefulWidget {
   const EmployerPostJobScreen({super.key});
@@ -11,18 +18,6 @@ class EmployerPostJobScreen extends StatefulWidget {
 
 class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
   String? selectedCategory;
-
-  // List to store education details
-  List<Map<String, String>> educationDetails = [];
-
-  // List to store work experience details
-  List<Map<String, String>> workExperienceDetails = [];
-
-  // List to store certifications details
-  List<Map<String, String>> certificationDetails = [];
-
-  // List to store skills details
-  List<Map<String, String>> skillsDetails = [];
 
   List<Map<String, String>> jobDetails = [];
   List<Map<String, String>> applicationInfo = [];
@@ -89,7 +84,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
     final experienceMonthsController = TextEditingController();
     String? employmentStatus;
     final vacanciesController =
-    TextEditingController(text: '1'); // Default value
+        TextEditingController(text: '1'); // Default value
 
     showDialog(
       context: context,
@@ -161,9 +156,9 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     'Temporary'
                   ]
                       .map((type) => DropdownMenuItem(
-                    value: type,
-                    child: Text(type),
-                  ))
+                            value: type,
+                            child: Text(type),
+                          ))
                       .toList(),
                   decoration: InputDecoration(
                     labelText: 'Job Type',
@@ -247,9 +242,9 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     'C-Level(CEO,CFO)'
                   ]
                       .map((level) => DropdownMenuItem(
-                    value: level,
-                    child: Text(level),
-                  ))
+                            value: level,
+                            child: Text(level),
+                          ))
                       .toList(),
                   decoration: InputDecoration(
                     labelText: 'Career Level',
@@ -314,9 +309,9 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                   },
                   items: ['Contractual', 'Permanent', 'Freelance']
                       .map((status) => DropdownMenuItem(
-                    value: status,
-                    child: Text(status),
-                  ))
+                            value: status,
+                            child: Text(status),
+                          ))
                       .toList(),
                   decoration: InputDecoration(
                     labelText: 'Employment Status',
@@ -370,7 +365,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     'skills': skillsExperienceController.text,
                     'salary': offeredSalaryController.text,
                     'careerLevel':
-                    careerLevel ?? '', // Default to an empty string if null
+                        careerLevel ?? '', // Default to an empty string if null
                     'experienceYears': experienceYearsController.text,
                     'experienceMonths': experienceMonthsController.text,
                     'status': employmentStatus ??
@@ -396,21 +391,21 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
 
   void showEditJobPopup(int index) {
     final jobTitleController =
-    TextEditingController(text: jobDetails[index]['title']);
+        TextEditingController(text: jobDetails[index]['title']);
     final jobDescriptionController =
-    TextEditingController(text: jobDetails[index]['description']);
+        TextEditingController(text: jobDetails[index]['description']);
     String? jobType = jobDetails[index]['type'];
     final keyResponsibilitiesController =
-    TextEditingController(text: jobDetails[index]['responsibilities']);
+        TextEditingController(text: jobDetails[index]['responsibilities']);
     final skillsExperienceController =
-    TextEditingController(text: jobDetails[index]['skills']);
+        TextEditingController(text: jobDetails[index]['skills']);
     final offeredSalaryController =
-    TextEditingController(text: jobDetails[index]['salary']);
+        TextEditingController(text: jobDetails[index]['salary']);
     String? careerLevel = jobDetails[index]['careerLevel'];
     final experienceYearsController =
-    TextEditingController(text: jobDetails[index]['experienceYears']);
+        TextEditingController(text: jobDetails[index]['experienceYears']);
     final experienceMonthsController =
-    TextEditingController(text: jobDetails[index]['experienceMonths']);
+        TextEditingController(text: jobDetails[index]['experienceMonths']);
     String? employmentStatus = jobDetails[index]['status'];
     final vacanciesController = TextEditingController(
         text: jobDetails[index]['vacancies']); // Default value
@@ -485,9 +480,9 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     'Temporary'
                   ]
                       .map((type) => DropdownMenuItem(
-                    value: type,
-                    child: Text(type),
-                  ))
+                            value: type,
+                            child: Text(type),
+                          ))
                       .toList(),
                   decoration: InputDecoration(
                     labelText: 'Job Type',
@@ -571,9 +566,9 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     'C-Level(CEO,CFO)'
                   ]
                       .map((level) => DropdownMenuItem(
-                    value: level,
-                    child: Text(level),
-                  ))
+                            value: level,
+                            child: Text(level),
+                          ))
                       .toList(),
                   decoration: InputDecoration(
                     labelText: 'Career Level',
@@ -638,9 +633,9 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                   },
                   items: ['Contractual', 'Permanent', 'Freelance']
                       .map((status) => DropdownMenuItem(
-                    value: status,
-                    child: Text(status),
-                  ))
+                            value: status,
+                            child: Text(status),
+                          ))
                       .toList(),
                   decoration: InputDecoration(
                     labelText: 'Employment Status',
@@ -694,7 +689,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     'skills': skillsExperienceController.text,
                     'salary': offeredSalaryController.text,
                     'careerLevel':
-                    careerLevel ?? '', // Default to an empty string if null
+                        careerLevel ?? '', // Default to an empty string if null
                     'experienceYears': experienceYearsController.text,
                     'experienceMonths': experienceMonthsController.text,
                     'status': employmentStatus ??
@@ -841,7 +836,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content:
-                            Text("Please enter a valid email address.")),
+                                Text("Please enter a valid email address.")),
                       );
                       return;
                     }
@@ -857,7 +852,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     setState(() {
                       applicationInfo.add({
                         'deadlineDate':
-                        deadlineDate!.toLocal().toString().split(' ')[0],
+                            deadlineDate!.toLocal().toString().split(' ')[0],
                         'email': emailController.text,
                         'username': usernameController.text,
                       });
@@ -884,9 +879,9 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
 
   void showEditApplicationInfoPopup(int index) {
     final emailController =
-    TextEditingController(text: applicationInfo[index]['email']);
+        TextEditingController(text: applicationInfo[index]['email']);
     final usernameController =
-    TextEditingController(text: applicationInfo[index]['username']);
+        TextEditingController(text: applicationInfo[index]['username']);
     DateTime? deadlineDate = deadLine[index]['date'];
 
     showDialog(
@@ -1007,7 +1002,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content:
-                            Text("Please enter a valid email address.")),
+                                Text("Please enter a valid email address.")),
                       );
                       return;
                     }
@@ -1023,7 +1018,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     setState(() {
                       applicationInfo[index] = {
                         'deadlineDate':
-                        deadlineDate!.toLocal().toString().split(' ')[0],
+                            deadlineDate!.toLocal().toString().split(' ')[0],
                         'email': emailController.text,
                         'username': usernameController.text,
                       };
@@ -1102,7 +1097,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     ),
                     const Divider(),
                     ...contactInfo.keys.map(
-                          (key) => Column(
+                      (key) => Column(
                         children: [
                           _buildEditableRow(
                             label: key,
@@ -1250,7 +1245,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     ),
                     const Divider(),
                     ...contactInfo.keys.map(
-                          (key) => Column(
+                      (key) => Column(
                         children: [
                           _buildEditableRow2(
                             label: key,
@@ -1570,17 +1565,17 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
 
   void showEditCompanyDetailsPopup(int index) {
     final companyNameController =
-    TextEditingController(text: companyDetails[index]['companyName']);
+        TextEditingController(text: companyDetails[index]['companyName']);
     final companyWebsiteController =
-    TextEditingController(text: companyDetails[index]['companyWebsite']);
+        TextEditingController(text: companyDetails[index]['companyWebsite']);
     final industryController =
-    TextEditingController(text: companyDetails[index]['industry']);
+        TextEditingController(text: companyDetails[index]['industry']);
     final contactPersonNameController =
-    TextEditingController(text: companyDetails[index]['contactPersonName']);
+        TextEditingController(text: companyDetails[index]['contactPersonName']);
     final contactPhoneController =
-    TextEditingController(text: companyDetails[index]['contactPhone']);
+        TextEditingController(text: companyDetails[index]['contactPhone']);
     final contactEmailController =
-    TextEditingController(text: companyDetails[index]['contactEmail']);
+        TextEditingController(text: companyDetails[index]['contactEmail']);
 
     showDialog(
       context: context,
@@ -1888,7 +1883,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     });
                   },
                   items:
-                  ['Male', 'Female', 'Others'].map((String genderOption) {
+                      ['Male', 'Female', 'Others'].map((String genderOption) {
                     return DropdownMenuItem<String>(
                       value: genderOption,
                       child: Text(genderOption),
@@ -2028,11 +2023,11 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
 
   void showEditAdditionalInfoPopup(int index) {
     final qualificationController =
-    TextEditingController(text: additionalInfo[index]['qualification']);
+        TextEditingController(text: additionalInfo[index]['qualification']);
     final benefitsController =
-    TextEditingController(text: additionalInfo[index]['benefits']);
+        TextEditingController(text: additionalInfo[index]['benefits']);
     final languagesController =
-    TextEditingController(text: additionalInfo[index]['languagesRequired']);
+        TextEditingController(text: additionalInfo[index]['languagesRequired']);
 
     String? specialism = additionalInfo[index]['specialism'];
     String? gender = additionalInfo[index]['gender'];
@@ -2118,7 +2113,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     });
                   },
                   items:
-                  ['Male', 'Female', 'Others'].map((String genderOption) {
+                      ['Male', 'Female', 'Others'].map((String genderOption) {
                     return DropdownMenuItem<String>(
                       value: genderOption,
                       child: Text(genderOption),
@@ -2257,7 +2252,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
   }
 
   bool showAllSkillCards =
-  false; // Flag to control if all cards should be shown
+      false; // Flag to control if all cards should be shown
 
   bool showAllJobCards = false;
 
@@ -2268,6 +2263,117 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
   bool showAllCompanyCards = false;
 
   bool showAllAdditionalCards = false;
+
+  Future<void> _postingNewJob() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String apiUrl = "${AppConfig.baseUrl}/api/jobs";
+
+    final body = {
+      "user_id": prefs.getString("userId") ?? "",
+      "jobTitle": jobDetails.isNotEmpty ? jobDetails[0]['title'] ?? '' : '',
+      "jobCategory": selectedCategory ?? '',
+      "jobDescription":
+          jobDetails.isNotEmpty ? jobDetails[0]['description'] ?? '' : '',
+      "email":
+          applicationInfo.isNotEmpty ? applicationInfo[0]['email'] ?? '' : '',
+      "username": applicationInfo.isNotEmpty
+          ? applicationInfo[0]['username'] ?? ''
+          : '',
+      "specialisms": additionalInfo.isNotEmpty
+          ? additionalInfo[0]['specialism']?.split(',') ?? []
+          : [],
+      "jobType": jobDetails.isNotEmpty ? jobDetails[0]['type'] ?? '' : '',
+      "offeredSalary": jobDetails.isNotEmpty ? jobDetails[0]['salary'] : '0',
+      "careerLevel":
+          jobDetails.isNotEmpty ? jobDetails[0]['careerLevel'] ?? '' : '',
+      "experienceYears":
+          jobDetails.isNotEmpty ? jobDetails[0]['experienceYears'] ?? '0' : '0',
+      "experienceMonths": jobDetails.isNotEmpty
+          ? jobDetails[0]['experienceMonths'] ?? '0'
+          : '0',
+      "gender":
+          additionalInfo.isNotEmpty ? additionalInfo[0]['gender'] ?? '' : '',
+      "industry":
+          companyDetails.isNotEmpty ? companyDetails[0]['industry'] ?? '' : '',
+      "qualification": additionalInfo.isNotEmpty
+          ? additionalInfo[0]['qualification'] ?? ''
+          : '',
+      "applicationDeadlineDate":
+          deadLine.isNotEmpty ? deadLine[0]['date'].toString() ?? '' : '',
+      "country":
+          locationInfo.isNotEmpty ? locationInfo[0]['country'] ?? '' : '',
+      "city": locationInfo.isNotEmpty ? locationInfo[0]['city'] ?? '' : '',
+      "completeAddress":
+          locationInfo.isNotEmpty ? locationInfo[0]['address'] ?? '' : '',
+      "latitude":
+          locationInfo.isNotEmpty ? locationInfo[0]['latitude'] ?? '0' : '0',
+      "longitude":
+          locationInfo.isNotEmpty ? locationInfo[0]['longitude'] ?? '0' : '0',
+      "companyName": companyDetails.isNotEmpty
+          ? companyDetails[0]['companyName'] ?? ''
+          : '',
+      "companyWebsite": companyDetails.isNotEmpty
+          ? companyDetails[0]['companyWebsite'] ?? ''
+          : '',
+      "plan_id": "67ab0c695d26342441c9ea08", // Add this if needed
+      "benefits": additionalInfo.isNotEmpty
+          ? additionalInfo[0]['benefits']?.split(',') ?? []
+          : [],
+      "languagesRequired": additionalInfo.isNotEmpty
+          ? additionalInfo[0]['languagesRequired']?.split(',') ?? []
+          : [],
+      "vacancies":
+          jobDetails.isNotEmpty ? jobDetails[0]['vacancies'] ?? '0' : '0',
+      "employmentStatus":
+          jobDetails.isNotEmpty ? jobDetails[0]['status'] ?? '' : '',
+      "contactPersonName": companyDetails.isNotEmpty
+          ? companyDetails[0]['contactPersonName'] ?? ''
+          : '',
+      "contactPhone": companyDetails.isNotEmpty
+          ? companyDetails[0]['contactPhone'] ?? ''
+          : '',
+      "contactEmail": companyDetails.isNotEmpty
+          ? companyDetails[0]['contactEmail'] ?? ''
+          : '',
+      "keyResponsibilities": jobDetails.isNotEmpty
+          ? jobDetails[0]['responsibilities']?.split(',') ?? []
+          : [],
+      "skillsAndExperience": jobDetails.isNotEmpty
+          ? jobDetails[0]['skills']?.split(',') ?? []
+          : [],
+      "seen": false,
+      "postedDate": DateTime.now().toIso8601String().toString(),
+      "updatedDate": DateTime.now().toIso8601String().toString(),
+      "__v": 0
+    };
+    print(body);
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final result = jsonDecode(response.body);
+        print("Job posted successfully: $result");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Job posted successfully")),
+        );
+      } else {
+        print("Failed to post job: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to post job")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("An error occurred while posting the job")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2442,7 +2548,8 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                 children: [
                   Expanded(
                     child: RadioListTile<String>(
-                      title: const Text('Technical', style:TextStyle(fontSize: 14)),
+                      title: const Text('Technical',
+                          style: TextStyle(fontSize: 14)),
                       value: 'Technical',
                       groupValue: selectedCategory,
                       onChanged: (value) {
@@ -2454,7 +2561,8 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                   ),
                   Expanded(
                     child: RadioListTile<String>(
-                      title: const Text('Non-Technical', style:TextStyle(fontSize: 14)),
+                      title: const Text('Non-Technical',
+                          style: TextStyle(fontSize: 14)),
                       value: 'Non-Technical',
                       groupValue: selectedCategory,
                       onChanged: (value) {
@@ -2485,106 +2593,106 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                   // Show only the first 2 cards initially
                   ...(showAllJobCards
                       ? jobDetails.map((job) {
-                    int index = jobDetails.indexOf(job);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: Text(
-                              '${job['title']} - ${job['description']}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              'Year: ${job['skills']} - ${job['salary']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.blue,
+                          int index = jobDetails.indexOf(job);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: Text(
+                                    '${job['title']} - ${job['description']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
-                                  onPressed: () =>
-                                      showEditJobPopup(index),
+                                  subtitle: Text(
+                                    'Year: ${job['skills']} - ${job['salary']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () =>
+                                            showEditJobPopup(index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () => deleteDetail(1, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => deleteDetail(1, index),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()
                       : jobDetails.take(2).map((job) {
-                    int index = jobDetails.indexOf(job);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: Text(
-                              '${job['title']} - ${job['description']}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              'Year: ${job['skills']} - ${job['salary']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () =>
-                                      showEditJobPopup(index),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
+                          int index = jobDetails.indexOf(job);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: Text(
+                                    '${job['title']} - ${job['description']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
-                                  onPressed: () => deleteDetail(1, index),
+                                  subtitle: Text(
+                                    'Year: ${job['skills']} - ${job['salary']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.blue),
+                                        onPressed: () =>
+                                            showEditJobPopup(index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () => deleteDetail(1, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()),
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()),
                   // Button to toggle between showing all cards and the first 2 cards
                   if (jobDetails.length > 2)
                     TextButton(
                       onPressed: () {
                         setState(() {
                           showAllJobCards =
-                          !showAllJobCards; // Toggle the view mode
+                              !showAllJobCards; // Toggle the view mode
                         });
                       },
                       child: Text(
@@ -2612,106 +2720,106 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                   // Show only the first 2 cards initially
                   ...(showAllApplicationCards
                       ? applicationInfo.map((application) {
-                    int index = applicationInfo.indexOf(application);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: Text(
-                              '${application['username']} - ${application['email']}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              'Date: ${application['deadlineDate']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.blue,
+                          int index = applicationInfo.indexOf(application);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: Text(
+                                    '${application['username']} - ${application['email']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
-                                  onPressed: () =>
-                                      showEditApplicationInfoPopup(index),
+                                  subtitle: Text(
+                                    'Date: ${application['deadlineDate']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () =>
+                                            showEditApplicationInfoPopup(index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () => deleteDetail(2, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => deleteDetail(2, index),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()
                       : applicationInfo.take(2).map((application) {
-                    int index = applicationInfo.indexOf(application);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: Text(
-                              '${application['username']} - ${application['email']}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              'Date: ${application['deadlineDate']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () =>
-                                      showEditApplicationInfoPopup(index),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
+                          int index = applicationInfo.indexOf(application);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: Text(
+                                    '${application['username']} - ${application['email']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
-                                  onPressed: () => deleteDetail(2, index),
+                                  subtitle: Text(
+                                    'Date: ${application['deadlineDate']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.blue),
+                                        onPressed: () =>
+                                            showEditApplicationInfoPopup(index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () => deleteDetail(2, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()),
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()),
                   // Button to toggle between showing all cards and the first 2 cards
                   if (applicationInfo.length > 2)
                     TextButton(
                       onPressed: () {
                         setState(() {
                           showAllApplicationCards =
-                          !showAllApplicationCards; // Toggle the view mode
+                              !showAllApplicationCards; // Toggle the view mode
                         });
                       },
                       child: Text(
@@ -2741,106 +2849,106 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                   // Show only the first 2 cards initially
                   ...(showAllLocationCards
                       ? locationInfo.map((location) {
-                    int index = locationInfo.indexOf(location);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: const Text(
-                              'Complete Address-',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              '${location['address']}, ${location['latitude']}, ${location['longitude']}, ${location['city']}, ${location['state']}, ${location['country']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.blue,
+                          int index = locationInfo.indexOf(location);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: const Text(
+                                    'Complete Address-',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
-                                  onPressed: () => showEditLocationPopup(
-                                      context, index),
+                                  subtitle: Text(
+                                    '${location['address']}, ${location['latitude']}, ${location['longitude']}, ${location['city']}, ${location['state']}, ${location['country']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () => showEditLocationPopup(
+                                            context, index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () => deleteDetail(3, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => deleteDetail(3, index),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()
                       : locationInfo.take(2).map((location) {
-                    int index = locationInfo.indexOf(location);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: const Text(
-                              'Complete Address-',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              '${location['address']}, ${location['latitude']}, ${location['longitude']}, ${location['city']}, ${location['state']}, ${location['country']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () => showEditLocationPopup(
-                                      context, index),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
+                          int index = locationInfo.indexOf(location);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: const Text(
+                                    'Complete Address-',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
-                                  onPressed: () => deleteDetail(3, index),
+                                  subtitle: Text(
+                                    '${location['address']}, ${location['latitude']}, ${location['longitude']}, ${location['city']}, ${location['state']}, ${location['country']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.blue),
+                                        onPressed: () => showEditLocationPopup(
+                                            context, index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () => deleteDetail(3, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()),
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()),
                   // Button to toggle between showing all cards and the first 2 cards
                   if (locationInfo.length > 2)
                     TextButton(
                       onPressed: () {
                         setState(() {
                           showAllLocationCards =
-                          !showAllLocationCards; // Toggle the view mode
+                              !showAllLocationCards; // Toggle the view mode
                         });
                       },
                       child: Text(
@@ -2867,104 +2975,104 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                 children: [
                   ...(showAllCompanyCards
                       ? companyDetails.map((detail) {
-                    int index = companyDetails.indexOf(detail);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: Text(
-                              '${detail['companyName']}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              'Company Website: ${detail['companyWebsite']} Industry: ${detail['industry']} \nContact Details.\nName: ${detail['contactPersonName']}, Phone: ${detail['contactPhone']}\nEmail: ${detail['contactEmail']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.blue,
+                          int index = companyDetails.indexOf(detail);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: Text(
+                                    '${detail['companyName']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
-                                  onPressed: () =>
-                                      showEditCompanyDetailsPopup(index),
+                                  subtitle: Text(
+                                    'Company Website: ${detail['companyWebsite']} Industry: ${detail['industry']} \nContact Details.\nName: ${detail['contactPersonName']}, Phone: ${detail['contactPhone']}\nEmail: ${detail['contactEmail']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () =>
+                                            showEditCompanyDetailsPopup(index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () => deleteDetail(4, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => deleteDetail(4, index),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()
                       : companyDetails.take(2).map((detail) {
-                    int index = companyDetails.indexOf(detail);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: Text(
-                              '${detail['companyName']}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              'Company Website: ${detail['companyWebsite']} Industry: ${detail['industry']} \nContact Details.\nName: ${detail['contactPersonName']}, Phone: ${detail['contactPhone']}\nEmail: ${detail['contactEmail']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () =>
-                                      showEditCompanyDetailsPopup(index),
+                          int index = companyDetails.indexOf(detail);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: Text(
+                                    '${detail['companyName']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
+                                  ),
+                                  subtitle: Text(
+                                    'Company Website: ${detail['companyWebsite']} Industry: ${detail['industry']} \nContact Details.\nName: ${detail['contactPersonName']}, Phone: ${detail['contactPhone']}\nEmail: ${detail['contactEmail']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.blue),
+                                        onPressed: () =>
+                                            showEditCompanyDetailsPopup(index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () => deleteDetail(4, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => deleteDetail(4, index),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()),
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()),
                   // Button to toggle between showing all cards and the first 2 cards
                   if (companyDetails.length > 2)
                     TextButton(
                       onPressed: () {
                         setState(() {
                           showAllCompanyCards =
-                          !showAllCompanyCards; // Toggle the view mode
+                              !showAllCompanyCards; // Toggle the view mode
                         });
                       },
                       child: Text(
@@ -2991,104 +3099,104 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                 children: [
                   ...(showAllAdditionalCards
                       ? additionalInfo.map((detail) {
-                    int index = additionalInfo.indexOf(detail);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: Text(
-                              'Specialism: ${detail['specialism']}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              'Qualification:  ${detail['qualification']}\nGender: ${detail['gender']}\nBenefits: ${detail['benefits']}\nLanguage Required: ${detail['languagesRequired']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.blue,
+                          int index = additionalInfo.indexOf(detail);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: Text(
+                                    'Specialism: ${detail['specialism']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
-                                  onPressed: () =>
-                                      showEditAdditionalInfoPopup(index),
+                                  subtitle: Text(
+                                    'Qualification:  ${detail['qualification']}\nGender: ${detail['gender']}\nBenefits: ${detail['benefits']}\nLanguage Required: ${detail['languagesRequired']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () =>
+                                            showEditAdditionalInfoPopup(index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () => deleteDetail(5, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => deleteDetail(5, index),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()
                       : additionalInfo.take(2).map((detail) {
-                    int index = additionalInfo.indexOf(detail);
-                    return Column(
-                      children: [
-                        Card(
-                          margin:
-                          const EdgeInsets.symmetric(vertical: 10),
-                          color: Colors.transparent,
-                          elevation: 0,
-                          child: ListTile(
-                            title: Text(
-                              'Specialism: ${detail['specialism']}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16),
-                            ),
-                            subtitle: Text(
-                              'Qualification:  ${detail['qualification']}\nGender: ${detail['gender']}\nBenefits: ${detail['benefits']}\nLanguage Required: ${detail['languagesRequired']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () =>
-                                      showEditAdditionalInfoPopup(index),
+                          int index = additionalInfo.indexOf(detail);
+                          return Column(
+                            children: [
+                              Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: ListTile(
+                                  title: Text(
+                                    'Specialism: ${detail['specialism']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
+                                  ),
+                                  subtitle: Text(
+                                    'Qualification:  ${detail['qualification']}\nGender: ${detail['gender']}\nBenefits: ${detail['benefits']}\nLanguage Required: ${detail['languagesRequired']}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.blue),
+                                        onPressed: () =>
+                                            showEditAdditionalInfoPopup(index),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () => deleteDetail(5, index),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => deleteDetail(5, index),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const Divider(
-                          color: Colors.black26,
-                          thickness: 1,
-                        ),
-                      ],
-                    );
-                  }).toList()),
+                              ),
+                              const Divider(
+                                color: Colors.black26,
+                                thickness: 1,
+                              ),
+                            ],
+                          );
+                        }).toList()),
                   // Button to toggle between showing all cards and the first 2 cards
                   if (additionalInfo.length > 2)
                     TextButton(
                       onPressed: () {
                         setState(() {
                           showAllAdditionalCards =
-                          !showAllAdditionalCards; // Toggle the view mode
+                              !showAllAdditionalCards; // Toggle the view mode
                         });
                       },
                       child: Text(
@@ -3118,9 +3226,11 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      _postingNewJob();
+                    },
                     child: const Text(
-                      'Next Page',
+                      'Post',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

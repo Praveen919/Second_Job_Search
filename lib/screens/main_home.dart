@@ -8,6 +8,7 @@ import 'package:second_job_search/screens/employeers/employee_profile_screen.dar
 import 'package:second_job_search/screens/employeers/manage_jobs_screen.dart';
 import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/screens/notifications_screen.dart';
+import 'package:second_job_search/screens/plan_pricing_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/saved_jobs_screen.dart';
 import 'package:second_job_search/screens/sms_screen.dart';
@@ -202,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 size: 24,
               ),
               title: const Text(
-                "Employee",
+                "Pricing",
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 18,
@@ -213,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const EmployeeProfileScreen(),
+                    builder: (context) => PlanPricingScreen(),
                   ),
                 );
               },

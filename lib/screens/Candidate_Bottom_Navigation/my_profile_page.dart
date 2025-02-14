@@ -214,7 +214,11 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   context,
                   icon: Icons.logout,
                   text: 'Log Out',
-                  onTap: () {
+                  onTap: () async {
+                    SharedPreferences pref =
+                        await SharedPreferences.getInstance();
+                    pref.setString("role", "");
+                    pref.setString("userId", "");
                     Navigator.push(
                       context,
                       MaterialPageRoute(

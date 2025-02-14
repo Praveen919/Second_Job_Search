@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:second_job_search/screens/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/Config/config.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
@@ -14,12 +13,15 @@ class AccountSettingsScreen extends StatefulWidget {
 
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   bool isLoading = false;
+  bool isDndEnabled = false;
+  int dndDuration = 0;
   String? userId;
 
   @override
   void initState() {
     super.initState();
     _loadUserId();
+    _loadDndPreference();
   }
 
   Future<void> _loadUserId() async {
@@ -29,119 +31,228 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     });
   }
 
-  Future<void> _deactivateAccount() async {
-    setState(() => isLoading = true);
-
-    final response = await http.patch(
-      Uri.parse('${AppConfig.baseUrl}/api/users/$userId'),
-      headers: {'Content-Type': 'application/json'},
-    );
-
-    setState(() => isLoading = false);
-
-    if (response.statusCode == 200) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.clear(); // Clear user data
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        _buildSnackBar('Account Deactivated', Colors.orange),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        _buildSnackBar('Failed to deactivate account', Colors.red),
-      );
-    }
+  Future<void> _loadDndPreference() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isDndEnabled = prefs.getBool('dndMode') ?? false;
+      dndDuration = prefs.getInt('dndDuration') ?? 0;
+    });
   }
 
-  Future<void> _deleteAccount() async {
+  Future<void> _setDnd(int days) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('dndMode', true);
+    await prefs.setInt('dndDuration', days);
+    setState(() {
+      isDndEnabled = true;
+      dndDuration = days;
+    });
+  }
+
+  void _showDndPopup() {
+    int selectedDays = 7;
+    TextEditingController customDaysController = TextEditingController();
+    bool isCustom = false;
+
     showDialog(
       context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Do Not Disturb'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Choose duration for Do Not Disturb mode:'),
+                  DropdownButton<int>(
+                    value: isCustom ? null : selectedDays,
+                    isExpanded: true,
+                    hint: const Text("Select Duration"),
+                    onChanged: (value) {
+                      setDialogState(() {
+                        if (value == -1) {
+                          isCustom = true;
+                        } else {
+                          isCustom = false;
+                          selectedDays = value ?? 7;
+                        }
+                      });
+                    },
+                    items: const [
+                      DropdownMenuItem(value: 7, child: Text('1 Week')),
+                      DropdownMenuItem(value: 30, child: Text('1 Month')),
+                      DropdownMenuItem(value: -1, child: Text('Custom')),
+                    ],
+                  ),
+                  if (isCustom)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: TextField(
+                        controller: customDaysController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                            labelText: 'Enter days (max 60)'),
+                        onChanged: (value) {
+                          int days = int.tryParse(value) ?? 0;
+                          if (days > 60) days = 60;
+                          setDialogState(() {
+                            selectedDays = days;
+                          });
+                        },
+                      ),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (isCustom) {
+                      int days = int.tryParse(customDaysController.text) ?? 0;
+                      if (days <= 0 || days > 60) {
+                        _showSnackbar('Enter a valid number between 1 and 60',
+                            Colors.red);
+                        return;
+                      }
+                      _setDnd(days);
+                    } else {
+                      _setDnd(selectedDays);
+                    }
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Enable'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showSnackbar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content:
+            Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: color,
+      ),
+    );
+  }
+
+  Future<void> _confirmAction(
+      String title, String message, Function(String) onConfirm) {
+    TextEditingController passwordController = TextEditingController();
+    return showDialog(
+      context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Delete',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text(
-          'Are you sure you want to permanently delete your account? This action cannot be undone.',
-          style: TextStyle(fontSize: 16),
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration:
+                  const InputDecoration(labelText: 'Enter your password'),
+            ),
+          ],
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(fontSize: 16)),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(context);
-              setState(() => isLoading = true);
-
-              final response = await http.delete(
-                Uri.parse('${AppConfig.baseUrl}/api/users/$userId'),
-                headers: {'Content-Type': 'application/json'},
-              );
-
-              setState(() => isLoading = false);
-
-              if (response.statusCode == 200) {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.clear();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  _buildSnackBar('Account Deleted', Colors.red),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  _buildSnackBar('Failed to delete account', Colors.red),
-                );
-              }
+              onConfirm(passwordController.text);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete',
-                style: TextStyle(color: Colors.white, fontSize: 16)),
+            child: const Text('Confirm'),
           ),
         ],
       ),
     );
   }
 
-  SnackBar _buildSnackBar(String message, Color color) {
-    return SnackBar(
-      content: Text(message,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-      backgroundColor: color,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+  Future<void> _deactivateAccount() async {
+    _confirmAction('Deactivate Account',
+        'Are you sure you want to deactivate your account?', (password) async {
+      setState(() => isLoading = true);
+      final response = await http.patch(
+        Uri.parse('${AppConfig.baseUrl}/api/users/$userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: '{"password": "$password"}',
+      );
+      setState(() => isLoading = false);
+
+      if (response.statusCode == 200) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()));
+      } else {
+        _showSnackbar('Incorrect password or failed to deactivate', Colors.red);
+      }
+    });
+  }
+
+  Future<void> _deleteAccount() async {
+    _confirmAction('Delete Account', 'Are you sure? This cannot be undone!',
+        (password) async {
+      setState(() => isLoading = true);
+      final response = await http.delete(
+        Uri.parse('${AppConfig.baseUrl}/api/users/$userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: '{"password": "$password"}',
+      );
+      setState(() => isLoading = false);
+
+      if (response.statusCode == 200) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()));
+      } else {
+        _showSnackbar('Incorrect password or failed to delete', Colors.red);
+      }
+    });
+  }
+
+  void _showPrivacyPolicy() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: const Text(
+              'Privacy Policy: We collect minimal data and do not share it. '
+              'You have full control over your information and can delete it at any time.',
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildActionCard(
-      {required String title,
-      required String subtitle,
-      required IconData icon,
-      required Color iconColor,
-      required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: isLoading ? null : onTap,
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(16),
-          leading: Icon(icon, size: 30, color: iconColor),
-          title: Text(title,
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          subtitle: Text(subtitle,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
-          trailing:
-              const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
-        ),
+  Widget _buildSettingTile(String title, IconData icon, VoidCallback onTap) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.blue),
+        title: Text(title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+        onTap: onTap,
       ),
     );
   }
@@ -149,43 +260,34 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
-        title: const Text('Account Settings'),
         backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Package Details',
+          style: TextStyle(color: Colors.black, fontSize: 24),
+        ),
       ),
       body: Stack(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              const SizedBox(height: 20),
-              _buildActionCard(
-                title: 'Deactivate Account',
-                subtitle: 'Temporarily disable your account',
-                icon: Icons.pause_circle_outline,
-                iconColor: Colors.orange,
-                onTap: _deactivateAccount,
-              ),
-              _buildActionCard(
-                title: 'Delete Account',
-                subtitle: 'Permanently delete your account',
-                icon: Icons.delete_forever,
-                iconColor: Colors.red,
-                onTap: _deleteAccount,
-              ),
+              _buildSettingTile(
+                  'Do Not Disturb', Icons.notifications_off, _showDndPopup),
+              _buildSettingTile('Deactivate Account',
+                  Icons.pause_circle_outline, _deactivateAccount),
+              _buildSettingTile(
+                  'Delete Account', Icons.delete_forever, _deleteAccount),
+              _buildSettingTile(
+                  'Privacy Policy', Icons.privacy_tip, _showPrivacyPolicy),
             ],
           ),
-          if (isLoading)
-            Center(
-              child: Container(
-                color: Colors.black.withOpacity(0.3),
-                child: const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              ),
-            ),
+          if (isLoading) const Center(child: CircularProgressIndicator()),
         ],
       ),
     );

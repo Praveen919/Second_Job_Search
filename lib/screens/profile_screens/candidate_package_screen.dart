@@ -1,7 +1,5 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -15,36 +13,45 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
-  List<Map<String, dynamic>> activePackages = [];
+  Map<String, dynamic>? activePackage;
+
   @override
   void initState() {
     super.initState();
-    _loadPackageData();
+    _loadActivePackage();
   }
 
-  Future<void> _loadPackageData() async {
+  Future<void> _loadActivePackage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
       final response = await http.get(
-          Uri.parse(
-              '${AppConfig.baseUrl}/api/plans/user/${prefs.getString("userId")}'),
-          headers: {'Content-Type': 'application/json'});
+        Uri.parse(
+            '${AppConfig.baseUrl}/api/plans/user/${prefs.getString("userId") ?? ""}'),
+        headers: {'Content-Type': 'application/json'},
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print(data);
-        setState(() {
-          activePackages = (data['plans'] as List)
-              .map((package) => {
-                    "title": package["plan_name"],
-                    "description": "Access to ${package["plan_name"]} features",
-                    "price": "₹${package["plan_price"]}/monthly",
-                    "feature1": "${package["paid_jobs"]} paid job applied",
-                    "feature2": "${package["free_jobs"]} free job applied",
-                    "feature3": "Premium Support 24/7",
-                  })
-              .toList();
-        });
+
+        if (data['plans'] != null &&
+            data['plans'] is List &&
+            data['plans'].isNotEmpty) {
+          var plan = data['plans'][0];
+
+          setState(() {
+            activePackage = {
+              "title": plan["plan_name"]?.toString() ?? "Unknown Plan",
+              "price": "₹${plan["plan_price"]?.toString() ?? "0"}/month",
+              "start_date": _extractDate(plan["start_date"]),
+              "end_date": _extractDate(plan["end_date"]),
+              "duration": "${plan["no_of_days"]?.toString() ?? "N/A"} days",
+              "features": [
+                "${plan["paid_jobs"]?.toString() ?? "0"} Paid Jobs",
+                "${plan["free_jobs"]?.toString() ?? "0"} Free Jobs",
+              ],
+            };
+          });
+        }
       } else {
         throw Exception('Failed to fetch user data');
       }
@@ -56,184 +63,175 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     }
   }
 
-  final List<Map<String, String>> packages = [
-    {
-      'title': 'Basic Plan',
-      'description': 'Access to basic features',
-      'price': '₹100/monthly',
-      'feature1': '5 paid job applied',
-      'feature2': '2 free job applied',
-      'feature3': 'Premium Support 24/7',
-    },
-    {
-      'title': 'Standard Plan',
-      'description': 'Access to all standard features',
-      'price': '₹500/monthly',
-      'feature1': '20 paid job applied',
-      'feature2': '10 free job applied',
-      'feature3': 'Premium Support 24/7',
-    },
-    {
-      'title': 'Premium Plan',
-      'description': 'All features included + priority support',
-      'price': '₹800/monthly',
-      'feature1': '30 paid job applied',
-      'feature2': '15 free job applied',
-      'feature3': 'Premium Support 24/7',
-    },
-  ];
-
-  void _subscribe(String plan) {
-    Fluttertoast.showToast(
-      msg: 'Subscribed to $plan successfully.',
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
-    );
+  // Extracts only the date part (YYYY-MM-DD) from a datetime string
+  String _extractDate(String? dateTime) {
+    if (dateTime == null || dateTime.isEmpty) return "N/A";
+    return dateTime
+        .split("T")[0]; // Assumes date format is "YYYY-MM-DDTHH:MM:SS"
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Subscription Packages',
+          'Package Details',
           style: TextStyle(color: Colors.black, fontSize: 24),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Active Packages Section
-              if (activePackages.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Currently Active Package',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    ...activePackages.map((package) => _buildPackageCard(
-                          package,
-                          screenWidth,
-                          isActive: true,
-                        )),
-                    const SizedBox(height: 30),
-                  ],
-                ),
-              // Subscription Packages Section
-              const Text(
-                'Choose a Subscription Package',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              ...packages.map((package) => _buildPackageCard(
-                    package,
-                    screenWidth,
-                    isActive: false,
-                  )),
-            ],
-          ),
-        ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: activePackage != null
+            ? _buildPackageCard(activePackage!)
+            : _buildNoSubscriptionUI(),
       ),
     );
   }
 
-  Widget _buildPackageCard(Map<String, dynamic> package, double screenWidth,
-      {bool isActive = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isActive ? Colors.grey[200] : Colors.blue.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.blue),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Text(
-                    package['title']!,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  package['price']!,
-                  style: const TextStyle(
-                    fontSize: 18,
+  Widget _buildPackageCard(Map<String, dynamic> package) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 6,
+            spreadRadius: 1,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // Keeps container small
+        children: [
+          // Subscription Name and Badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                package['title'] ?? 'Unknown Plan',
+                style: const TextStyle(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+                    color: Colors.blue),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              package['description']!,
-              style: const TextStyle(fontSize: 16, color: Colors.black),
-            ),
-            const SizedBox(height: 8),
-            ...['feature1', 'feature2', 'feature3'].map((key) => Text(
-                  package[key]!,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                )),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (!isActive) _subscribe(package['title']!);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isActive ? Colors.grey : Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                    ),
-                    child: Text(
-                      isActive ? 'Activated' : 'Buy Now',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                child: const Text(
+                  'Active',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Subscription Price
+          Text(
+            package['price'] ?? '',
+            style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87),
+          ),
+          const SizedBox(height: 12),
+          Divider(color: Colors.grey[300]),
+
+          // Subscription Dates
+          _buildDetailRow(
+              Icons.calendar_today, "Bought at: ${package['start_date']}"),
+          _buildDetailRow(
+              Icons.event_busy, "Expries at: ${package['end_date']}"),
+          _buildDetailRow(Icons.timelapse, "Duration: ${package['duration']}"),
+
+          const SizedBox(height: 10),
+          Divider(color: Colors.grey[300]),
+
+          // Features List
+          const SizedBox(height: 6),
+          ...package['features']
+              .map<Widget>(
+                  (feature) => _buildFeatureRow(Icons.check_circle, feature))
+              .toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.blue),
+          const SizedBox(width: 8),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow(IconData icon, String feature) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.green),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              feature,
+              style: const TextStyle(fontSize: 13, color: Colors.black87),
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoSubscriptionUI() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.cancel, color: Colors.red, size: 70),
+          const SizedBox(height: 14),
+          const Text(
+            'No Active Subscription',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/planPricingScreen');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            child: const Text('View Plans', style: TextStyle(fontSize: 15)),
+          ),
+        ],
       ),
     );
   }
