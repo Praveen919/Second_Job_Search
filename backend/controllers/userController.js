@@ -540,6 +540,8 @@ const updateUserData = async (req, res) => {
   }
 }
 
+
+
 const getUserDetails = async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -574,6 +576,39 @@ const getUserDetails = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Update Employer Company Data Function
+const updateCompanyData = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { companyName, email, companyWebsite, companyAddress, companyIndexNo, companyEstablishmentYear,
+         companyContactPerson: {name,officialEmail,personalEmail,mobileNumber,country,callTimings},} = req.body;
+
+    // Validate required fields
+    if (!email) {
+      return res.status(400).json({ message: "Required fields are missing" });
+    }
+
+    // Find and update only specified fields
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: { companyName, email, companyWebsite, companyAddress, companyIndexNo, companyEstablishmentYear,
+        companyContactPerson: {name,officialEmail,personalEmail,mobileNumber,country,callTimings},},
+      },
+      { new: true } // Return the updated user object
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
 
 // Update Notification Settings Function
 const updateNotificationSettings = async (req, res) => {
@@ -734,8 +769,8 @@ const editUserProfile = async (req, res) => {
 
     // Update the user document and return the modified user
     const updatedUser = await User.findByIdAndUpdate(
-      user_id, 
-      { $set: updateData }, 
+      user_id,
+      { $set: updateData },
       { new: true, runValidators: true }
     );
 
@@ -764,6 +799,7 @@ module.exports = {
   updateUserImage,
   changePassword,
   updateUserData,
+  updateCompanyData,
   updateNotificationSettings,
   getUserByEmail,
   editUserProfile,

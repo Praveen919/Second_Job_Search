@@ -1,8 +1,122 @@
 import 'package:flutter/material.dart';
 import 'package:second_job_search/screens/employeers/company_links_screen.dart';
+import 'package:second_job_search/Config/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class CompanyDetailsScreen extends StatelessWidget {
-  const CompanyDetailsScreen({super.key});
+class CompanyDetailsScreen extends StatefulWidget {
+  const CompanyDetailsScreen({super.key, required this.userId});
+  final String userId;
+
+  @override
+  _CompanyDetailsScreenState createState() => _CompanyDetailsScreenState();
+}
+
+class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
+  final TextEditingController companyNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController websiteController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController indexNoController = TextEditingController();
+  final TextEditingController establishmentYearController = TextEditingController();
+  final TextEditingController contactPersonNameController = TextEditingController();
+  final TextEditingController countryController = TextEditingController();
+  final TextEditingController officialEmailController = TextEditingController();
+  final TextEditingController personalEmailController = TextEditingController();
+  final TextEditingController contactNoController = TextEditingController();
+  final TextEditingController callTimingsController = TextEditingController();
+  final TextEditingController referralCodeController = TextEditingController();
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData(); // Fetch user data on screen load
+  }
+
+  Future<void> fetchUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    try {
+      final response = await http.get(
+          Uri.parse('${AppConfig.baseUrl}/api/users/details/${prefs.getString("userId")}'),
+          headers: {'Content-Type': 'application/json'});
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          companyNameController.text = data['companyName'] ?? '';
+          emailController.text = data['email'] ?? '';
+          websiteController.text = data['companyWebsite'] ?? '';
+          addressController.text = data['companyAddress'] ?? '';
+          indexNoController.text = data['companyIndexNo'] ?? '';
+          establishmentYearController.text = data['companyEstablishmentYear'].toString() ?? '';
+          contactPersonNameController.text = data['companyContactPerson']?['name'] ?? '';
+          countryController.text = data['companyContactPerson']?['country'] ?? '';
+          officialEmailController.text = data['companyContactPerson']?['officialEmail'] ?? '';
+          personalEmailController.text = data['companyContactPerson']?['personalEmail'] ?? '';
+          contactNoController.text = data['companyContactPerson']?['mobileNumber'] ?? '';
+          callTimingsController.text = data['companyContactPerson']?['callTimings'] ?? '';
+          referralCodeController.text = data['myrefcode'] ?? '';
+
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load company data');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading company data: $e')),
+      );
+    }
+  }
+
+  Future<void> _updateUserData() async {
+    final apiUrl = '${AppConfig.baseUrl}/api/users/update-companyData/${widget.userId}';
+    final body = {
+      "companyName": companyNameController.text,
+      "email": emailController.text,
+      "companyWebsite": websiteController.text,
+      "companyAddress": addressController.text,
+      "companyIndexNo": indexNoController.text,
+      "companyEstablishmentYear": int.tryParse(establishmentYearController.text) ?? 0, // Ensuring it's an integer
+      "companyContactPerson": {
+        "name": contactPersonNameController.text,
+        "country": countryController.text,
+        "officialEmail": officialEmailController.text,
+        "personalEmail": personalEmailController.text,
+        "mobileNumber": contactNoController.text,
+        "callTimings": callTimingsController.text,
+      },
+      "myrefcode": referralCodeController.text,
+    };
+
+    try {
+      final response = await http.put(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Company details updated successfully")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update company details")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("An error occurred")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +136,17 @@ class CompanyDetailsScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              // Handle Done action
-            },
+            onPressed: _updateUserData,
             child: const Text(
-              'Done',
+              'Save',
               style: TextStyle(color: Colors.blue, fontSize: 16),
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
@@ -44,8 +158,7 @@ class CompanyDetailsScreen extends StatelessWidget {
                   children: [
                     const CircleAvatar(
                       radius: 50,
-                      backgroundImage: AssetImage(
-                          'assets/logo.png'), // Replace with actual image
+                      backgroundImage: AssetImage('assets/logo.png'),
                     ),
                     const SizedBox(height: 10),
                     TextButton(
@@ -79,7 +192,7 @@ class CompanyDetailsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Personal Information',
+                      'Company Information',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -87,18 +200,19 @@ class CompanyDetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 15),
                     ..._buildEditableRows([
-                      {'label': 'Company Name', 'value': 'SAdf'},
-                      {'label': 'Email', 'value': 'ujfythdth64@gmail.com'},
-                      {'label': 'Company Website', 'value': '+91 9881678837'},
-                      {'label': 'Company Address', 'value': 'Male'},
-                      {'label': 'Company Index No.', 'value': 'India'},
-                      {'label': 'Establishment Year', 'value': 'Dharavi'},
-                      {'label': 'Contact Person No.', 'value': 'Dharavi'},
-                      {'label': 'Official Email', 'value': 'Dharavi'},
-                      {'label': 'Personal Email', 'value': 'Dharavi'},
-                      {'label': 'Contact No.', 'value': 'Dharavi'},
-                      {'label': 'Call Timings', 'value': 'Dharavi'},
-                      {'label': 'Referral Code', 'value': 'Dharavi'},
+                      {'label': 'Company Name', 'controller': companyNameController},
+                      {'label': 'Email', 'controller': emailController},
+                      {'label': 'Company Website', 'controller': websiteController},
+                      {'label': 'Company Address', 'controller': addressController},
+                      {'label': 'Company Index No.', 'controller': indexNoController},
+                      {'label': 'Establishment Year', 'controller': establishmentYearController},
+                      {'label': 'Contact Person Name.', 'controller': contactPersonNameController},
+                      {'label': 'Country', 'controller': countryController},
+                      {'label': 'Official Email', 'controller': officialEmailController},
+                      {'label': 'Personal Email', 'controller': personalEmailController},
+                      {'label': 'Contact No.', 'controller': contactNoController},
+                      {'label': 'Call Timings', 'controller': callTimingsController},
+                      {'label': 'Referral Code', 'controller': referralCodeController},
                     ]),
                   ],
                 ),
@@ -107,7 +221,6 @@ class CompanyDetailsScreen extends StatelessWidget {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    // Handle Next page action
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -137,12 +250,12 @@ class CompanyDetailsScreen extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildEditableRows(List<Map<String, String>> fields) {
+  List<Widget> _buildEditableRows(List<Map<String, dynamic>> fields) {
     return fields.map((field) {
       return Column(
         children: [
           _buildEditableRow(
-              label: field['label']!, initialValue: field['value']!),
+              label: field['label']!, controller: field['controller']!),
           const Divider(),
         ],
       );
@@ -151,7 +264,7 @@ class CompanyDetailsScreen extends StatelessWidget {
 
   Widget _buildEditableRow({
     required String label,
-    required String initialValue,
+    required TextEditingController controller,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -169,7 +282,7 @@ class CompanyDetailsScreen extends StatelessWidget {
         Expanded(
           flex: 3,
           child: TextFormField(
-            initialValue: initialValue,
+            controller: controller,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,

@@ -11,6 +11,7 @@ const {
   updateUserImage,
   changePassword,
   updateUserData,
+  updateCompanyData,
   updateNotificationSettings,
   saveJob,
   getUserByEmail,
@@ -34,6 +35,7 @@ router.delete('/delete-resume/:user_id', deleteResume);      // Delete resume
 router.put('/update-image/:id', updateUserImage);           // Update user image
 router.put('/change-password/:id', changePassword);         // Change user password
 router.put('/update-data/:id', updateUserData);             // Update user data
+router.put('/update-companyData/:id', updateCompanyData);    //Update Company data
 router.put('/update-notifications', updateNotificationSettings); // Update notification settings
 router.put('/save-jobs', saveJob);
 router.get('/email/:email', getUserByEmail);

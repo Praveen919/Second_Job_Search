@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:second_job_search/screens/Candidate_Bottom_Navigation/my_profile_page.dart';
 import 'package:second_job_search/screens/employeers/allapplicant_screen.dart';
 import 'package:second_job_search/screens/employeers/candidate_screen.dart';
 import 'package:second_job_search/screens/employeers/company_details_screen.dart';
@@ -8,7 +7,6 @@ import 'package:second_job_search/screens/employeers/employee_dashbord.dart';
 import 'package:second_job_search/screens/employeers/manage_jobs_screen.dart';
 import 'package:second_job_search/screens/employeers/shorlist_resume_screen.dart';
 import 'dart:io';
-import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/screens/profile_screens/candidate_package_screen.dart';
 import 'package:second_job_search/screens/profile_screens/password_update_screen.dart';
@@ -16,23 +14,29 @@ import 'package:second_job_search/screens/profile_screens/profile_cand_faq_scree
 import 'package:second_job_search/screens/profile_screens/profile_resume_screen.dart/resume_screen.dart';
 import 'package:second_job_search/screens/profile_screens/testinomials_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:second_job_search/screens/Candidate_Bottom_Navigation/my_profile_page.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:second_job_search/Config/config.dart'; // Ensure this import is correct
 
 class EmployeeProfileScreen extends StatefulWidget {
   const EmployeeProfileScreen({super.key});
+
   @override
   _EmployeeProfileScreenState createState() => _EmployeeProfileScreenState();
 }
 
 class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   String profileName = "Alok Kushwaha";
-  String location = "India";
+  String location = "Mumbai, India";
   File? profileImage; // Holds the uploaded image file
 
   final ImagePicker _picker = ImagePicker();
+
   @override
   void initState() {
     super.initState();
-    _loadProfileData(); // Load the saved data on initialization
+    _loadProfileData();
   }
 
   Future<void> _loadProfileData() async {
@@ -40,8 +44,8 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
     setState(() {
       profileName = prefs.getString('name') ?? profileName;
       String address = prefs.getString('address') ?? "Unknown Address";
-      String country = prefs.getString('country') ?? "India";
-      location = "$address, $location";
+      String country = prefs.getString('country') ?? "Unknown Country";
+      location = "$address, $country";
     });
   }
 
@@ -127,11 +131,11 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 ),
                 _buildOption(
                   context,
-                  icon: Icons.dashboard_outlined,
+                  icon: Icons.person,
                   text: 'Edit Profile',
                   onTap: () async {
                     SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
+                    await SharedPreferences.getInstance();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -145,11 +149,14 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   context,
                   icon: Icons.person_2_outlined,
                   text: 'Company Details',
-                  onTap: () {
+                  onTap: () async {
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => CompanyDetailsScreen()));
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CompanyDetailsScreen(userId: '${prefs.getString("userId")}'),
+                      ),
+                    );
                   },
                 ),
                 _buildOption(
@@ -183,7 +190,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                const ShortlistedResumeScreen()));
+                            const ShortlistedResumeScreen()));
                   },
                 ),
                 _buildOption(
@@ -195,7 +202,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                const ManageCandidatesScreen()));
+                            const ManageCandidatesScreen()));
                   },
                 ),
                 _buildOption(
@@ -207,7 +214,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                const UpdatePasswordScreen()));
+                            const UpdatePasswordScreen()));
                   },
                 ),
                 _buildOption(
@@ -238,11 +245,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   context,
                   icon: Icons.logout,
                   text: 'Log Out',
-                  onTap: () async {
-                    SharedPreferences pref =
-                        await SharedPreferences.getInstance();
-                    pref.setString("role", "");
-                    pref.setString("userId", "");
+                  onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -262,9 +265,9 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
   Widget _buildOption(BuildContext context,
       {required IconData icon,
-      required String text,
-      required VoidCallback onTap,
-      bool isLogout = false}) {
+        required String text,
+        required VoidCallback onTap,
+        bool isLogout = false}) {
     return ListTile(
       leading: Icon(icon, color: isLogout ? Colors.red : Colors.blue),
       title: Text(
@@ -319,6 +322,255 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class EditProfileScreen extends StatefulWidget {
+  final String userId;
+
+  const EditProfileScreen({super.key, required this.userId});
+
+  @override
+  _EditProfileScreenState createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends State<EditProfileScreen> {
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController nicknameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+
+  String? selectedGender = "Male";
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData(); // Fetch user data on screen load
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${AppConfig.baseUrl}/api/users/${widget.userId}'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          fullNameController.text = data['name'] ?? '';
+          nicknameController.text = data['username'] ?? '';
+          emailController.text = data['email'] ?? '';
+          phoneController.text = data['mobile1'] ?? '';
+          addressController.text = data['address'] ?? '';
+          selectedGender = data['gender'] ?? 'Female';
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to fetch user data');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching user data: $e')),
+      );
+    }
+  }
+
+  Future<void> _updateUserData() async {
+    final apiUrl =
+        '${AppConfig.baseUrl}/api/users/update-data/${widget.userId}';
+    final body = {
+      "name": fullNameController.text,
+      "username": nicknameController.text,
+      "email": emailController.text,
+      "mobile1": phoneController.text,
+      "address": addressController.text,
+      "gender": selectedGender,
+    };
+
+    try {
+      final response = await http.put(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final updatedUser = jsonDecode(response.body);
+        print("User updated successfully: $updatedUser");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile updated successfully")),
+        );
+      } else {
+        print("Failed to update user: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update profile")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("An error occurred")),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    fullNameController.dispose();
+    nicknameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    addressController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Edit Profile",
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        foregroundColor: Colors.black,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                _buildTextField(
+                  label: "Full Name",
+                  hintText: "Enter your full name",
+                  controller: fullNameController,
+                  icon: Icons.person,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  label: "Username",
+                  hintText: "Enter your username",
+                  controller: nicknameController,
+                  icon: Icons.tag,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  label: "Email",
+                  hintText: "Enter your email",
+                  controller: emailController,
+                  icon: Icons.email,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField(
+                        label: "Phone",
+                        hintText: "Enter your phone number",
+                        controller: phoneController,
+                        icon: Icons.phone,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: selectedGender,
+                        items: const [
+                          DropdownMenuItem(value: "Male", child: Text("Male")),
+                          DropdownMenuItem(value: "Female", child: Text("Female")),
+                          DropdownMenuItem(value: "Other", child: Text("Other")),
+                        ],
+                        onChanged: (value) => setState(() => selectedGender = value),
+                        decoration: InputDecoration(
+                          labelText: "Gender",
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    )],
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  label: "Address",
+                  hintText: "Enter your address",
+                  controller: addressController,
+                  icon: Icons.location_on,
+                ),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : _updateUserData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text("SUBMIT",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String hintText,
+    required TextEditingController controller,
+    required IconData icon,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hintText,
+        prefixIcon: Icon(icon),
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.blueAccent),
+        ),
+      ),
     );
   }
 }
