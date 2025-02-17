@@ -1,17 +1,18 @@
-const bcrypt = require('bcrypt');
+// models/User.js
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
-const SALT_ROUNDS = 10; // You can adjust the number of salt rounds as needed
+const SALT_ROUNDS = 10; // Adjust the number of salt rounds as needed
 
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-
   name: { type: String },
   address: { type: String },
-  country: { type: String }, // Add country field
+  country: { type: String },
   dateOfBirth: { type: Date },
+  typeOfWork: { type: String, enum: ['Full-time', 'Part-time'] },
   nationality: { type: String },
   resume: { type: String },
   resumeType: { type: String },
@@ -19,34 +20,34 @@ const UserSchema = new mongoose.Schema({
   mobile2: { type: String },
   age: { type: Number },
   gender: { type: String },
-  linkedin: { type: String },  // Common LinkedIn field for both Candidate and Employer
+  linkedin: { type: String },  // LinkedIn field for both Candidate and Employer
   image: { type: String },
-  role: { type: String, required: true, enum: ['candidate', 'employer', 'admin', 'super-admin'] },
+  role: { type: String, required: true, enum: ['candidate', 'employer', 'admin', 'user-admin', 'plan-admin', 'job-admin', 'freejob-admin', 'super-admin'] },
   walletPoints: { type: Number, default: 0 },
   myrefcode: {
     type: String,
-    unique: true, // Ensure that myrefcode is unique
+    unique: true, // Ensure myrefcode is unique
   },
 
-  // DND feature fields
+  // DND feature
   dnd: {
-    isActive: { type: Boolean, default: false }, // Whether DND is enabled
-    startDate: { type: Date },                   // When DND was enabled
-    endDate: { type: Date },                     // When DND will expire
+    isActive: { type: Boolean, default: false },
+    startDate: { type: Date },
+    endDate: { type: Date },
   },
 
   // Candidate-specific fields
-  currentJobTitle: { type: String }, // Only for candidates
-  experienceLevel: { type: String }, // Only for candidates
-  availability: { type: String },    // Only for candidates
-  maritalStatus: { type: String },   // Only for candidates
+  currentJobTitle: { type: String },
+  experienceLevel: { type: String },
+  availability: { type: String },
+  maritalStatus: { type: String },
 
   // Employer-specific fields
-  companyName: { type: String },           // Only for employers
-  companyWebsite: { type: String },        // Only for employers
-  companyAddress: { type: String },        // Only for employers
-  companyIndexNo: { type: String },        // Only for employers
-  companyEstablishmentYear: { type: Number }, // Only for employers
+  companyName: { type: String },
+  companyWebsite: { type: String },
+  companyAddress: { type: String },
+  companyIndexNo: { type: String },
+  companyEstablishmentYear: { type: Number },
   companyContactPerson: {
     name: { type: String },
     designation: { type: String },
@@ -59,30 +60,26 @@ const UserSchema = new mongoose.Schema({
   },
 
   // Social media links
-  facebook: { type: String },
-  twitter: { type: String },
-  googlePlus: { type: String },
+  linkedin: { type: String },
+  github: { type: String },
+  portfolio: { type: String },
+  other: { type: String },
 
   category: { type: String },
-  city: { type: String }, // New field for city
-  zipCode: { type: String }, // New field for zip code
+  city: { type: String },
+  zipCode: { type: String },
   about: { type: String },
-  
-  // OTP and Verification fields
-  otp: {
-    type: String,
-    default: '',
-  },
+
+  // OTP and verification
+  otp: { type: String, default: '' },
   otpExpiration: Date,
   verified: { type: Boolean, default: false },
+  complete: { type: Boolean, default: false },
 
   // User activation status
-  active: {
-    type: Boolean,
-    default: true
-  },
-  registeredTimeStamp: { type: Date, default: Date.now }, // Add registeredtimestamp field
-  jobPostIds: [{ type: mongoose.Schema.Types.ObjectId}]
+  active: { type: Boolean, default: true },
+  registeredTimeStamp: { type: Date, default: Date.now },
+  jobPostIds: [{ type: mongoose.Schema.Types.ObjectId }],
 });
 
 // Hash the password before saving
@@ -100,9 +97,7 @@ UserSchema.pre('save', function (next) {
   }
 });
 
-// Method to match password
-UserSchema.methods.matchPassword = async function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
-};
+// Use mongoose.models to prevent redefinition of the model
+const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = User;
