@@ -24,6 +24,10 @@ const blogSchema = new mongoose.Schema({
     type: String, // This will store the path or URL of the image
     trim: true,
   },
+  blockedRegions: {
+    type: [String],  // Array of regions (e.g., country codes, continent names)
+    default: [],  // Default is no blocked regions
+  },
 });
 
 // Create a model from the schema
