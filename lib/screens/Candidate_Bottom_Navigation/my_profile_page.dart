@@ -314,6 +314,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  final TextEditingController licenseController = TextEditingController();
 
   String? selectedGender = "Male";
   bool isLoading = true;
@@ -403,6 +404,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     emailController.dispose();
     phoneController.dispose();
     addressController.dispose();
+    licenseController.dispose();
     super.dispose();
   }
 
@@ -488,6 +490,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     hintText: "Enter your address",
                     controller: addressController,
                     icon: Icons.location_on),
+                const SizedBox(height: 16),
+                _buildTextField(
+                    label: "License Number: ",
+                    hintText: "License Number",
+                    controller: addressController,
+                    icon: Icons.card_membership),
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
