@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:second_job_search/screens/notifications_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:second_job_search/Config/config.dart';
+import 'package:intl/intl.dart';
 
 class EmployeeDashboardscreen extends StatefulWidget {
   const EmployeeDashboardscreen({super.key});
@@ -11,6 +15,56 @@ class EmployeeDashboardscreen extends StatefulWidget {
 }
 
 class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
+  String? name = "";
+  String? lastLoginTime = "";
+  String? saved_job_count = "";
+
+  String convertMongoDBTimestamp(String mongoTimestamp) {
+    // Parse the MongoDB timestamp to DateTime
+    DateTime dateTime = DateTime.parse(mongoTimestamp);
+
+    // Format the DateTime object
+    String formattedDate = DateFormat('d MMMM yyyy, h:mm a').format(dateTime);
+
+    return formattedDate;
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadDashboardData();
+  }
+
+  Future<void> _loadDashboardData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String apiUrl =
+        "${AppConfig.baseUrl}/api/users/${prefs.getString("userId")}";
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        dynamic data = response.body;
+
+        setState(() {
+          lastLoginTime =
+              convertMongoDBTimestamp(data['registeredTimeStamp'].toString())
+                  .toString();
+        });
+      } else {
+        setState(() {
+          lastLoginTime = "11th February 2025, 9:46 AM";
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+    setState(() {
+      name = prefs.getString("name");
+      name = name?.split(" ")[0];
+    });
+  }
+
   // Reusable Container Widget
   Widget _buildInfoContainer({
     required IconData icon,
@@ -96,17 +150,17 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
           child: Column(
             children: [
               const SizedBox(height: 10),
-              const Text(
-                'Howdy User!!',
-                style: TextStyle(
+              Text(
+                'Howdy $name',
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 28,
                   color: Color.fromARGB(255, 5, 64, 146),
                 ),
               ),
-              const Text(
-                'Last login: 7th October 2024, 1:25 pm - Unknown',
-                style: TextStyle(
+              Text(
+                'Last login: $lastLoginTime - Unknown',
+                style: const TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 14,
                   color: Colors.black,
@@ -128,18 +182,18 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
                               label: 'Applied Job',
                               iconColor: Colors.black,
                               backgroundColor:
-                                  const Color.fromARGB(255, 169, 210, 230),
+                                  const Color.fromARGB(255, 77, 177, 223),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Flexible(
                             child: _buildInfoContainer(
                               icon: Icons.sticky_note_2_outlined,
-                              count: '4525',
+                              count: '452',
                               label: 'Job Alerts',
                               iconColor: Colors.black,
                               backgroundColor:
-                                  const Color.fromARGB(255, 179, 233, 182),
+                                  const Color.fromARGB(255, 18, 149, 209),
                             ),
                           ),
                         ],
@@ -154,7 +208,7 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
                               label: 'Messages',
                               iconColor: Colors.black,
                               backgroundColor:
-                                  const Color.fromARGB(255, 224, 189, 137),
+                                  const Color.fromARGB(255, 18, 149, 209),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -164,7 +218,8 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
                               count: '0',
                               label: 'Shortlist',
                               iconColor: Colors.black,
-                              backgroundColor: Colors.pink[200]!,
+                              backgroundColor:
+                                  const Color.fromARGB(255, 77, 177, 223),
                             ),
                           ),
                         ],

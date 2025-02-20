@@ -341,18 +341,70 @@ class JobDescriptionPage extends StatefulWidget {
 class _JobDescriptionPageState extends State<JobDescriptionPage> {
   bool _isApplied = false;
 
-  void _applyForJob() {
-    setState(() {
-      _isApplied = true;
-    });
-    Fluttertoast.showToast(
-      msg: "You have successfully applied for this job!",
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
+  Future<void> _applyForJob() async {
+    // Fetch user_id from SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId == null) {
+      Fluttertoast.showToast(
+        msg: "User not logged in!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      return;
+    }
+
+    // Prepare the data to be sent to the backend
+    Map<String, dynamic> requestBody = {
+      "userId": userId,
+      "post_id": widget.job['_id'], // Assuming job has an _id field
+    };
+
+    // Make the API call
+    const url = "${AppConfig.baseUrl}/api/applied-jobs/applyJob";
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _isApplied = true;
+        });
+        Fluttertoast.showToast(
+          msg: "You have successfully applied for this job!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Failed to apply for the job. Please try again.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Error applying for job: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
   }
 
   @override

@@ -581,7 +581,7 @@ const getUserDetails = async (req, res) => {
 const updateCompanyData = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { companyName, email, companyWebsite, companyAddress, companyIndexNo, companyEstablishmentYear,
+    const { companyName, email, companyWebsite, companyAddress, companyIndexNo, companyEstablishmentYear,myrefcode,
          companyContactPerson: {name,officialEmail,personalEmail,mobileNumber,country,callTimings},} = req.body;
 
     // Validate required fields
@@ -593,7 +593,7 @@ const updateCompanyData = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        $set: { companyName, email, companyWebsite, companyAddress, companyIndexNo, companyEstablishmentYear,
+        $set: { companyName, email, companyWebsite, companyAddress, companyIndexNo, companyEstablishmentYear,myrefcode,
         companyContactPerson: {name,officialEmail,personalEmail,mobileNumber,country,callTimings},},
       },
       { new: true } // Return the updated user object

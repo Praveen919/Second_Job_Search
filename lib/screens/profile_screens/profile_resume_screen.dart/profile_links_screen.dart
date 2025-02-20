@@ -71,7 +71,15 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String apiUrl =
         "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
-    print(apiUrl);
+
+    String educationapiUrl =
+        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
+    String workapiUrl =
+        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
+    String certificateapiUrl =
+        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
+    String skillsapiUrl =
+        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
     final body = {
       "username": widget.userData["Full Name"],
       "email": widget.userData["Email"],
@@ -80,6 +88,10 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
       "nationality": widget.userData["Nationality"],
       "address": widget.userData["Address"],
       "resumeType": widget.userData["selected_category"],
+      "linkedin": personalInfoControllers['LinkedIn Link']!.text,
+      "facebook": personalInfoControllers['Facebook Link']!.text,
+      "twitter": personalInfoControllers['Twitter Link']!.text,
+      "googlePlus": personalInfoControllers['Other Links']!.text,
     };
 
     try {
