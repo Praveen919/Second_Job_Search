@@ -89,7 +89,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: const Color(0xFFBFDBFE),
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -98,7 +98,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               // Sky-blue background section (Logo part)
               Container(
                 width: double.infinity,
-                color: const Color(0xFFBFDBFE),
+                color: const Color.fromARGB(255, 100, 176, 238),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 30.0),
                   child: Column(

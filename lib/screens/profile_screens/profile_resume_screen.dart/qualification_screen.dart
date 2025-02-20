@@ -46,13 +46,16 @@ class _QualificationScreenState extends State<QualificationScreen> {
         final Map<String, dynamic> data = json.decode(response.body);
 
         setState(() {
-          if (data['resumeType'] == "non-technical") {
+          if (data['resumeType'] == "Non-Technical") {
             selectedCategory = "Non-Technical";
-          } else {
+          } else if (data['resumeType'] == "Technical") {
             selectedCategory = "Technical";
+          } else {
+            selectedCategory = "Both";
           }
           educationDetails = (data['education'] as List)
               .map((education) => {
+                    "_id": education["_id"],
                     "degree": education["course"],
                     "university": education["institution"],
                     "startYear": education["startDate"],
@@ -61,6 +64,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
               .toList();
           workExperienceDetails = (data['experience'] as List)
               .map((experience) => {
+                    "_id": experience["_id"],
                     "jobTitle": experience["title"],
                     "companyName": experience["company"],
                     "startYear": experience["year"],
@@ -69,6 +73,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
               .toList();
           certificationDetails = (data['awards'] as List)
               .map((certification) => {
+                    "_id": certification["_id"],
                     "certificationName": certification["title"],
                     "issuingOrganization": certification["organization"],
                     "issueYear": certification["year"],
@@ -78,6 +83,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
 
           skillsDetails = (data['skills'] as List)
               .map((skill) => {
+                    "_id": skill["_id"],
                     "skillName": skill["skillName"],
                     "knowledgeLevel": skill["knowledgeLevel"],
                     "experienceWeeks": skill["experienceWeeks"]
@@ -302,6 +308,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 if (startMonth != null && endMonth != null) {
                   setState(() {
                     educationDetails.add({
+                      '_id': null,
                       'degree': degreeController.text,
                       'university': universityController.text,
                       'startYear': startYearController.text,
@@ -521,6 +528,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 if (startMonth != null && endMonth != null) {
                   setState(() {
                     educationDetails[index] = {
+                      '_id': educationDetails[index]['_id'],
                       'degree': degreeController.text,
                       'university': universityController.text,
                       'startYear': startYearController.text,
@@ -739,6 +747,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 if (startMonth != null && endMonth != null) {
                   setState(() {
                     workExperienceDetails.add({
+                      '_id': null,
                       'jobTitle': jobTitleController.text,
                       'companyName': companyNameController.text,
                       'startYear': startYearController.text,
@@ -957,6 +966,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 if (startMonth != null && endMonth != null) {
                   setState(() {
                     workExperienceDetails[index] = {
+                      '_id': workExperienceDetails[index]['_id'],
                       'jobTitle': jobTitleController.text,
                       'companyName': companyController.text,
                       'startYear': startYearController.text,
@@ -1175,6 +1185,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 if (issueMonth != null && expireMonth != null) {
                   setState(() {
                     certificationDetails.add({
+                      '_id': null,
                       'certificationName': certificationNameController.text,
                       'issuingOrganization': issuingOrganizationController.text,
                       'issueYear': issueYearController.text,
@@ -1393,6 +1404,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 if (issueMonth != null && expireMonth != null) {
                   setState(() {
                     certificationDetails[index] = {
+                      '_id': certificationDetails[index]['_id'],
                       'certificationName': certificationNameController.text,
                       'issuingOrganization': issuingOrganizationController.text,
                       'issueYear': issueYearController.text,
@@ -1525,6 +1537,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 if (skillLevel != null) {
                   setState(() {
                     skillsDetails.add({
+                      '_id': null,
                       'skillName': skillNameController.text,
                       'experienceWeeks': experienceController.text,
                       'knowledgeLevel': skillLevel!,
@@ -1648,6 +1661,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                 if (level != null) {
                   setState(() {
                     skillsDetails[index] = {
+                      '_id': skillsDetails[index]['_id'],
                       'skillName': skillNameController.text,
                       'experienceWeeks': experienceController.text,
                       'knowledgeLevel': level!,
@@ -1740,6 +1754,16 @@ class _QualificationScreenState extends State<QualificationScreen> {
                     ),
                   ),
                 ],
+              ),
+              RadioListTile<String>(
+                title: const Text('Both'),
+                value: 'Both',
+                groupValue: selectedCategory,
+                onChanged: (value) {
+                  setState(() {
+                    selectedCategory = value;
+                  });
+                },
               ),
               const SizedBox(height: 20),
               const Text(

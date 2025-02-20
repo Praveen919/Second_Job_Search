@@ -69,17 +69,13 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
 
   Future<void> _uploadResumeData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String apiUrl =
-        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
+    String? userId = prefs.getString("userId");
+    String apiUrl = "${AppConfig.baseUrl}/api/users/edit/$userId";
 
-    String educationapiUrl =
-        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
-    String workapiUrl =
-        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
-    String certificateapiUrl =
-        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
-    String skillsapiUrl =
-        "${AppConfig.baseUrl}/api/users/edit/${prefs.getString("userId")}";
+    String educationapiUrl = "${AppConfig.baseUrl}/api/education/";
+    String workapiUrl = "${AppConfig.baseUrl}/api/experience/";
+    String certificateapiUrl = "${AppConfig.baseUrl}/api/awards/";
+    String skillsapiUrl = "${AppConfig.baseUrl}/api/skills/";
     final body = {
       "username": widget.userData["Full Name"],
       "email": widget.userData["Email"],
@@ -93,6 +89,119 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
       "twitter": personalInfoControllers['Twitter Link']!.text,
       "googlePlus": personalInfoControllers['Other Links']!.text,
     };
+
+    List<dynamic> educationList = widget.userData["education"] ?? [];
+
+    for (var education in educationList) {
+      String degree = education["degree"];
+      final educationBody = {
+        "course": education["degree"],
+        "institution": education["university"],
+        "startDate": education["startYear"],
+        "endDate": education["endYear"],
+        "user_id": userId
+      };
+
+      if (education['_id'] != null) {
+        // Update existing education record
+        final response = await http.put(
+          Uri.parse("$educationapiUrl/${education["_id"]}"),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(educationBody),
+        );
+      } else {
+        // Create new education record
+        final response = await http.post(
+          Uri.parse(educationapiUrl),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({...educationBody, "user_id": userId}),
+        );
+      }
+    }
+
+    List<dynamic> workExperienceList = widget.userData["experience"] ?? [];
+
+    for (var experience in workExperienceList) {
+      final experienceBody = {
+        "title": experience["jobTitle"],
+        "company": experience["companyName"],
+        "year": experience["startYear"],
+        "description": experience["description"],
+        "user_id": userId
+      };
+
+      if (experience['_id'] != null) {
+        // Update existing education record
+        final response = await http.put(
+          Uri.parse("$workapiUrl/${experience["_id"]}"),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(experienceBody),
+        );
+      } else {
+        // Create new education record
+        final response = await http.post(
+          Uri.parse(workapiUrl),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({...experienceBody, "user_id": userId}),
+        );
+      }
+    }
+
+    List<dynamic> awardsList = widget.userData["certificate"] ?? [];
+
+    for (var award in awardsList) {
+      final awardBody = {
+        "title": award["certificationName"],
+        "organization": award["issuingOrganization"],
+        "year": award["issueYear"],
+        "description": award["description"],
+        "user_id": userId
+      };
+
+      if (award['_id'] != null) {
+        // Update existing education record
+        final response = await http.put(
+          Uri.parse("$certificateapiUrl/${award["_id"]}"),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(awardBody),
+        );
+      } else {
+        // Create new education record
+        final response = await http.post(
+          Uri.parse(certificateapiUrl),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({...awardBody, "user_id": userId}),
+        );
+      }
+    }
+    print(widget.userData);
+
+    List<dynamic> skillList = widget.userData["skills"] ?? [];
+
+    for (var skill in skillList) {
+      final skillBody = {
+        "skillName": skill["skillName"],
+        "knowledgeLevel": skill["knowledgeLevel"],
+        "experienceWeeks": skill["experienceWeeks"],
+        "userId": userId
+      };
+
+      if (skill['_id'] != null) {
+        // Update existing education record
+        final response = await http.put(
+          Uri.parse("$skillsapiUrl/${skill["_id"]}"),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(skillBody),
+        );
+      } else {
+        // Create new education record
+        final response = await http.post(
+          Uri.parse(skillsapiUrl),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({...skillBody, "userId": userId}),
+        );
+      }
+    }
 
     try {
       final response = await http.put(
