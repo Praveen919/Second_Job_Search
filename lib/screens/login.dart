@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:second_job_search/screens/create_account_screen.dart';
 import 'package:second_job_search/screens/create_account_employer_screen.dart';
 import 'package:second_job_search/screens/employeers/employer_main_home.dart';
@@ -30,6 +31,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLocked = false;
   Timer? timer;
   Timer? lockTimer;
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
 
   void startOtpTimer() {
     setState(() {
@@ -237,6 +242,63 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> handleGoogleLogin() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // User canceled the login
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Get user details
+      String email = googleUser.email;
+      String name = googleUser.displayName ?? 'User';
+      String image = googleUser.photoUrl ?? '';
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('email', email);
+      await prefs.setString('name', name);
+      await prefs.setString('image', image);
+
+      // Call your backend API to check if user exists and get the role
+      final response = await http.get(
+        Uri.parse('${AppConfig.baseUrl}/api/users/email/$email'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final roleData = json.decode(response.body);
+        String role = roleData['role'] ?? 'candidate';
+
+        await prefs.setString('role', role);
+
+        // Navigate to the appropriate screen based on the role
+        if (role == 'candidate') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        } else if (role == 'employer') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const EmployerHomeScreen()),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch user role')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google login failed: $error')),
+      );
+    }
+  }
+
   @override
   void dispose() {
     timer?.cancel();
@@ -350,7 +412,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               ElevatedButton.icon(
-                                onPressed: () {},
+                                onPressed: handleGoogleLogin,
                                 icon: const FaIcon(FontAwesomeIcons.google,
                                     size: 25.0, color: Colors.red),
                                 label: const Text('Google'),
