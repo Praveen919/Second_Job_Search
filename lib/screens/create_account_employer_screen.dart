@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:second_job_search/screens/login.dart'; // Import the employer login screen
@@ -80,6 +81,136 @@ class _CreateAccountEmployerScreenState
         _isLoading = false;
       });
     }
+  }
+
+  // Google Sign-In and send data to the same registration API
+  Future<void> _signInWithGoogle() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        _showSnackBar('Google Sign-In canceled', isError: true);
+        return;
+      }
+
+      // Extract user data from Google
+      final String name = googleUser.displayName ?? "";
+      final String email = googleUser.email;
+      final String image = googleUser.photoUrl ?? "";
+
+      // Show a dialog to create a password
+      String? password = await _showPasswordDialog();
+
+      if (password == null || password.isEmpty) {
+        _showSnackBar('Password is required for registration', isError: true);
+        return;
+      }
+
+      // Send data to backend using the register API
+      final String apiUrl = '${AppConfig.baseUrl}/api/users/register';
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'username': name,
+          'image': image, // Optional
+          'role': 'employer', // Default role
+          'password': password, // Password entered by user
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _showSnackBar('Google Sign-Up successful!');
+
+        // Navigate to the next screen (Modify as needed)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      } else {
+        final errorResponse = jsonDecode(response.body);
+        _showSnackBar(errorResponse['message'] ?? 'Google Sign-Up failed',
+            isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Google Sign-In failed: $e', isError: true);
+    }
+  }
+
+  Future<String?> _showPasswordDialog() async {
+    String? password;
+    final TextEditingController _passwordController = TextEditingController();
+    final TextEditingController _confirmPasswordController =
+        TextEditingController();
+    bool isPasswordVisible = false;
+
+    return await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Create Password'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: !isPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: 'Enter Password',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _confirmPasswordController,
+                    obscureText: !isPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: 'Confirm Password',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, null),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_passwordController.text.isEmpty ||
+                        _confirmPasswordController.text.isEmpty) {
+                      _showSnackBar('Both fields are required', isError: true);
+                    } else if (_passwordController.text !=
+                        _confirmPasswordController.text) {
+                      _showSnackBar('Passwords do not match', isError: true);
+                    } else {
+                      Navigator.pop(context, _passwordController.text);
+                    }
+                  },
+                  child: const Text('Confirm'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -204,7 +335,7 @@ class _CreateAccountEmployerScreenState
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton.icon(
-                            onPressed: () {},
+                            onPressed: _signInWithGoogle,
                             icon: const FaIcon(
                               FontAwesomeIcons.google,
                               size: 25.0,
