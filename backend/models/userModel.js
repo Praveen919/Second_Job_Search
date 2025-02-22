@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema({
   address: { type: String },
   country: { type: String },
   dateOfBirth: { type: Date },
+  licenseNumber: { type: String },
   typeOfWork: { type: String, enum: ['Full-time', 'Part-time'] },
   nationality: { type: String },
   resume: { type: String },
