@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:second_job_search/screens/main_home.dart';
 import 'package:second_job_search/Config/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -253,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // Get user details
+      // Get user details from Google
       String email = googleUser.email;
       String name = googleUser.displayName ?? 'User';
       String image = googleUser.photoUrl ?? '';
@@ -263,38 +264,78 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setString('name', name);
       await prefs.setString('image', image);
 
-      // Call your backend API to check if user exists and get the role
+      // Step 1: Get user ID from email
       final response = await http.get(
         Uri.parse('${AppConfig.baseUrl}/api/users/email/$email'),
         headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
-        final roleData = json.decode(response.body);
-        String role = roleData['role'] ?? 'candidate';
+        final userData = json.decode(response.body);
+        String userId = userData['_id'].toString();
 
-        await prefs.setString('role', role);
+        if (userId.isNotEmpty) {
+          // Step 2: Fetch full user details using userId
+          final userDetailsResponse = await http.get(
+            Uri.parse('${AppConfig.baseUrl}/api/users/$userId'),
+            headers: {'Content-Type': 'application/json'},
+          );
 
-        // Navigate to the appropriate screen based on the role
-        if (role == 'candidate') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        } else if (role == 'employer') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const EmployerHomeScreen()),
-          );
+          if (userDetailsResponse.statusCode == 200) {
+            final userDetails = json.decode(userDetailsResponse.body);
+
+            print(userDetails);
+            // Extract details and ensure all are stored as strings
+            String role = userDetails['role'].toString();
+            String address = userDetails['address'].toString();
+            String country = userDetails['country'].toString();
+
+            // Store additional details in SharedPreferences
+            await prefs.setString('userId', userId);
+            await prefs.setString('role', role);
+            await prefs.setString('address', address);
+            await prefs.setString('country', country);
+
+            // Show success toast
+            Fluttertoast.showToast(
+              msg: "Login successful",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+            );
+
+            // Navigate to the appropriate screen based on the role
+            if (role == 'candidate') {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+              );
+            } else if (role == 'employer') {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const EmployerHomeScreen()),
+              );
+            }
+          } else {
+            Fluttertoast.showToast(
+              msg: "Failed to fetch complete user details",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+            );
+          }
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch user role')),
+        Fluttertoast.showToast(
+          msg: "Failed to fetch user ID",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
         );
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google login failed: $error')),
+      Fluttertoast.showToast(
+        msg: "Google login failed: $error",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
       );
     }
   }

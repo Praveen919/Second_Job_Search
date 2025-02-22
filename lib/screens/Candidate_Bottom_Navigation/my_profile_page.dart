@@ -315,6 +315,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController licenseController = TextEditingController();
+  final TextEditingController countryController = TextEditingController();
 
   String? selectedGender = "Male";
   bool isLoading = true;
@@ -366,6 +367,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       "mobile1": phoneController.text,
       "address": addressController.text,
       "gender": selectedGender,
+      "country": countryController.text,
     };
 
     try {
@@ -392,7 +394,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       print("Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("An error occurred")),
+        const SnackBar(content: Text("An error occurred ")),
       );
     }
   }
@@ -405,6 +407,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     phoneController.dispose();
     addressController.dispose();
     licenseController.dispose();
+    countryController.dispose();
     super.dispose();
   }
 
@@ -490,6 +493,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     hintText: "Enter your address",
                     controller: addressController,
                     icon: Icons.location_on),
+                const SizedBox(height: 16),
+                _buildTextField(
+                    label: "Country",
+                    hintText: "Country",
+                    controller: countryController,
+                    icon: Icons.gps_fixed),
                 const SizedBox(height: 16),
                 _buildTextField(
                     label: "License Number: ",

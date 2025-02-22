@@ -513,7 +513,7 @@ const changePassword = async (req, res) => {
 const updateUserData = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { name, username, email, mobile1, address, gender } = req.body;
+    const { name, username, email, mobile1, address, gender, country } = req.body;
 
     // Validate required fields
     if (!email || !mobile1) {
@@ -524,7 +524,7 @@ const updateUserData = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        $set: { name, username, email, mobile1, address, gender },
+        $set: { name, username, email, mobile1, address, gender, country },
       },
       { new: true } // Return the updated user object
     );
