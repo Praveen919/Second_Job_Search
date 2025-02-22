@@ -1,5 +1,6 @@
 const Plan = require('../models/planModel');
 const User = require('../models/userModel');  // Assuming you have a User model to find users by ID
+const DynamicPlan = require('../models/dynamicPlanModel');
 
 // Fetch all plans
 const getAllPlans = async (req, res) => {
@@ -15,71 +16,68 @@ const getAllPlans = async (req, res) => {
 // Purchase a plan using wallet points
 const purchaseByWalletpoint = async (req, res) => {
   const { user_id, plan_name } = req.body;
-  let no_of_days, paid_jobs = 0, free_jobs = 0, apply_paid_jobs = 0, apply_free_jobs = 0, plan_price = 0;
-  let end_date = new Date();
 
-  // Determine plan details
-  switch (plan_name) {
-    case 'Basic':
-      no_of_days = 30;
-      paid_jobs = 5;
-      apply_paid_jobs = 10;
-      apply_free_jobs = 5;
-      free_jobs = 2;
-      plan_price = 100;
-      break;
-    case 'Standard':
-      no_of_days = 30;
-      paid_jobs = 20;
-      free_jobs = 10;
-      apply_paid_jobs = 40;
-      apply_free_jobs = 20;
-      plan_price = 500;
-      break;
-    case 'Extended':
-      no_of_days = 30;
-      paid_jobs = 30;
-      free_jobs = 15;
-      apply_paid_jobs = 60;
-      apply_free_jobs = 30;
-      plan_price = 800;
-      break;
-    default:
-      return res.status(400).json({ message: 'Invalid plan name' });
-  }
-
-  end_date.setDate(end_date.getDate() + no_of_days);  // Add days to current date
+  let no_of_days, paid_jobs, free_jobs, apply_paid_jobs, apply_free_jobs, plan_price, end_date = new Date(); 
 
   try {
-    const user = await User.findById(user_id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    // Fetch the dynamic plan from the database based on plan_name
+    const plan = await DynamicPlan.findOne({ plan_name });
 
-    const walletPoints = user.walletPoints;
+    if (!plan) {
+      return res.status(400).json({ message: 'Invalid plan name' });
+    }
+
+    // Retrieve the plan details
+    no_of_days = plan.no_of_days;
+    paid_jobs = plan.paid_jobs;
+    free_jobs = plan.free_jobs;
+    apply_paid_jobs = plan.apply_paid_jobs;
+    apply_free_jobs = plan.apply_free_jobs;
+    plan_price = plan.plan_price; // Assume plan_price is stored in DynamicPlan
+
+    // Set the end date based on the number of days for the plan
+    end_date.setDate(end_date.getDate() + no_of_days);
+
+    // Fetch the user's wallet points
+    const user = await User.findById(user_id); 
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    const walletPoints = user.walletPoints; // Assuming walletPoints is a field in the User model
     const remainingAmount = plan_price - walletPoints;
 
+    // If there is any remaining amount, you can handle it here (e.g., process a payment)
     if (remainingAmount > 0) {
-      return res.status(200).json({ message: 'Plan purchased successfully, but remaining amount needs to be paid', remainingAmount });
+        // Handle payment processing for remaining amount here
+        return res.status(200).json({
+            message: 'Plan purchased successfully, but remaining amount needs to be paid',
+            remainingAmount
+        });
     }
 
     // Check if the user already has the same plan
     const existingPlan = await Plan.findOne({ user_id, plan_name });
 
     if (existingPlan) {
-      // Update the existing plan
-      existingPlan.paid_jobs += paid_jobs;
-      existingPlan.free_jobs += free_jobs;
-      existingPlan.apply_paid_jobs += apply_paid_jobs;
-      existingPlan.apply_free_jobs += apply_free_jobs;
-      existingPlan.end_date = end_date;
+      // If the user already has the same plan, update the values
+      existingPlan.paid_jobs += paid_jobs; // Add new paid_jobs to existing ones
+      existingPlan.free_jobs += free_jobs; // Add new free_jobs to existing ones
+      existingPlan.apply_paid_jobs += apply_paid_jobs; // Add new apply_paid_jobs to existing ones
+      existingPlan.apply_free_jobs += apply_free_jobs; // Add new apply_free_jobs to existing ones
+      existingPlan.end_date = end_date; // Update the end_date to the new calculated date
 
-      user.walletPoints = 0;  // Deduct wallet points
-      await user.save();
+      // Deduct wallet points
+      user.walletPoints = 0; // Deduct all points
+      await user.save(); // Save the user changes
+
+      // Save the updated plan to the database
       await existingPlan.save();
 
       return res.status(200).json({ message: 'Plan updated successfully', plan: existingPlan });
     }
 
-    // If no existing plan, create a new plan
+    // If the user does not have the same plan, create a new plan
     const newPlan = new Plan({
       user_id,
       plan_name,
@@ -94,8 +92,11 @@ const purchaseByWalletpoint = async (req, res) => {
       plan_price
     });
 
-    user.walletPoints = 0;  // Deduct wallet points
-    await user.save();
+    // Deduct wallet points
+    user.walletPoints = 0; // Deduct all points
+    await user.save(); // Save the user changes
+
+    // Save the new plan to the database
     await newPlan.save();
 
     res.status(201).json({ message: 'Plan purchased successfully', plan: newPlan });
@@ -108,55 +109,46 @@ const purchaseByWalletpoint = async (req, res) => {
 // Purchase a plan without wallet points (if applicable)
 const purchase = async (req, res) => {
   const { user_id, plan_name } = req.body;
-  let no_of_days, paid_jobs = 0, free_jobs = 0, apply_paid_jobs = 0, apply_free_jobs = 0, plan_price = 0;
-  let end_date = new Date();
 
-  switch (plan_name) {
-    case 'Basic':
-      no_of_days = 30;
-      paid_jobs = 5;
-      apply_paid_jobs = 10;
-      apply_free_jobs = 5;
-      free_jobs = 2;
-      plan_price = 100;
-      break;
-    case 'Standard':
-      no_of_days = 30;
-      paid_jobs = 20;
-      free_jobs = 10;
-      apply_paid_jobs = 40;
-      apply_free_jobs = 20;
-      plan_price = 500;
-      break;
-    case 'Extended':
-      no_of_days = 30;
-      paid_jobs = 30;
-      free_jobs = 15;
-      apply_paid_jobs = 60;
-      apply_free_jobs = 30;
-      plan_price = 800;
-      break;
-    default:
-      return res.status(400).json({ message: 'Invalid plan name' });
-  }
-
-  end_date.setDate(end_date.getDate() + no_of_days);  // Add days to current date
+  let no_of_days, paid_jobs, free_jobs, apply_paid_jobs, apply_free_jobs, plan_price, end_date = new Date(); 
 
   try {
+    // Fetch the dynamic plan from the database based on the plan_name
+    const plan = await DynamicPlan.findOne({ plan_name });
+
+    if (!plan) {
+      return res.status(400).json({ message: 'Invalid plan name' });
+    }
+
+    // Retrieve the plan details
+    no_of_days = plan.no_of_days;
+    paid_jobs = plan.paid_jobs;
+    free_jobs = plan.free_jobs;
+    apply_paid_jobs = plan.apply_paid_jobs;
+    apply_free_jobs = plan.apply_free_jobs;
+    plan_price = plan.plan_price; // Assume plan_price is also stored in DynamicPlan
+
+    // Set the end date based on the number of days for the plan
+    end_date.setDate(end_date.getDate() + no_of_days);
+
+    // Check if the user already has the same plan
     const existingPlan = await Plan.findOne({ user_id, plan_name });
 
     if (existingPlan) {
-      // Update the existing plan
-      existingPlan.paid_jobs += paid_jobs;
-      existingPlan.free_jobs += free_jobs;
-      existingPlan.apply_paid_jobs += apply_paid_jobs;
-      existingPlan.apply_free_jobs += apply_free_jobs;
-      existingPlan.end_date = end_date;
+      // If the user already has the same plan, update the values
+      existingPlan.paid_jobs += paid_jobs; // Add new paid_jobs to existing ones
+      existingPlan.free_jobs += free_jobs; // Add new free_jobs to existing ones
+      existingPlan.apply_paid_jobs += apply_paid_jobs; // Add new apply_paid_jobs to existing ones
+      existingPlan.apply_free_jobs += apply_free_jobs; // Add new apply_free_jobs to existing ones
+      existingPlan.end_date = end_date; // Update the end_date to the new calculated date
 
+      // Save the updated plan to the database
       await existingPlan.save();
+
       return res.status(200).json({ message: 'Plan updated successfully', plan: existingPlan });
     }
 
+    // If the user does not have the same plan, create a new plan
     const newPlan = new Plan({
       user_id,
       plan_name,
@@ -171,7 +163,9 @@ const purchase = async (req, res) => {
       plan_price
     });
 
+    // Save the new plan to the database
     await newPlan.save();
+
     res.status(201).json({ message: 'Plan purchased successfully', plan: newPlan });
   } catch (error) {
     console.error('Error purchasing plan:', error);

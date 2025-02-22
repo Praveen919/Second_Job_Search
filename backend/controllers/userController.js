@@ -17,7 +17,8 @@ const Education = require('../models/educationModel');
 const Experience = require('../models/experienceModel');
 const Award = require('../models/awardModel');
 const Skill = require('../models/skillModel');
-
+const Job = require('../models/jobModel');
+const FreeJob = require('../models/freeJobModel');
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -687,8 +688,8 @@ const saveJob = async (req, res) => {
   }
 };
 
-// Function to get the count of saved jobs
-const getSavedJobsCount = async (req, res) => {
+// Function to getsaved jobs
+const getSavedJobs = async (req, res) => {
   const { userId } = req.params;
 
   if (!userId) {
@@ -702,12 +703,20 @@ const getSavedJobsCount = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Get the count of saved jobs
-    const savedJobsCount = user.jobPostIds.length;
+    const jobPostIds = user.jobPostIds;
 
-    return res.status(200).json(savedJobsCount);
+    // Fetch jobs from both collections
+    const [jobs, freeJobs] = await Promise.all([
+      Job.find({ _id: { $in: jobPostIds } }),
+      FreeJob.find({ _id: { $in: jobPostIds } }),
+    ]);
+
+    // Combine both job lists into a single array
+    const allJobs = [...jobs, ...freeJobs];
+
+    return res.status(200).json({ count: allJobs.length, jobs: allJobs });
   } catch (error) {
-    console.error('Error fetching saved jobs count:', error);
+    console.error('Error fetching saved jobs:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -803,5 +812,5 @@ module.exports = {
   updateNotificationSettings,
   getUserByEmail,
   editUserProfile,
-  saveJob, getSavedJobsCount, removeSavedJob
+  saveJob, getSavedJobs, removeSavedJob
 };

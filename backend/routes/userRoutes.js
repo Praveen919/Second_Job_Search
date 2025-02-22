@@ -15,10 +15,10 @@ const {
   updateNotificationSettings,
   saveJob,
   getUserByEmail,
-  getSavedJobsCount,
   removeSavedJob,
   getUserDetails,
-  editUserProfile
+  editUserProfile,
+  getSavedJobs
 } = require('../controllers/userController'); // Importing all necessary controllers
 
 const router = express.Router();
@@ -39,7 +39,7 @@ router.put('/update-companyData/:id', updateCompanyData);    //Update Company da
 router.put('/update-notifications', updateNotificationSettings); // Update notification settings
 router.put('/save-jobs', saveJob);
 router.get('/email/:email', getUserByEmail);
-router.get('/save-jobs/:userId', getSavedJobsCount);
+router.get('/save-jobs/:userId', getSavedJobs);
 router.put('/remove-save-job', removeSavedJob);
 router.get('/details/:id', getUserDetails);
 router.put('/edit/:user_id', editUserProfile);

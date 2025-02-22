@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/dbConfig');
 const userRoutes = require('./routes/userRoutes');
 const planRoutes = require('./routes/planRoutes');
+const dynamicPlanRoutes = require('./routes/dynamicPlanRoutes');
 const appliedJobRoutes = require('./routes/appliedJobRoutes');
 const archivedFreeJobRoutes = require('./routes/archivedFreeJobRoutes');
 const archivedJobRoutes = require('./routes/archivedJobRoutes');
@@ -29,6 +30,7 @@ app.use(bodyParser.json()); // Parse JSON bodies
 // Mount routes
 app.use('/api/users', userRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/dynamic-plan', dynamicPlanRoutes);
 app.use('/api/applied-jobs', appliedJobRoutes);
 app.use('/api/archived-free-jobs', archivedFreeJobRoutes);
 app.use('/api/archived-jobs', archivedJobRoutes);
