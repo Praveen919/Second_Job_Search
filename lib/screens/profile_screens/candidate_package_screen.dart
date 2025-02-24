@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:second_job_search/screens/plan_pricing_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,6 +15,7 @@ class SubscriptionScreen extends StatefulWidget {
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Map<String, dynamic>? activePackage;
+  String? userId = "";
 
   @override
   void initState() {
@@ -23,6 +25,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Future<void> _loadActivePackage() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString("userId");
     try {
       final response = await http.get(
         Uri.parse(
@@ -223,7 +226,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           const SizedBox(height: 8),
           ElevatedButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/planPricingScreen');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => PlanPricingScreen(
+                          userId: userId ?? "",
+                        )),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,

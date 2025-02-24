@@ -1,67 +1,109 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class PlanPricingScreen extends StatelessWidget {
-  PlanPricingScreen({super.key});
+import 'package:second_job_search/Config/config.dart';
 
-  final List<Map<String, String>> packages = [
-    {
-      'title': 'Basic Plan',
-      'description': 'Perfect for job seekers getting started.',
-      'price': '₹100/month',
-      'feature1': '5 Paid Job Applications',
-      'feature2': '2 Free Job Applications',
-      'feature3': 'Basic Support',
-    },
-    {
-      'title': 'Standard Plan',
-      'description': 'Ideal for regular job seekers.',
-      'price': '₹500/month',
-      'feature1': '20 Paid Job Applications',
-      'feature2': '10 Free Job Applications',
-      'feature3': 'Priority Support',
-    },
-    {
-      'title': 'Premium Plan',
-      'description': 'Best for professionals seeking top opportunities.',
-      'price': '₹800/month',
-      'feature1': '30 Paid Job Applications',
-      'feature2': '15 Free Job Applications',
-      'feature3': '24/7 Premium Support',
-    },
-  ];
+class PlanPricingScreen extends StatefulWidget {
+  final String userId; // Dynamic User ID from Navigator
 
-  void _subscribe(String plan) {
-    Fluttertoast.showToast(
-      msg: 'Subscribed to $plan successfully.',
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
+  const PlanPricingScreen({super.key, required this.userId});
+
+  @override
+  _PlanPricingScreenState createState() => _PlanPricingScreenState();
+}
+
+class _PlanPricingScreenState extends State<PlanPricingScreen> {
+  late Future<List<Plan>> futurePlans;
+
+  @override
+  void initState() {
+    super.initState();
+    futurePlans = fetchPlans();
+  }
+
+  // Fetch subscription plans from API
+  Future<List<Plan>> fetchPlans() async {
+    final response = await http.get(
+      Uri.parse('${AppConfig.baseUrl}/api/dynamic-plan'),
+      headers: {'Content-Type': 'application/json'},
     );
+
+    if (response.statusCode == 200) {
+      List jsonResponse = json.decode(response.body);
+      return jsonResponse.map((plan) => Plan.fromJson(plan)).toList();
+    } else {
+      throw Exception('Failed to load plans');
+    }
+  }
+
+  // Purchase Plan API Call
+  Future<void> purchasePlan(String planName) async {
+    final url = Uri.parse('${AppConfig.baseUrl}/api/plans/purchase');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        "user_id": widget.userId, // Dynamic User ID
+        "plan_name": planName,
+      }),
+    );
+    print(widget.userId);
+    print(response.body);
+    print(response.statusCode);
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      Fluttertoast.showToast(
+        msg: "message",
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+    } else {
+      Fluttertoast.showToast(
+        msg: "message" ?? "Failed to purchase plan",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Light background
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor:
-            const Color.fromARGB(255, 100, 176, 238), // Matching AppBar color
+        backgroundColor: Colors.blueAccent,
         elevation: 0,
-        title: const Text('Choose a Plan',
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 22,
-                fontWeight: FontWeight.w600)),
+        title: const Text(
+          'Choose a Plan',
+          style: TextStyle(
+              color: Colors.white, fontSize: 22, fontWeight: FontWeight.w600),
+        ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children:
-            packages.map((package) => _buildPackageCard(package)).toList(),
+      body: FutureBuilder<List<Plan>>(
+        future: futurePlans,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No plans available'));
+          } else {
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: snapshot.data!
+                  .map((plan) => _buildPackageCard(plan))
+                  .toList(),
+            );
+          }
+        },
       ),
     );
   }
 
-  Widget _buildPackageCard(Map<String, String> package) {
+  Widget _buildPackageCard(Plan plan) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -73,44 +115,36 @@ class PlanPricingScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Plan Title
             Text(
-              package['title']!,
+              plan.title,
               style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue),
             ),
             const SizedBox(height: 5),
-
-            // Plan Description
             Text(
-              package['description']!,
+              plan.description,
               style: const TextStyle(fontSize: 16, color: Colors.black87),
             ),
             const SizedBox(height: 12),
-
-            // Plan Price
             Text(
-              package['price']!,
+              "\$${plan.price}",
               style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.green),
             ),
             const SizedBox(height: 12),
-
-            // Features List
-            _buildFeatureRow(Icons.check_circle, package['feature1']!),
-            _buildFeatureRow(Icons.check_circle, package['feature2']!),
-            _buildFeatureRow(Icons.check_circle, package['feature3']!),
+            _buildFeatureRow(Icons.check_circle, plan.feature1),
+            _buildFeatureRow(Icons.check_circle, plan.feature2),
+            _buildFeatureRow(Icons.check_circle, plan.feature3),
             const SizedBox(height: 20),
-
-            // Buy Now Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => _subscribe(package['title']!),
+                onPressed: () =>
+                    purchasePlan(plan.title), // API Call on button press
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
@@ -145,6 +179,36 @@ class PlanPricingScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Model Class for Plan
+class Plan {
+  final String title;
+  final String description;
+  final String price;
+  final String feature1;
+  final String feature2;
+  final String feature3;
+
+  Plan({
+    required this.title,
+    required this.description,
+    required this.price,
+    required this.feature1,
+    required this.feature2,
+    required this.feature3,
+  });
+
+  factory Plan.fromJson(Map<String, dynamic> json) {
+    return Plan(
+      title: json['plan_name'] ?? 'No Title',
+      description: 'Subscription Plan',
+      price: (json['plan_price'] ?? '0').toString(),
+      feature1: '${json['no_of_days'] ?? 0} Days',
+      feature2: '${json['paid_jobs'] ?? 0} Paid Jobs',
+      feature3: '${json['free_jobs'] ?? 0} Free Jobs',
     );
   }
 }
