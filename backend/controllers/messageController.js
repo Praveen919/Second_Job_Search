@@ -15,10 +15,10 @@ const getAllMessages = async (req, res) => {
 
 // Create a new message
 const createMessage = async (req, res) => {
-  const { chatId, senderId, receiverId, text } = req.body;
+  const {  senderId, receiverId, text } = req.body;
 
   try {
-    const newMessage = new Message({ chatId, senderId, receiverId, text });
+    const newMessage = new Message({  senderId, receiverId, text });
     await newMessage.save();
     res.status(201).json(newMessage);
   } catch (error) {
