@@ -32,7 +32,7 @@ class _SmsScreenState extends State<SmsScreen> {
     print(senderId);
     try {
       final response = await http.get(
-          Uri.parse('http://localhost:8000/api/messages/user-list/$senderId'));
+          Uri.parse('${AppConfig.baseUrl}/api/messages/user-list/$senderId'));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         setState(() {

@@ -1,7 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:second_job_search/Config/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:second_job_search/screens/Candidate_Bottom_Navigation/home_page.dart';
 
-class SavedJobsScreen extends StatelessWidget {
+class SavedJobsScreen extends StatefulWidget {
   const SavedJobsScreen({super.key});
+
+  @override
+  State<SavedJobsScreen> createState() => _SavedJobsScreenState();
+}
+
+class _SavedJobsScreenState extends State<SavedJobsScreen> {
+  List<dynamic> savedJobs = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSavedJobs();
+  }
+
+  Future<void> fetchSavedJobs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId == null) {
+      print("User not logged in!");
+      return;
+    }
+
+    final apiUrl = '${AppConfig.baseUrl}/api/users/save-jobs/$userId';
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          savedJobs = responseData['jobs'] ?? [];  // Ensure we get an array
+          isLoading = false;
+        });
+      } else {
+        print("Failed to fetch saved jobs: ${response.statusCode}");
+      }
+    } catch (error) {
+      print("Error fetching saved jobs: $error");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +83,6 @@ class SavedJobsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Bar
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               decoration: BoxDecoration(
@@ -51,23 +98,24 @@ class SavedJobsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Section Title
             const Text(
-              'Waiting for Approval',
+              'Saved Jobs',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            // Job Cards
             Expanded(
-              child: ListView.builder(
-                itemCount: 2, // Replace with the number of saved jobs
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : savedJobs.isEmpty
+                  ? const Center(child: Text("No saved jobs found"))
+                  : ListView.builder(
+                itemCount: savedJobs.length,
                 itemBuilder: (context, index) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 12.0),
-                    child: JobCard(),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: JobCard(job: savedJobs[index]),
                   );
                 },
               ),
@@ -80,7 +128,9 @@ class SavedJobsScreen extends StatelessWidget {
 }
 
 class JobCard extends StatelessWidget {
-  const JobCard({super.key});
+  final dynamic job;
+
+  const JobCard({super.key, required this.job});
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +151,6 @@ class JobCard extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            // Company Logo Placeholder
             Container(
               height: 50,
               width: 50,
@@ -117,43 +166,38 @@ class JobCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            // Job Details
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Visual Designer',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    job['jobTitle'] ?? 'Job Title',
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    'Soul Tech',
-                    style: TextStyle(color: Colors.grey),
+                    job['companyName'] ?? 'Company Name',
+                    style: const TextStyle(color: Colors.grey),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-
-                    'London, UK (On-site)',
-                    style: TextStyle(color: Colors.grey),
+                    "${job['city']}, ${job['country']}",
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
             ),
-            // Applied Button
-            Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: const Text(
-                'Applied',
-                style: TextStyle(color: Colors.white),
-              ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => JobDescriptionPage(job: job),
+                  ),
+                );
+              },
+              child: const Text("View"),
             ),
           ],
         ),

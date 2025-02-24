@@ -151,19 +151,19 @@ class _HomePageState extends State<HomePage> {
                           isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : jobList.isEmpty
-                                  ? const Text(
-                                      "Can't fetch jobs at the moment.",
-                                      style: TextStyle(color: Colors.red))
-                                  : ListView.builder(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: filteredJobList.length,
-                                      itemBuilder: (context, index) {
-                                        final job = filteredJobList[index];
-                                        return JobCard(job: job);
-                                      },
-                                    ),
+                              ? const Text(
+                              "Can't fetch jobs at the moment.",
+                              style: TextStyle(color: Colors.red))
+                              : ListView.builder(
+                            shrinkWrap: true,
+                            physics:
+                            const NeverScrollableScrollPhysics(),
+                            itemCount: filteredJobList.length,
+                            itemBuilder: (context, index) {
+                              final job = filteredJobList[index];
+                              return JobCard(job: job);
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -340,6 +340,157 @@ class JobDescriptionPage extends StatefulWidget {
 
 class _JobDescriptionPageState extends State<JobDescriptionPage> {
   bool _isApplied = false;
+  bool _isSaved = false; // To track if the job is saved
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfJobIsSaved(); // Check if the job is already saved
+  }
+
+  Future<void> _checkIfJobIsSaved() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId == null) {
+      return;
+    }
+
+    const apiUrl = '${AppConfig.baseUrl}/api/users/save-jobs';
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'user_id': userId, 'post_id': widget.job['_id']}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        setState(() {
+          _isSaved = responseData['isSaved'];
+        });
+      }
+    } catch (error) {
+      print("Error checking saved job: $error");
+    }
+  }
+
+  Future<void> _saveJob() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId == null) {
+      Fluttertoast.showToast(
+        msg: "User not logged in!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      return;
+    }
+
+    const apiUrl = '${AppConfig.baseUrl}/api/users/save-jobs';
+    try {
+      final response = await http.put(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'user_id': userId, 'post_id': widget.job['_id']}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _isSaved = true;
+        });
+        Fluttertoast.showToast(
+          msg: "Job saved successfully!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } else {
+        print("Backend Error: ${response.body}");
+        Fluttertoast.showToast(
+          msg: "Failed to save job. Please try again.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (error) {
+      Fluttertoast.showToast(
+        msg: "Error saving job: $error",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
+
+  Future<void> _unsaveJob() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId == null) {
+      Fluttertoast.showToast(
+        msg: "User not logged in!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      return;
+    }
+
+    const apiUrl = '${AppConfig.baseUrl}/api/users/remove-save-job';
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'user_id': userId, 'post_id': widget.job['_id']}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _isSaved = false;
+        });
+        Fluttertoast.showToast(
+          msg: "Job unsaved successfully!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Failed to unsave job. Please try again.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (error) {
+      Fluttertoast.showToast(
+        msg: "Error unsaving job: $error",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
 
   Future<void> _applyForJob() async {
     // Fetch user_id from SharedPreferences
@@ -360,7 +511,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
 
     // Prepare the data to be sent to the backend
     Map<String, dynamic> requestBody = {
-      "userId": userId,
+      "user_id": userId, // Use "user_id" instead of "userId"
       "post_id": widget.job['_id'], // Assuming job has an _id field
     };
 
@@ -386,6 +537,8 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
           fontSize: 16.0,
         );
       } else {
+        // Print the error response from the backend
+        print("Backend Error: ${response.body}");
         Fluttertoast.showToast(
           msg: "Failed to apply for the job. Please try again.",
           toastLength: Toast.LENGTH_SHORT,
@@ -396,6 +549,8 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
         );
       }
     } catch (e) {
+      // Print the exception for debugging
+      print("Exception: $e");
       Fluttertoast.showToast(
         msg: "Error applying for job: $e",
         toastLength: Toast.LENGTH_SHORT,
@@ -415,6 +570,21 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
       appBar: AppBar(
         title: Text(job['jobTitle'] ?? 'Job Details'),
         backgroundColor: const Color.fromARGB(255, 251, 252, 252),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isSaved ? Icons.bookmark : Icons.bookmark_border,
+              color: _isSaved ? Colors.blue : Colors.grey,
+            ),
+            onPressed: () {
+              if (_isSaved) {
+                _unsaveJob();
+              } else {
+                _saveJob();
+              }
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -520,7 +690,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
           const CircleAvatar(
             radius: 40,
             backgroundImage:
-                AssetImage('assets/logo.png'), // Placeholder for company logo
+            AssetImage('assets/logo.png'), // Placeholder for company logo
           ),
           const SizedBox(width: 16),
           Expanded(

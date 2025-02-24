@@ -1,9 +1,11 @@
 const AppliedJob = require('../models/appliedJobModel');
 const User = require('../models/userModel');
 const Job = require('../models/jobModel');
+const mongoose = require('mongoose');
 const FreeJob = require('../models/freeJobModel');
 const Plan = require('../models/planModel');
 const { sendEmail } = require('../utils/sendEmail'); // Importing sendEmail
+console.log('sendEmail function:', sendEmail);
 
 // Controller function to get all applied jobs
 const getAllAppliedJobs = async (req, res) => {
@@ -217,6 +219,7 @@ const deleteAppliedJob = async (req, res) => {
 };
 
 // Endpoint to apply for a job
+// Inside the applyForJob function
 const applyForJob = async (req, res) => {
   const { user_id, post_id } = req.body;
 
@@ -285,6 +288,7 @@ const applyForJob = async (req, res) => {
     // Send a confirmation email to the applicant
     const applicant = await User.findById(userId);
     if (applicant) {
+     console.log('Sending email to:', applicant.email);
       await sendEmail(applicant.email, 'Job Application Confirmation', 'Your application was successful!');
     }
 

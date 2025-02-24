@@ -658,10 +658,14 @@ const updateNotificationSettings = async (req, res) => {
   }
 }
 
+//SaveJobs Functionality
 const saveJob = async (req, res) => {
   const { user_id, post_id } = req.body;
 
+  console.log('Received request to save job:', { user_id, post_id }); // Debugging log
+
   if (!user_id || !post_id) {
+    console.log('Missing user_id or post_id'); // Debugging log
     return res.status(400).json({ error: 'user_id and post_id are required' });
   }
 
@@ -669,11 +673,13 @@ const saveJob = async (req, res) => {
     const user = await User.findById(user_id);
 
     if (!user) {
+      console.log('User not found'); // Debugging log
       return res.status(404).json({ valid: false, message: 'User not found' });
     }
 
     // Check if the job is already saved
     if (user.jobPostIds.includes(post_id)) {
+      console.log('Job already saved'); // Debugging log
       return res.status(400).json({ valid: false, message: 'Job is already saved' });
     }
 
@@ -681,9 +687,10 @@ const saveJob = async (req, res) => {
     user.jobPostIds.push(post_id);
     await user.save();
 
+    console.log('Job saved successfully'); // Debugging log
     return res.status(200).json({ valid: true, message: 'Job Saved' });
   } catch (error) {
-    console.error('Error saving job:', error);
+    console.error('Error saving job:', error); // Debugging log
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

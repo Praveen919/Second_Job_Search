@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:second_job_search/Config/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:second_job_search/screens/Candidate_Bottom_Navigation/home_page.dart';
 
 class FindJobsPageScreen extends StatefulWidget {
@@ -32,8 +33,7 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
   List<dynamic> filteredJobs = []; // Stores filtered jobs
   bool isLoading = true;
 
-  final TextEditingController searchController =
-      TextEditingController(); // Search controller
+  final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -42,47 +42,34 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
   }
 
   List<String> extractCities(List<dynamic> jsonData) {
-    List<dynamic> jobs = jsonData;
     Set<String> cities = {"Location"};
-
-    for (var job in jobs) {
+    for (var job in jsonData) {
       if (job['city'] != null) {
         cities.add(job['city']);
       }
     }
-
     return cities.toList();
   }
 
   List<String> getSortedSalaries(List<dynamic> jobData) {
-    // Extract offeredSalary values
     List<int> salaries = jobData.map((job) {
-      // Cast each job to Map<String, dynamic>
       Map<String, dynamic> jobMap = job as Map<String, dynamic>;
       return jobMap['offeredSalary'] as int;
     }).toList();
-
-    // Sort salaries in ascending order
     salaries.sort();
-
-    // Convert sorted salaries to a list of strings
-    List<String> sortedSalariesAsString =
-        salaries.map((salary) => salary.toString()).toList();
-
-    return sortedSalariesAsString;
+    return salaries.map((salary) => salary.toString()).toList();
   }
 
   Future<void> fetchJobs() async {
-    const apiUrl = '${AppConfig.baseUrl}/api/jobs'; // Replace with your API URL
+    const apiUrl = '${AppConfig.baseUrl}/api/jobs';
     try {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
         setState(() {
           allJobs = jsonDecode(response.body);
-          filteredJobs = allJobs; // Initially show all jobs
+          filteredJobs = allJobs;
           locationOptions = extractCities(allJobs);
           salaryOptions = salaryOptions + getSortedSalaries(allJobs);
-
           isLoading = false;
         });
       } else {
@@ -93,11 +80,10 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
     }
   }
 
-  // Filter jobs based on search input
   void _filterJobs(String query) {
     if (query.isEmpty) {
       setState(() {
-        filteredJobs = allJobs; // Show all jobs when search is empty
+        filteredJobs = allJobs;
       });
       return;
     }
@@ -107,27 +93,51 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
         final jobTitle = job['jobTitle']?.toLowerCase() ?? "";
         final companyName = job['companyName']?.toLowerCase() ?? "";
         final searchLower = query.toLowerCase();
-
-        return jobTitle.contains(searchLower) ||
-            companyName.contains(searchLower);
+        return jobTitle.contains(searchLower) || companyName.contains(searchLower);
       }).toList();
     });
+  }
+
+  Future<void> _saveJob(String jobId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId == null) {
+      print("User not logged in!");
+      return;
+    }
+
+    const apiUrl = '${AppConfig.baseUrl}/api/saveJob';
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'userId': userId, 'jobId': jobId}),
+      );
+
+      if (response.statusCode == 200) {
+        print("Job saved successfully!");
+      } else {
+        print("Failed to save job: ${response.statusCode}");
+      }
+    } catch (error) {
+      print("Error saving job: $error");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color.fromARGB(255, 100, 176, 238), // Light blue background
+      color: const Color.fromARGB(255, 100, 176, 238),
       child: Column(
         children: [
-          // Search Bar and Filters
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
                 TextField(
                   controller: searchController,
-                  onChanged: _filterJobs, // Call filter function on text change
+                  onChanged: _filterJobs,
                   decoration: InputDecoration(
                     hintText: 'Search Job by title or company',
                     prefixIcon: const Icon(Icons.search),
@@ -148,8 +158,7 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
                         selectedJob = newValue!;
                       });
                     }),
-                    _buildDropdown(locationOptions, selectedLocation,
-                        (newValue) {
+                    _buildDropdown(locationOptions, selectedLocation, (newValue) {
                       setState(() {
                         selectedLocation = newValue!;
                       });
@@ -164,28 +173,24 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
               ],
             ),
           ),
-
-          // Job Cards
           Expanded(
             child: isLoading
-                ? const Center(
-                    child: CircularProgressIndicator()) // Show loader
+                ? const Center(child: CircularProgressIndicator())
                 : filteredJobs.isEmpty
-                    ? const Center(child: Text("No jobs found"))
-                    : ListView.builder(
-                        itemCount: filteredJobs.length,
-                        itemBuilder: (context, index) {
-                          return _buildJobCard(filteredJobs[index]);
-                        },
-                      ),
+                ? const Center(child: Text("No jobs found"))
+                : ListView.builder(
+              itemCount: filteredJobs.length,
+              itemBuilder: (context, index) {
+                return _buildJobCard(filteredJobs[index]);
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDropdown(List<String> options, String selectedValue,
-      ValueChanged<String?> onChanged) {
+  Widget _buildDropdown(List<String> options, String selectedValue, ValueChanged<String?> onChanged) {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -198,15 +203,12 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
         child: DropdownButton<String>(
           isExpanded: true,
           value: selectedValue,
-          underline: const SizedBox(), // Remove default underline
+          underline: const SizedBox(),
           icon: const Icon(Icons.arrow_drop_down),
           items: options.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
-              child: Text(
-                value,
-                style: const TextStyle(fontSize: 14),
-              ),
+              child: Text(value, style: const TextStyle(fontSize: 14)),
             );
           }).toList(),
           onChanged: onChanged,
@@ -252,8 +254,7 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
                 const Spacer(),
                 Text(
                   "\$${job['offeredSalary'] ?? ''}/mo",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.black),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
                 ),
               ],
             ),
@@ -264,8 +265,7 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
                 Row(
                   children: [
                     const Icon(Icons.location_on_outlined, color: Colors.grey),
-                    Text(job['city'] ?? '',
-                        style: const TextStyle(color: Colors.grey)),
+                    Text(job['city'] ?? '', style: const TextStyle(color: Colors.grey)),
                   ],
                 ),
                 Row(
@@ -289,7 +289,12 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
                       child: const Text("Apply"),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.bookmark_border, color: Colors.grey),
+                    IconButton(
+                      icon: const Icon(Icons.bookmark_border, color: Colors.grey),
+                      onPressed: () {
+                        _saveJob(job['_id']);
+                      },
+                    ),
                   ],
                 ),
               ],

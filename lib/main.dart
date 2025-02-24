@@ -1,8 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:second_job_search/screens/splashscreen.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 // import 'package:second_job_search/screens/login.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Awesome Notifications
+  await AwesomeNotifications().initialize(
+    null, // Use default icon for notifications
+    [
+      NotificationChannel(
+        channelKey: 'basic_channel',
+        channelName: 'Basic Notifications',
+        channelDescription: 'Notification channel for basic tests',
+        defaultColor: Colors.teal,
+        ledColor: Colors.white,
+        importance: NotificationImportance.High,
+        channelShowBadge: true,
+      ),
+    ],
+  );
+
   runApp(const MyApp());
 }
 
