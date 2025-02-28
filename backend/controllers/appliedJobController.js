@@ -18,6 +18,27 @@ const getAllAppliedJobs = async (req, res) => {
   }
 };
 
+const getAppliedJobsCount = async (req, res) => {
+  const { post_id } = req.params;
+
+  if (!post_id) {
+    return res.status(400).send({ message: 'Post_id is required' });
+  }
+
+  try {
+    const applications = await AppliedJob.find({ post_id });
+
+    if (applications.length > 0) {
+      res.status(200).json(applications);
+    } else {
+      res.status(404).json({ message: 'No applications found for the specified post_id' });
+    }
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Controller function to validate user and post IDs
 const validateIds = async (req, res) => {
   const { user_id, post_id } = req.body;
@@ -307,4 +328,5 @@ module.exports = {
   updateSeenStatus,
   deleteAppliedJob,
   applyForJob,
+  getAppliedJobsCount,
 };
