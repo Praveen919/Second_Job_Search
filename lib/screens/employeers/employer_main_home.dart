@@ -12,6 +12,8 @@ import 'package:second_job_search/screens/notifications_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/saved_jobs_screen.dart';
 import 'package:second_job_search/screens/sms_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class EmployerHomeScreen extends StatefulWidget {
   const EmployerHomeScreen({super.key});
@@ -80,14 +82,23 @@ class _HomeScreenState extends State<EmployerHomeScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 0, 5.0, 0),
                   child: IconButton(
-                    onPressed: () {
-                      // Handle the button press action here
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NotificationsScreen(),
-                        ),
-                      );
+                    onPressed: () async {
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      String? userId = prefs.getString('userId');
+                      String? userRole = prefs.getString('role') ?? 'candidate'; // Default to candidate
+
+                      if (userId != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NotificationsScreen(),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('User not logged in')),
+                        );
+                      }
                     },
                     icon: const Icon(
                       Icons.notifications_none,
