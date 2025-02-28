@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:second_job_search/screens/splashscreen.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
-// import 'package:second_job_search/screens/login.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Awesome Notifications
   await AwesomeNotifications().initialize(
-    null, // Use default icon for notifications
+    null, // Use default icon
     [
       NotificationChannel(
         channelKey: 'basic_channel',
         channelName: 'Basic Notifications',
-        channelDescription: 'Notification channel for basic tests',
+        channelDescription: 'Notification channel for local notifications',
         defaultColor: Colors.teal,
         ledColor: Colors.white,
         importance: NotificationImportance.High,
@@ -22,7 +21,34 @@ void main() async {
     ],
   );
 
+  // Request Notification Permissions
+  bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+  if (!isAllowed) {
+    await AwesomeNotifications().requestPermissionToSendNotifications();
+  }
+
+  // Set up notification listeners
+  AwesomeNotifications().setListeners(
+    onActionReceivedMethod: onActionReceivedMethod,
+    onNotificationCreatedMethod: (ReceivedNotification notification) async {
+      print('Notification created: ${notification.id}');
+    },
+    onNotificationDisplayedMethod: (ReceivedNotification notification) async {
+      print('Notification displayed: ${notification.id}');
+    },
+    onDismissActionReceivedMethod: (ReceivedAction action) async {
+      print('Notification dismissed: ${action.id}');
+    },
+  );
+
   runApp(const MyApp());
+}
+
+// Global function to handle notification actions
+@pragma("vm:entry-point")
+Future<void> onActionReceivedMethod(ReceivedAction receivedAction) async {
+  print('Notification tapped: ${receivedAction.id}');
+  // You can handle navigation or other actions here
 }
 
 class MyApp extends StatelessWidget {
@@ -36,7 +62,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue, // Sets the primary color of your app
       ),
-      home: const SplashScreen(), // Sets LoginScreen as the home screen
+      home: const SplashScreen(), // Sets SplashScreen as the home screen
     );
   }
 }
