@@ -80,6 +80,34 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
     }
   }
 
+  void _filterDropdownJobs() {
+    setState(() {
+      filteredJobs = allJobs.where((job) {
+        final jobType = job['jobType'] ?? "";
+        final city = job['city'] ?? "";
+        final salary = job['offeredSalary']?.toString() ?? "0";
+
+        int salaryFilter =
+        selectedSalary != "Salary" ? int.tryParse(selectedSalary) ?? 0 : 0;
+        int jobSalary = int.tryParse(salary) ?? 0;
+
+        return (selectedJob == "All Jobs" || jobType == selectedJob) &&
+            (selectedLocation == "Location" || city == selectedLocation) &&
+            (selectedSalary == "Salary" ||
+                jobSalary.toString() == salaryFilter.toString());
+      }).toList();
+      if (selectedJob != "All Jobs" ||
+          selectedLocation != "Location" ||
+          selectedSalary != "Salary") {
+        locationOptions = extractCities(filteredJobs);
+        salaryOptions = salaryOptions + getSortedSalaries(filteredJobs);
+      } else {
+        locationOptions = extractCities(allJobs);
+        salaryOptions = salaryOptions + getSortedSalaries(allJobs);
+      }
+    });
+  }
+
   void _filterJobs(String query) {
     if (query.isEmpty) {
       setState(() {
@@ -93,8 +121,11 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
         final jobTitle = job['jobTitle']?.toLowerCase() ?? "";
         final companyName = job['companyName']?.toLowerCase() ?? "";
         final searchLower = query.toLowerCase();
-        return jobTitle.contains(searchLower) || companyName.contains(searchLower);
+        return jobTitle.contains(searchLower) ||
+            companyName.contains(searchLower);
       }).toList();
+      locationOptions = extractCities(filteredJobs);
+      salaryOptions = salaryOptions + getSortedSalaries(filteredJobs);
     });
   }
 
@@ -153,21 +184,9 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildDropdown(jobOptions, selectedJob, (newValue) {
-                      setState(() {
-                        selectedJob = newValue!;
-                      });
-                    }),
-                    _buildDropdown(locationOptions, selectedLocation, (newValue) {
-                      setState(() {
-                        selectedLocation = newValue!;
-                      });
-                    }),
-                    _buildDropdown(salaryOptions, selectedSalary, (newValue) {
-                      setState(() {
-                        selectedSalary = newValue!;
-                      });
-                    }),
+                    _buildDropdown(jobOptions, selectedJob),
+                    _buildDropdown(locationOptions, selectedLocation),
+                    _buildDropdown(salaryOptions, selectedSalary),
                   ],
                 ),
               ],
@@ -190,7 +209,7 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
     );
   }
 
-  Widget _buildDropdown(List<String> options, String selectedValue, ValueChanged<String?> onChanged) {
+  Widget _buildDropdown(List<String> options, String selectedValue) {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -211,7 +230,20 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
               child: Text(value, style: const TextStyle(fontSize: 14)),
             );
           }).toList(),
-          onChanged: onChanged,
+          onChanged: (newValue) {
+            if (newValue != null) {
+              setState(() {
+                if (options == jobOptions) {
+                  selectedJob = newValue;
+                } else if (options == locationOptions) {
+                  selectedLocation = newValue;
+                } else if (options == salaryOptions) {
+                  selectedSalary = newValue;
+                }
+                _filterDropdownJobs();
+              });
+            }
+          },
         ),
       ),
     );
@@ -254,7 +286,8 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
                 const Spacer(),
                 Text(
                   "\$${job['offeredSalary'] ?? ''}/mo",
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.black),
                 ),
               ],
             ),
@@ -265,7 +298,8 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
                 Row(
                   children: [
                     const Icon(Icons.location_on_outlined, color: Colors.grey),
-                    Text(job['city'] ?? '', style: const TextStyle(color: Colors.grey)),
+                    Text(job['city'] ?? '',
+                        style: const TextStyle(color: Colors.grey)),
                   ],
                 ),
                 Row(
@@ -290,7 +324,8 @@ class _FindJobsPageScreenState extends State<FindJobsPageScreen> {
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.bookmark_border, color: Colors.grey),
+                      icon:
+                      const Icon(Icons.bookmark_border, color: Colors.grey),
                       onPressed: () {
                         _saveJob(job['_id']);
                       },
