@@ -103,4 +103,43 @@ const deleteBlog = async (req, res) => {
   }
 };
 
-module.exports = { getAllBlogs, createBlog, deleteBlog };
+const getBlogsByUserId = async (req, res) => {
+   try {
+    // Extract the userId from the route parameter ':id'
+    const userId = req.params.id;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    // Fetch blogs uploaded by the specific user
+    const blogs = await Blog.find({ userId: userId });
+
+    // If no blogs found, return a message
+    if (blogs.length === 0) {
+      return res.status(404).json({ message: "No blogs found for this user" });
+    }
+
+    // Send the fetched blogs as a JSON response
+    return res.json(blogs);
+  } catch (error) {
+    // Log the error and send a server error response
+    console.error('Error fetching blogs:', error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+const getBlogById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog not found' });
+    }
+    res.status(200).json(blog);
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred while retrieving the blog' });
+  }
+}
+
+module.exports = { getAllBlogs, createBlog, deleteBlog, getBlogById, getBlogsByUserId  };
