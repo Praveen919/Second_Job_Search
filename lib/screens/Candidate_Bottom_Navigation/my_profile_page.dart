@@ -4,6 +4,7 @@ import 'package:second_job_search/Config/config.dart';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:second_job_search/screens/change_password_screen.dart';
 import 'dart:convert';
 
 import 'package:second_job_search/screens/login.dart';
@@ -183,7 +184,7 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                const UpdatePasswordScreen()));
+                                const ChangePasswordScreen()));
                   },
                 ),
                 _buildOption(

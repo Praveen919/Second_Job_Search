@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('', getAllBlogs); // Route to get all blogs
 router.post('', multer().single('image'), createBlog); // Route to create a new blog (with image upload)
 router.delete('/:id', deleteBlog); // Route to delete a blog by ID
-router.get('/:id', getBlogsById);
+router.get('/:id', getBlogById);
 router.get('/user/:id', getBlogsByUserId);
 
 module.exports = router;

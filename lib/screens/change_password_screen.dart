@@ -1,7 +1,109 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // Import FlutterToast
+import 'package:http/http.dart' as http;
+import 'package:second_job_search/Config/config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ChangePasswordScreen extends StatelessWidget {
+class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
+
+  @override
+  _ChangePasswordScreenState createState() => _ChangePasswordScreenState();
+}
+
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final TextEditingController oldPasswordController = TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
+  bool isLoading = false;
+  String? userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userId = prefs.getString("userId");
+    });
+  }
+
+  Future<void> updatePassword() async {
+    if (userId == null) {
+      Fluttertoast.showToast(
+        msg: "User ID not found. Please log in again.",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final Uri url =
+        Uri.parse('${AppConfig.baseUrl}/api/users/change-password/$userId');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+        },
+        body: jsonEncode({
+          "oldPassword": oldPasswordController.text,
+          "newPassword": newPasswordController.text,
+        }),
+      );
+
+      print('Response Status: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        Fluttertoast.showToast(
+          msg: "Password changed successfully!",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+        Navigator.pop(context);
+      } else {
+        String errorMessage = 'Password change failed.';
+        if (response.body.isNotEmpty && response.body.startsWith('{')) {
+          final responseData = jsonDecode(response.body);
+          errorMessage = responseData['message'] ?? errorMessage;
+        }
+        Fluttertoast.showToast(
+          msg: errorMessage,
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    } catch (error) {
+      Fluttertoast.showToast(
+        msg: "Error: $error",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,27 +120,24 @@ class ChangePasswordScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Sky-blue background section (Logo part)
               Container(
                 width: double.infinity,
-                color: const Color(0xFFBFDBFE), // Sky-blue color
+                color: const Color(0xFFBFDBFE),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 30.0),
                   child: Column(
                     children: [
                       Image.asset(
-                        'assets/logo.png', // Replace with your logo asset
-                        width: 300.0, // Logo ki width adjust karein
+                        'assets/logo.png',
+                        width: 300.0,
                         height: 200.0,
-                        fit: BoxFit.cover, // Logo ki height adjust karein
+                        fit: BoxFit.cover,
                       ),
                       const SizedBox(height: 30),
                     ],
                   ),
                 ),
               ),
-
-              // Rest of the screen (white background)
               Container(
                 color: Colors.white,
                 child: Padding(
@@ -46,7 +145,6 @@ class ChangePasswordScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Change Password Title
                       const Text(
                         'Change Password',
                         style: TextStyle(
@@ -55,43 +153,35 @@ class ChangePasswordScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // Email TextField
-                      const TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Email',
+                      TextField(
+                        controller: oldPasswordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Old Password',
                           border: OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 15),
-                      // OTP TextField
-                      const TextField(
+                      TextField(
+                        controller: newPasswordController,
                         obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: 'OTP',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-                      // Password TextField
-                      const TextField(
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: 'Create New Password',
+                        decoration: const InputDecoration(
+                          labelText: 'New Password',
                           border: OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // SignUp Button
                       ElevatedButton(
-                        onPressed: () {
-                          // Handle login action
-                        },
+                        onPressed: isLoading ? null : updatePassword,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black, // Button color
+                          backgroundColor: Colors.black,
                           foregroundColor: Colors.white,
                           minimumSize: const Size(double.infinity, 50),
                         ),
-                        child: const Text('Change Password'),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : const Text('Change Password'),
                       ),
                     ],
                   ),
