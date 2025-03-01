@@ -173,7 +173,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 _buildOption(
                   context,
                   icon: Icons.article_outlined,
-                  text: 'All Applications',
+                  text: 'All Applicants',
                   onTap: () {
                     Navigator.push(
                         context,
@@ -341,6 +341,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  final TextEditingController licenseController = TextEditingController();
+  final TextEditingController countryController = TextEditingController();
 
   String? selectedGender = "Male";
   bool isLoading = true;
@@ -354,9 +356,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> fetchUserData() async {
     try {
       final response = await http.get(
-        Uri.parse('${AppConfig.baseUrl}/api/users/${widget.userId}'),
-        headers: {'Content-Type': 'application/json'},
-      );
+          Uri.parse('${AppConfig.baseUrl}/api/users/${widget.userId}'),
+          headers: {'Content-Type': 'application/json'});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -383,6 +384,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _updateUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     final apiUrl =
         '${AppConfig.baseUrl}/api/users/update-data/${widget.userId}';
     final body = {
@@ -392,6 +394,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       "mobile1": phoneController.text,
       "address": addressController.text,
       "gender": selectedGender,
+      "country": countryController.text,
     };
 
     try {
@@ -407,6 +410,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profile updated successfully")),
         );
+        prefs.setString("name", fullNameController.text);
+        prefs.setString("address", addressController.text);
       } else {
         print("Failed to update user: ${response.body}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -416,7 +421,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       print("Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("An error occurred")),
+        const SnackBar(content: Text("An error occurred ")),
       );
     }
   }
@@ -428,6 +433,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     emailController.dispose();
     phoneController.dispose();
     addressController.dispose();
+    licenseController.dispose();
+    countryController.dispose();
     super.dispose();
   }
 
@@ -454,64 +461,77 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               children: [
                 const SizedBox(height: 10),
                 _buildTextField(
-                  label: "Full Name",
-                  hintText: "Enter your full name",
-                  controller: fullNameController,
-                  icon: Icons.person,
-                ),
+                    label: "Full Name",
+                    hintText: "Enter your full name",
+                    controller: fullNameController,
+                    icon: Icons.person),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  label: "Username",
-                  hintText: "Enter your username",
-                  controller: nicknameController,
-                  icon: Icons.tag,
-                ),
+                    label: "Username",
+                    hintText: "Enter your username",
+                    controller: nicknameController,
+                    icon: Icons.tag),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  label: "Email",
-                  hintText: "Enter your email",
-                  controller: emailController,
-                  icon: Icons.email,
-                ),
+                    label: "Email",
+                    hintText: "Enter your email",
+                    controller: emailController,
+                    icon: Icons.email),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: _buildTextField(
-                        label: "Phone",
-                        hintText: "Enter your phone number",
-                        controller: phoneController,
-                        icon: Icons.phone,
-                      ),
+                          label: "Phone",
+                          hintText: "Enter your phone number",
+                          controller: phoneController,
+                          icon: Icons.phone),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: selectedGender,
-                        items: const [
-                          DropdownMenuItem(value: "Male", child: Text("Male")),
-                          DropdownMenuItem(value: "Female", child: Text("Female")),
-                          DropdownMenuItem(value: "Other", child: Text("Other")),
-                        ],
-                        onChanged: (value) => setState(() => selectedGender = value),
                         decoration: InputDecoration(
                           labelText: "Gender",
                           filled: true,
                           fillColor: Colors.grey.shade100,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 18, horizontal: 12),
                         ),
+                        value: selectedGender,
+                        items: const [
+                          DropdownMenuItem(value: "Male", child: Text("Male")),
+                          DropdownMenuItem(
+                              value: "Female", child: Text("Female")),
+                          DropdownMenuItem(
+                              value: "Other", child: Text("Other")),
+                        ],
+                        onChanged: (value) =>
+                            setState(() => selectedGender = value),
                       ),
-                    )],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
-                  label: "Address",
-                  hintText: "Enter your address",
-                  controller: addressController,
-                  icon: Icons.location_on,
-                ),
+                    label: "Address",
+                    hintText: "Enter your address",
+                    controller: addressController,
+                    icon: Icons.location_on),
+                const SizedBox(height: 16),
+                _buildTextField(
+                    label: "Country",
+                    hintText: "Country",
+                    controller: countryController,
+                    icon: Icons.gps_fixed),
+                const SizedBox(height: 16),
+                _buildTextField(
+                    label: "License Number: ",
+                    hintText: "License Number",
+                    controller: addressController,
+                    icon: Icons.card_membership),
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
@@ -536,8 +556,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Container(
               color: Colors.black.withOpacity(0.3),
               child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
+                  child: CircularProgressIndicator(color: Colors.white)),
             ),
         ],
       ),
