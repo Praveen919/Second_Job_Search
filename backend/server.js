@@ -20,6 +20,7 @@ const messageRoutes = require('./routes/messageRoutes');
 const notificationLogRoutes = require('./routes/notficationLogRoutes');
 const skillRoutes = require('./routes/skillRoutes');
 const testimonialRoutes = require('./routes/testimonialRoutes');
+const interviewRoutes = require('./routes/interviewRoutes');
 
 dotenv.config();
 connectDB();
@@ -46,6 +47,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationLogRoutes);
 app.use('/api/skills', skillRoutes);
 app.use('/api/testimonials', testimonialRoutes);
+app.use('/api/interview', interviewRoutes);
 
 const PORT = process.env.PORT || 8000;
 
