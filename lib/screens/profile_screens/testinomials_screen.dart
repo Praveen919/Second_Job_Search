@@ -49,7 +49,7 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
     }
   }
 
-  void _submitTestimonial() {
+  Future<void> _submitTestimonial() async {
     String name = _nameController.text.trim();
     String feedback = _feedbackController.text.trim();
 
@@ -62,22 +62,42 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
       return;
     }
 
-    setState(() {
-      testimonials.add({
-        'name': name,
-        'message': feedback,
-        'createdAt': DateTime.now().toString().split(' ')[0],
-      });
-    });
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'name': name,
+          'message': feedback,
+        }),
+      );
 
-    Fluttertoast.showToast(
-      msg: 'Thank you for your feedback!',
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
-    );
+      if (response.statusCode == 201) {
+        // Fetch updated testimonials
+        fetchTestimonials();
+        // Clear input fields
+        _nameController.clear();
+        _feedbackController.clear();
 
-    _nameController.clear();
-    _feedbackController.clear();
+        Fluttertoast.showToast(
+          msg: 'Thank you for your feedback!',
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: 'Failed to submit testimonial.',
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: 'An error occurred: $e',
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
   }
 
   @override
@@ -185,51 +205,51 @@ class _TestimonialsScreenState extends State<TestimonialsScreen> {
               ),
               const SizedBox(height: 15),
               ...testimonials.map((testimonial) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Container(
-                      width: double.infinity,
-                      constraints: const BoxConstraints(minHeight: 120),
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 120),
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                testimonial['name'] ?? 'Anonymous',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                              Text(
-                                testimonial['createdAt']?.split('T')[0] ?? '',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
                           Text(
-                            testimonial['message'] ?? 'No feedback provided.',
+                            testimonial['name'] ?? 'Anonymous',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          Text(
+                            testimonial['createdAt']?.split('T')[0] ?? '',
                             style: const TextStyle(
                               fontSize: 14,
-                              color: Colors.black87,
+                              color: Colors.black54,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  )),
+                      const SizedBox(height: 8),
+                      Text(
+                        testimonial['message'] ?? 'No feedback provided.',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )),
             ],
           ),
         ),
