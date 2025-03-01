@@ -19,20 +19,20 @@ const getAllAppliedJobs = async (req, res) => {
 };
 
 const getAppliedJobsCount = async (req, res) => {
-  const { post_id } = req.params;
+  const { user_id } = req.params;
 
-  if (!post_id) {
-    return res.status(400).send({ message: 'Post_id is required' });
+  if (!user_id) {
+    return res.status(400).send({ message: 'User ID is required' });
   }
 
   try {
-    const applications = await AppliedJob.find({ post_id });
+    const applications = await AppliedJob.find({ user_id });
 
-    if (applications.length > 0) {
-      res.status(200).json(applications);
-    } else {
-      res.status(404).json({ message: 'No applications found for the specified post_id' });
-    }
+    res.status(200).json({
+      user_id,
+      applied_jobs_count: applications.length,
+    });
+
   } catch (error) {
     console.error('Error fetching applications:', error);
     res.status(500).json({ message: 'Server error' });

@@ -34,10 +34,10 @@ class _ProfilescreenState extends State<Profilescreen> {
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
-        final String data = response.body;
+        dynamic data = response.body;
 
         setState(() {
-          saved_job_count = data;
+          saved_job_count = data["count"];
         });
       } else {
         setState(() {
