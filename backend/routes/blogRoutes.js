@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllBlogs, createBlog, deleteBlog } = require('../controllers/blogController');
+const { getAllBlogs, createBlog, deleteBlog, getBlogById, getBlogsByUserId } = require('../controllers/blogController');
 const multer = require('multer');
 const router = express.Router();
 
@@ -7,5 +7,7 @@ const router = express.Router();
 router.get('', getAllBlogs); // Route to get all blogs
 router.post('', multer().single('image'), createBlog); // Route to create a new blog (with image upload)
 router.delete('/:id', deleteBlog); // Route to delete a blog by ID
+router.get('/:id', getBlogsById);
+router.get('/user/:id', getBlogsByUserId);
 
 module.exports = router;
