@@ -142,4 +142,27 @@ const getBlogById = async (req, res) => {
   }
 }
 
-module.exports = { getAllBlogs, createBlog, deleteBlog, getBlogById, getBlogsByUserId  };
+// function to update blogs
+const updateBlog = async (req, res) => {
+  const { id } = req.params;
+  const { content } = req.body;
+
+  try {
+    const blog = await Blog.findByIdAndUpdate(
+      id,
+      { content },
+      { new: true } // Return the updated blog
+    );
+
+    if (!blog) {
+      return res.status(404).json({ message: 'Blog not found' });
+    }
+
+    res.status(200).json(blog);
+  } catch (error) {
+    console.error('Error updating blog:', error);
+    res.status(500).json({ error: 'An error occurred while updating the blog' });
+  }
+};
+
+module.exports = { getAllBlogs, createBlog, deleteBlog, getBlogById, getBlogsByUserId, updateBlog  };
