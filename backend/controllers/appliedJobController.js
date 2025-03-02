@@ -4,6 +4,8 @@ const Job = require('../models/jobModel');
 const mongoose = require('mongoose');
 const FreeJob = require('../models/freeJobModel');
 const Plan = require('../models/planModel');
+const ArchivedJob = require('../models/archivedJobModel');
+const ArchivedFreeJob = require('../models/archivedFreeJobModel');
 const { sendEmail } = require('../utils/sendEmail'); // Importing sendEmail
 console.log('sendEmail function:', sendEmail);
 
@@ -35,6 +37,15 @@ const getApplicationUsingPostId = async (req, res) => {
         // If job not found in Job model, check in FreeJob model
         if (!job) {
           job = await FreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
+        }
+
+        if (!job) {
+          job = await ArchivedJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
+        }
+
+        // If still not found, check in archived free jobs
+        if (!job) {
+          job = await ArchivedFreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
         }
 
         return {
@@ -87,6 +98,15 @@ const getApplicationUsingUserId = async (req, res) => {
         // If job not found in Job model, check in FreeJob model
         if (!job) {
           job = await FreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
+        }
+
+        if (!job) {
+          job = await ArchivedJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
+        }
+
+        // If still not found, check in archived free jobs
+        if (!job) {
+          job = await ArchivedFreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
         }
 
         return {
