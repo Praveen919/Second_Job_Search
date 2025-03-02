@@ -445,6 +445,69 @@ const applyForJob = async (req, res) => {
   }
 };
 
+const updateJobStatus = async (id, action) => {
+  try {
+    const appliedJob = await AppliedJob.findById(id);
+    if (!appliedJob) {
+      return { status: 404, message: "Applied job not found" };
+    }
+
+    const job = await Job.findById(appliedJob.post_id) || await FreeJob.findById(appliedJob.post_id);
+    if (!job) {
+      return { status: 404, message: "Job not found" };
+    }
+
+    if (action === 'approve') {
+      appliedJob.__v = 1;
+    } else if (action === 'disapprove') {
+      appliedJob.__v = -1;
+    } else {
+      return { status: 400, message: "Invalid action" };
+    }
+
+    await appliedJob.save();
+
+    const applicant = await User.findById(appliedJob.user_id);
+    if (!applicant) {
+      return { status: 404, message: "Applicant not found" };
+    }
+
+    let subject = action === 'approve' 
+      ? `Application for ${job.jobTitle} Approved` 
+      : `Application for ${job.jobTitle} Rejected`;
+
+    let htmlMessage = action === 'approve' 
+      ? `<h2>Congratulations ${applicant.name},</h2>
+         <p>Your application for the job <strong>${job.jobTitle}</strong> has been approved!</p>
+         <p>We will contact you shortly with more details.</p>
+         <p>Best regards,<br>Hiring Team</p>`
+      : `<h2>Hello ${applicant.name},</h2>
+         <p>We regret to inform you that your application for the job <strong>${job.jobTitle}</strong> has been rejected.</p>
+         <p>We encourage you to apply for other opportunities in the future.</p>
+         <p>Best regards,<br>Hiring Team</p>`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: applicant.email,
+      subject,
+      html: htmlMessage,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`Email sent to ${applicant.email}`);
+    } catch (emailError) {
+      console.error(`Error sending email to ${applicant.email}:`, emailError);
+    }
+
+    return { status: 200, message: "Applied job status updated successfully", appliedJob };
+  } catch (error) {
+    console.error('Error updating applied job status:', error);
+    return { status: 500, message: "Server error" };
+  }
+};
+
+
 // Exporting the functions to be used in your routes
 module.exports = {
   getAllAppliedJobs,
@@ -455,5 +518,6 @@ module.exports = {
   applyForJob,
   getAppliedJobsCount,
   getApplicationUsingPostId,
-  getApplicationUsingUserId
+  getApplicationUsingUserId,
+  updateJobStatus
 };
