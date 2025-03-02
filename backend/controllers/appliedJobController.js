@@ -4,8 +4,6 @@ const Job = require('../models/jobModel');
 const mongoose = require('mongoose');
 const FreeJob = require('../models/freeJobModel');
 const Plan = require('../models/planModel');
-const ArchivedJob = require('../models/archivedJobModel');
-const ArchivedFreeJob = require('../models/archivedFreeJobModel');
 const { sendEmail } = require('../utils/sendEmail'); // Importing sendEmail
 console.log('sendEmail function:', sendEmail);
 
@@ -37,15 +35,6 @@ const getApplicationUsingPostId = async (req, res) => {
         // If job not found in Job model, check in FreeJob model
         if (!job) {
           job = await FreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
-        }
-
-        if (!job) {
-          job = await ArchivedJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
-        }
-
-        // If still not found, check in archived free jobs
-        if (!job) {
-          job = await ArchivedFreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
         }
 
         return {
@@ -100,15 +89,6 @@ const getApplicationUsingUserId = async (req, res) => {
           job = await FreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
         }
 
-        if (!job) {
-          job = await ArchivedJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
-        }
-
-        // If still not found, check in archived free jobs
-        if (!job) {
-          job = await ArchivedFreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
-        }
-
         return {
           _id: app.id,
           post_id: app.post_id,
@@ -129,6 +109,37 @@ const getApplicationUsingUserId = async (req, res) => {
   } catch (error) {
     console.error('Error fetching applications:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+//fetch employer specific posted jobs
+const getJobsByUserId = async (req, res) => {
+  const { user_id } = req.params;
+  try {
+    // Fetch jobs from both Job and FreeJob collections concurrently
+    const [jobs, freeJobs] = await Promise.all([
+      Job.find({ user_id }),
+      FreeJob.find({ user_id }),
+    ]);
+    // Combine the results from both collections
+    const allJobs = [...jobs, ...freeJobs];
+    // Add the label 'Paid Job' or 'Free Job' for each job based on its collection
+    const jobsWithLabel = allJobs.map(job => {
+      const jobType = job.constructor.modelName === 'Job' ? 'Paid Job' : 'Free Job';
+      return {
+        ...job._doc,  // Spread the job's original data
+        label: jobType  // Add the Paid/Free Job label
+      };
+    });
+    // If there are jobs, return them; otherwise, return 404
+    if (jobsWithLabel.length > 0) {
+      res.status(200).json(jobsWithLabel);
+    } else {
+      res.status(404).json({ message: "No jobs found for this user" });
+    }
+  } catch (error) {
+    console.error('Error fetching jobs:', error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -445,7 +456,29 @@ const applyForJob = async (req, res) => {
   }
 };
 
-const updateJobStatus = async (id, action) => {
+const getAppliedJobsById = async (req, res) => {
+  const { user_id } = req.params;
+
+  if (!user_id) {
+    return res.status(400).send({ message: 'User ID is required' });
+  }
+
+  try {
+    const applications = await AppliedJob.find({ user_id });
+
+    res.status(200).json(
+      
+     applications
+);
+
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+//Shortlisting status
+/*const updateJobsStatus = async (id, action) => {
   try {
     const appliedJob = await AppliedJob.findById(id);
     if (!appliedJob) {
@@ -472,11 +505,11 @@ const updateJobStatus = async (id, action) => {
       return { status: 404, message: "Applicant not found" };
     }
 
-    let subject = action === 'approve' 
-      ? `Application for ${job.jobTitle} Approved` 
+    let subject = action === 'approve'
+      ? `Application for ${job.jobTitle} Approved`
       : `Application for ${job.jobTitle} Rejected`;
 
-    let htmlMessage = action === 'approve' 
+    let htmlMessage = action === 'approve'
       ? `<h2>Congratulations ${applicant.name},</h2>
          <p>Your application for the job <strong>${job.jobTitle}</strong> has been approved!</p>
          <p>We will contact you shortly with more details.</p>
@@ -506,6 +539,100 @@ const updateJobStatus = async (id, action) => {
     return { status: 500, message: "Server error" };
   }
 };
+*/
+const updateJobStatus = async (req, res) => {
+  const { id } = req.params;
+  const { action } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid candidate ID format" });
+  }
+
+  try {
+    const appliedJob = await AppliedJob.findById(id);
+    if (!appliedJob) {
+      return res.status(404).json({ message: "Applied job not found" });
+    }
+
+    if (action === 'approve') {
+      appliedJob.__v = 1;
+    } else if (action === 'disapprove') {
+      appliedJob.__v = -1;
+    } else {
+      return res.status(400).json({ message: "Invalid action" });
+    }
+
+    await appliedJob.save();
+    console.log("Updated Job Status:", appliedJob); // ✅ Debugging
+
+    return res.status(200).json({ message: "Candidate shortlisted successfully" });
+  } catch (error) {
+    console.error("Error updating job status:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// get shortlisted candidates
+const getShortlistedCandidates = async (req, res) => {
+  const { user_id } = req.params;
+
+  console.log("Fetching Shortlisted Candidates for employer_id:", user_id);
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'user_id is required' });
+  }
+
+  try {
+    // Step 1: Fetch all jobs posted by this employer
+    const jobs = await Job.find({ user_id }).select('_id');
+    const jobIds = jobs.map(job => job._id);
+
+    console.log("Jobs Posted by Employer:", jobIds); // ✅ Debugging
+
+    if (jobIds.length === 0) {
+      return res.status(404).json({ message: 'No jobs found for this employer' });
+    }
+
+    // Step 2: Find all shortlisted candidates for these jobs
+    const applications = await AppliedJob.find({ post_id: { $in: jobIds }, __v: 1 });
+
+    console.log("Shortlisted Candidates Found:", applications); // ✅ Debugging
+
+    if (applications.length === 0) {
+      return res.status(404).json({ message: 'No shortlisted candidates found for this employer' });
+    }
+
+    // Step 3: Fetch user and job details
+    const enrichedApplications = await Promise.all(
+      applications.map(async (app) => {
+        const user = await User.findById(app.user_id).select('name email');
+        let job = await Job.findById(app.post_id).select('jobTitle jobType');
+
+        if (!job) {
+          job = await FreeJob.findById(app.post_id).select('jobTitle jobType');
+        }
+
+        return {
+          _id: app._id,
+          post_id: app.post_id,
+          user_id: app.user_id,
+          name: user?.name || 'N/A', // ✅ Add Candidate Name
+          email: user?.email || 'N/A',
+          jobTitle: job?.jobTitle || 'N/A', // ✅ Add Job Title
+          jobType: job?.jobType || 'N/A', // ✅ Add Job Type
+          seen: app.seen,
+          timestamp: app.timestamp,
+          status: app.__v, // 1 means shortlisted
+        };
+      })
+    );
+
+    res.status(200).json(enrichedApplications);
+  } catch (error) {
+    console.error('Error fetching shortlisted applications:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 
 // Exporting the functions to be used in your routes
@@ -517,7 +644,11 @@ module.exports = {
   deleteAppliedJob,
   applyForJob,
   getAppliedJobsCount,
+  getAppliedJobsById,
+  getJobsByUserId,
   getApplicationUsingPostId,
   getApplicationUsingUserId,
-  updateJobStatus
+  updateJobStatus,
+  getShortlistedCandidates,
+  //updateJobsStatus
 };
