@@ -444,33 +444,63 @@ const deleteResume = async (req, res) => {
   }
 }
 
+const profileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir); // Store in 'uploads/' directory
+    },
+    filename: (req, file, cb) => {
+        const extension = path.extname(file.originalname);
+        cb(null, `profile_${Date.now()}${extension}`); // Unique filename
+    }
+});
+
+const profileUploadMiddleware = multer({
+    storage: profileStorage,
+    limits: { fileSize: 2 * 1024 * 1024 } // Limit to 2MB
+});
+
 // Update User Image Function
 const updateUserImage = async (req, res) => {
-  const { id } = req.params;
+    const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ error: 'Invalid user ID' });
-  }
-
-  try {
-    const updateData = { ...req.body };
-
-    if (req.file) {
-      updateData.image = `/users/images/${req.file.filename}`;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid user ID' });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
-    if (!updatedUser) {
-      return res.status(404).json({ error: 'User not found' });
+        if (req.file) {
+            // Delete old image if exists
+            if (user.image) {
+                const oldImagePath = path.join(uploadDir, path.basename(user.image));
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+
+            // Save new image
+            user.image = `/uploads/${req.file.filename}`;
+            await user.save();
+
+            return res.status(200).json({
+                message: 'Profile image updated',
+                image: user.image // Ensure this field is always returned
+            });
+        } else {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+    } catch (error) {
+        console.error('Error updating profile image:', error);
+        res.status(500).json({ error: 'Server error' });
     }
+};
 
-    return res.json(updatedUser);
-  } catch (error) {
-    console.error('Error updating user:', error);
-    return res.status(500).json({ error: 'Server error' });
-  }
-}
+
 
 // Change Password Function
 const changePassword = async (req, res) => {
@@ -802,6 +832,7 @@ module.exports = {
   changePassword,
   updateUserData,
   updateCompanyData,
+  profileUploadMiddleware,
   updateNotificationSettings,
   getUserByEmail,
   editUserProfile,
