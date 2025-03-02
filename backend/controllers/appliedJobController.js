@@ -12,17 +12,48 @@ const getApplicationUsingPostId = async (req, res) => {
   const { post_id } = req.params;
 
   if (!post_id) {
-    return res.status(400).send({ message: 'Post_id is required' });
+    return res.status(400).json({ message: 'Post_id is required' });
   }
 
   try {
+    // Fetch applications based on post_id
     const applications = await AppliedJob.find({ post_id });
 
-    if (applications.length > 0) {
-      res.status(200).json(applications);
-    } else {
-      res.status(404).json({ message: 'No applications found for the specified post_id' });
+    if (applications.length === 0) {
+      return res.status(404).json({ message: 'No applications found for the specified post_id' });
     }
+
+    // Enrich applications with user details and job details
+    const enrichedApplications = await Promise.all(
+      applications.map(async (app) => {
+        // Fetch user details
+        const user = await User.findById(app.user_id).select('name email');
+
+        // Fetch job details first from Job model
+        let job = await Job.findOne({ _id: app.post_id }).select('jobTitle jobType');
+
+        // If job not found in Job model, check in FreeJob model
+        if (!job) {
+          job = await FreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
+        }
+
+        return {
+          _id: app.id,
+          post_id: app.post_id,
+          user_id: app.user_id,
+          plan_id: app.plan_id,
+          name: user?.name || 'N/A',
+          email: user?.email || 'N/A',
+          jobTitle: job?.jobTitle || 'N/A',
+          jobType: job?.jobType || 'N/A',
+          seen: app.seen,
+          timestamp: app.timestamp,
+          status: app.__v, // Renaming __v to label
+        };
+      })
+    );
+
+    res.status(200).json(enrichedApplications);
   } catch (error) {
     console.error('Error fetching applications:', error);
     res.status(500).json({ message: 'Server error' });
@@ -31,40 +62,53 @@ const getApplicationUsingPostId = async (req, res) => {
 
 const getApplicationUsingUserId = async (req, res) => {
   const { user_id } = req.params;
-
+  
   if (!user_id) {
-    return res.status(400).send({ message: 'user_id is required' });
+    return res.status(400).json({ message: 'user_id is required' });
   }
-
+  
   try {
-    // Fetch the applications for the specified user_id
+    // Fetch applications based on user_id
     const applications = await AppliedJob.find({ user_id });
 
-    // Dynamically populate post_id based on post_type
-    for (const application of applications) {
-      if (application.post_type === 'Job') {
-        await application.populate('post_id', 'jobTitle industry city country');
-      } else if (application.post_type === 'FreeJobs') {
-        await application.populate('post_id', 'jobTitle industry city country');
-      }
-
-      // Format the timestamp (or any other date field)
-      if (application.timestamp) {
-        const timestamp = new Date(application.timestamp);
-        application.timestamp = isNaN(timestamp.getTime())
-          ? 'Invalid Date'
-          : timestamp.toLocaleDateString(); // Format the date
-      }
-    }
-
-    if (applications.length > 0) {
-      return res.status(200).json(applications); // Return the applications with formatted date
-    } else {
+    if (applications.length === 0) {
       return res.status(404).json({ message: 'No applications found for the specified user_id' });
     }
+
+    // Enrich applications with user details and job details
+    const enrichedApplications = await Promise.all(
+      applications.map(async (app) => {
+        // Fetch user details
+        const user = await User.findById(app.user_id).select('name email');
+
+        // Fetch job details first from Job model
+        let job = await Job.findOne({ _id: app.post_id }).select('jobTitle jobType');
+
+        // If job not found in Job model, check in FreeJob model
+        if (!job) {
+          job = await FreeJob.findOne({ _id: app.post_id }).select('jobTitle jobType');
+        }
+
+        return {
+          _id: app.id,
+          post_id: app.post_id,
+          user_id: app.user_id,
+          plan_id: app.plan_id,
+          name: user?.name || 'N/A',
+          email: user?.email || 'N/A',
+          jobTitle: job?.jobTitle || 'N/A',
+          jobType: job?.jobType || 'N/A',
+          seen: app.seen,
+          timestamp: app.timestamp,
+          status: app.__v, // Renaming __v to label
+        };
+      })
+    );
+
+    res.status(200).json(enrichedApplications);
   } catch (error) {
     console.error('Error fetching applications:', error);
-    return res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
