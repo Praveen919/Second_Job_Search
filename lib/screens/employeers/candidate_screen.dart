@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:second_job_search/Config/config.dart';
 
 class ManageCandidatesScreen extends StatelessWidget {
   const ManageCandidatesScreen({super.key});
@@ -8,13 +11,12 @@ class ManageCandidatesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Set the background color to white
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor:
-            const Color.fromARGB(255, 100, 176, 238),// Set the AppBar background color to white
-        elevation: 0, // Remove the AppBar shadow
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
+        elevation: 0,
         title: const Text(
-          'Candidate',
+          'Candidates',
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.bold,
@@ -26,7 +28,7 @@ class ManageCandidatesScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Title for Pie Chart
+              // Pie Chart Section
               Text(
                 'Skillset Analysis',
                 style: TextStyle(
@@ -35,9 +37,8 @@ class ManageCandidatesScreen extends StatelessWidget {
                   color: Colors.black87,
                 ),
               ),
-              // Pie Chart with fixed height
               SizedBox(
-                height: 250, // Set a fixed height for the pie chart
+                height: 250,
                 child: PieChart(
                   PieChartData(
                     sections: showingSections(),
@@ -47,7 +48,7 @@ class ManageCandidatesScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              // Job Manager Container
+              // Candidate List Section
               Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
@@ -62,7 +63,7 @@ class ManageCandidatesScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Candidate(),
+                child: CandidateList(),
               ),
             ],
           ),
@@ -117,67 +118,16 @@ class ManageCandidatesScreen extends StatelessWidget {
   }
 }
 
-class Candidate extends StatefulWidget {
-  const Candidate({super.key});
+class CandidateList extends StatefulWidget {
+  const CandidateList({super.key});
 
   @override
-  _CandidateState createState() => _CandidateState();
+  _CandidateListState createState() => _CandidateListState();
 }
 
-class _CandidateState extends State<Candidate> {
-  final List<String> categories = [
-    'IT',
-    'Marketing',
-    'Finance',
-    'Sales',
-    'HR',
-    'Engineering',
-    'Design',
-    'Customer Service',
-    'Administration',
-    'Education'
-  ];
-
-  final List<String> emailList = [
-    'it@yahoo.com',
-    'marketing@gmail.com',
-    'finance@microsoft.com',
-    'sales@yahoo.com',
-    'hr@gmail.com',
-    'engineering@microsoft.com',
-    'design@yahoo.com',
-    'customerservice@gmail.com',
-    'administration@microsoft.com',
-    'education@yahoo.com'
-  ];
-
-  final List<String> locations = [
-    'Mumbai',
-    'Delhi',
-    'Bangalore',
-    'Chennai',
-    'Hyderabad',
-    'Pune',
-    'Kolkata',
-    'Ahmedabad',
-    'Chandigarh',
-    'Goa'
-  ];
-
-  final List<String> skillsList = [
-    'coding, debugging',
-    'seo, marketing',
-    'accounting, budgeting',
-    'negotiation, sales',
-    'recruitment, HR',
-    'problem-solving, decision-making',
-    'design, branding',
-    'customer support, CRM',
-    'administration, multitasking',
-    'teaching, e-learning'
-  ];
-
-  late List<Map<String, String>> jobListings;
+class _CandidateListState extends State<CandidateList> {
+  List<Map<String, dynamic>> candidates = [];
+  bool isLoading = true;
   int currentPage = 0;
   final int recordsPerPage = 5;
   String searchQuery = '';
@@ -185,58 +135,121 @@ class _CandidateState extends State<Candidate> {
   @override
   void initState() {
     super.initState();
-    jobListings = List.generate(
-      12,
-      (index) {
-        final random = Random();
-        final category = categories[random.nextInt(categories.length)];
-        final location = locations[random.nextInt(locations.length)];
-        final skill = skillsList[random.nextInt(skillsList.length)];
-        final email = emailList[random.nextInt(emailList.length)];
-
-        return {
-          'title': 'Developer ${index + 1}',
-          'category': category,
-          'location': location,
-          'email': email,
-          'skill': skill,
-        };
-      },
-    );
+    fetchJobsAndCandidates();
   }
 
-  void loadMoreJobs() {
+  Future<void> fetchJobsAndCandidates() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+    print("Fetched userId: $userId");
+    if (userId == null) {
+      print("Error: User ID is null or empty");
+      return;
+    }
+    try {
+      final jobResponse = await http.get(Uri.parse('${AppConfig.baseUrl}/api/applied-jobs/get-job-by-userid/$userId'));
+      print("API Response Status: ${jobResponse.statusCode}");
+      print("API Response Body: ${jobResponse.body}");
+      if (jobResponse.statusCode == 200) {
+        List<dynamic> jobs = json.decode(jobResponse.body);
+        if (jobs.isNotEmpty) {
+          for (var job in jobs) {
+            String postId = job['_id']?.toString() ?? '';
+            if (postId.isEmpty) continue;
+
+            await fetchCandidates(postId);
+          }
+        }
+      }
+    } catch (error) {
+      print('Error fetching jobs: $error');
+    }
+  }
+
+  Future<void> fetchCandidates(String postId) async {
+    try {
+      final response = await http.get(Uri.parse('${AppConfig.baseUrl}/api/applied-jobs/post/$postId'));
+      if (response.statusCode == 200) {
+        setState(() {
+          candidates.addAll(List<Map<String, dynamic>>.from(json.decode(response.body)));
+          isLoading = false;
+        });
+      }
+    } catch (error) {
+      print('Error fetching candidates: $error');
+    }
+  }
+
+  void loadMoreCandidates() {
     setState(() {
-      if (currentPage + 1 < (jobListings.length / recordsPerPage).ceil()) {
+      if (currentPage + 1 < (candidates.length / recordsPerPage).ceil()) {
         currentPage++;
       }
     });
   }
 
+  Future<void> shortlistCandidate(String candidateId) async {
+    if (candidateId.length != 24) { // ✅ MongoDB ObjectId check
+      print("Invalid Candidate ID: $candidateId");
+      return;
+    }
+
+    try {
+      print("Shortlisting candidate: $candidateId");
+      final response = await http.post(
+        Uri.parse('${AppConfig.baseUrl}/api/applied-jobs/update-job-status/$candidateId'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"action": "approve"}), // ✅ Backend expects "approve"
+      );
+
+      print("API Response Status: ${response.statusCode}");
+      print("API Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        setState(() {
+          candidates = candidates.map((candidate) {
+            if (candidate['_id'] == candidateId) {
+              candidate['status'] = 'shortlisted';
+              print("Candidate ${candidate['_id']} marked as shortlisted!"); // ✅ Debugging
+            }
+            return candidate;
+          }).toList();
+        });
+        print("Candidate successfully shortlisted!");
+      } else {
+        print("Error shortlisting candidate: ${response.body}");
+      }
+
+    } catch (error) {
+      print("Exception while shortlisting candidate: $error");
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Filter job listings based on search query
-    final filteredJobs = jobListings.where((job) {
-      return job['title']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          job['category']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          job['location']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          job['email']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          job['skill']!.toLowerCase().contains(searchQuery.toLowerCase());
+    // Filter candidates based on search query
+    final filteredCandidates = candidates.where((candidate) {
+      return candidate['name']?.toLowerCase().contains(searchQuery.toLowerCase()) == true ||
+          candidate['jobTitle']?.toLowerCase().contains(searchQuery.toLowerCase()) == true ||
+          candidate['jobType']?.toLowerCase().contains(searchQuery.toLowerCase()) == true ||
+          candidate['timestamp']?.toLowerCase().contains(searchQuery.toLowerCase()) == true;
     }).toList();
 
     final startIndex = currentPage * recordsPerPage;
     final endIndex = startIndex + recordsPerPage;
-    final jobsToShow = filteredJobs.sublist(
+    final candidatesToShow = filteredCandidates.sublist(
       startIndex,
-      endIndex > filteredJobs.length ? filteredJobs.length : endIndex,
+      endIndex > filteredCandidates.length ? filteredCandidates.length : endIndex,
     );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // "My Job Listings" Header
+        // "All Candidates" Header
         Text(
           'All Candidates',
           style: TextStyle(
@@ -269,38 +282,30 @@ class _CandidateState extends State<Candidate> {
                 });
               },
               decoration: InputDecoration(
-                hintText: 'Search for a job...',
+                hintText: 'Search for a candidate...',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 border: InputBorder.none,
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
             ),
           ),
         ),
         const SizedBox(height: 12),
 
-        // Job Listings
-        ListView.builder(
+        // Candidate Listings
+        isLoading
+            ? Center(child: CircularProgressIndicator())
+            : ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: jobsToShow.length,
+          itemCount: candidatesToShow.length,
           itemBuilder: (context, index) {
-            final job = jobsToShow[index];
-
+            final candidate = candidatesToShow[index];
             return GestureDetector(
               onTap: () {
-                // Navigate to the job details page
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => CandidateDetailsScreen(
-                            job: job,
-                          )
-                      // Navigate to the JobDetailsPage
-                      ),
-                );
+                // Navigate to candidate details page
               },
               child: Container(
                 padding: EdgeInsets.all(screenWidth * 0.04),
@@ -318,9 +323,10 @@ class _CandidateState extends State<Candidate> {
                   ],
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Candidate Name and Avatar
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const CircleAvatar(
                           radius: 30,
@@ -328,80 +334,69 @@ class _CandidateState extends State<Candidate> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                job['title']!,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: screenWidth * 0.045,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Flexible(
-                                    flex: 9,
-                                    child: Text(
-                                      job['category']!,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.038,
-                                        color: Colors.blueGrey,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Flexible(
-                                    flex: 8,
-                                    child: Text(
-                                      " - ${job['location']}",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.038,
-                                        color: Colors.blueGrey,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                            ],
+                          child: Text(
+                            candidate['name'] ?? 'No Name',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth * 0.045,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const Divider(color: Colors.grey, height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Email: ' + (job['email'] ?? 'No email provided'),
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.038,
-                                color: Colors.blueGrey,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Skills: ' +
-                                  (job['skill'] ?? 'No skill provided'),
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.038,
-                                color: Colors.blueGrey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    const SizedBox(height: 10),
+
+                    // Job Title and Type
+                    Text(
+                      'Applied for: ${candidate['jobTitle'] ?? 'No Job Title'}',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.038,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Job Type: ${candidate['jobType'] ?? 'No Job Type'}',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.038,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Date Applied and Status
+                    Text(
+                      'Date Applied: ${candidate['timestamp'] ?? 'No Date'}',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.038,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Status: ${candidate['status'] == 0 ? 'Pending' : 'Reviewed'}',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.038,
+                        color: candidate['status'] == 0 ? Colors.orange : Colors.green,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // View Resume Button
+                    ElevatedButton(
+                      onPressed: () {
+                        // Add functionality to view resume
+                      },
+                      child: const Text("View Resume", style: TextStyle(color: Colors.blue)),
+                    ),
+                    const SizedBox(height: 10),
+                    // View Resume Button
+                    ElevatedButton(
+                      onPressed: () => shortlistCandidate(candidate['_id']),
+                      child: Text(candidate['status'] == 'shortlisted' ? "Shortlisted" : "Shortlist"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: candidate['status'] == 'shortlisted' ? Colors.green : Colors.blue,
+                      ),
                     ),
                   ],
                 ),
@@ -409,9 +404,8 @@ class _CandidateState extends State<Candidate> {
             );
           },
         ),
-        SizedBox(
-          height: 5,
-        ),
+        SizedBox(height: 5),
+
         // Load More Button Section
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -426,7 +420,7 @@ class _CandidateState extends State<Candidate> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -437,17 +431,13 @@ class _CandidateState extends State<Candidate> {
                       fontSize: screenWidth * 0.04, color: Colors.white),
                 ),
               ),
-            if (currentPage + 1 < (filteredJobs.length / recordsPerPage).ceil())
+            if (currentPage + 1 < (filteredCandidates.length / recordsPerPage).ceil())
               ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    currentPage++;
-                  });
-                },
+                onPressed: loadMoreCandidates,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -459,170 +449,6 @@ class _CandidateState extends State<Candidate> {
                 ),
               ),
           ],
-        ),
-      ],
-    );
-  }
-}
-
-class CandidateDetailsScreen extends StatelessWidget {
-  final Map<String, dynamic> job;
-
-  const CandidateDetailsScreen({required this.job});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(job['name'] ?? 'Candidate Details'),
-        backgroundColor: const Color(0xFFBFDBFE),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile Image and Candidate Name Section
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: NetworkImage(job['profileImage'] ??
-                        'https://via.placeholder.com/150'),
-                  ),
-                  SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        job['name'] ?? 'No name',
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Location: ${job['location'] ?? 'Not available'}',
-                        style: TextStyle(fontSize: 16, color: Colors.blueGrey),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-
-              // Resume Download Button
-              ElevatedButton(
-                onPressed: () {
-                  // Add your resume download functionality here
-                  print('Download resume clicked');
-                },
-                child: Text('Download Resume'),
-              ),
-              SizedBox(height: 20),
-
-              // Candidate Information Section
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'Candidate Information',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-              ),
-              _buildRowWithIcon(Icons.work, 'Experience', job['experience']),
-              _buildRowWithIcon(Icons.school, 'Education', job['education']),
-              _buildRowWithIcon(Icons.monetization_on, 'Expected Salary',
-                  job['expected_salary']),
-              _buildRowWithIcon(Icons.monetization_on, 'Current Salary',
-                  job['current_salary']),
-              _buildRowWithIcon(Icons.person, 'Role', job['role']),
-              _buildRowWithIcon(
-                  Icons.sell, 'Professional Skills', job['skills']),
-              SizedBox(height: 20),
-
-              // Divider
-              Divider(),
-
-              // Other Related Candidates Section (in cards)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'Other Related Candidates',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: 3, // Just a placeholder count for related candidates
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      // Navigate to related candidate details (if required)
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(16),
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 8,
-                            spreadRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 25,
-                            backgroundImage: NetworkImage(
-                                'https://via.placeholder.com/150'), // Placeholder image
-                          ),
-                          SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Candidate ${index + 1}',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'Location: Some Location',
-                                style: TextStyle(
-                                    fontSize: 14, color: Colors.blueGrey),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Helper function to build rows with icons and text
-  Widget _buildRowWithIcon(IconData icon, String title, String? value) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.blueGrey),
-        SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            '$title: ${value ?? 'Not available'}',
-            style: TextStyle(fontSize: 16, color: Colors.blueGrey),
-            overflow: TextOverflow.ellipsis,
-          ),
         ),
       ],
     );
