@@ -116,8 +116,37 @@ class _QualificationScreenState extends State<QualificationScreen> {
 
     if (result != null && result.files.isNotEmpty) {
       setState(() {
-        uploadedFileName = result.files.single.name; // Get the file name
+        uploadedFileName = result.files.single.name;
       });
+
+      // Upload the file immediately after picking
+      await uploadResume(result.files.single);
+    }
+  }
+
+  Future<void> uploadResume(PlatformFile file) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId == null) {
+      print("User ID not found");
+      return;
+    }
+
+    var uri = Uri.parse("${AppConfig.baseUrl}/api/users/upload-resume/$userId");
+    var request = http.MultipartRequest("POST", uri)
+      ..files.add(await http.MultipartFile.fromPath('resume', file.path!))
+      ..fields['resumeType'] = "Technical"; // Example
+
+    try {
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        print("Resume uploaded successfully");
+      } else {
+        print("Failed to upload resume");
+      }
+    } catch (e) {
+      print("Error uploading file: $e");
     }
   }
 
@@ -197,7 +226,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: startMonth,
@@ -245,7 +274,7 @@ class _QualificationScreenState extends State<QualificationScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: endMonth,
