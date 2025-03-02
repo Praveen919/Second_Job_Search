@@ -28,9 +28,10 @@ class EmployeeProfileScreen extends StatefulWidget {
 class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   String profileName = "Alok Kushwaha";
   String location = "Mumbai, India";
-  File? profileImage; // Holds the uploaded image file
-
+  String? profileImagePath; // Updated to handle image URL
   final ImagePicker _picker = ImagePicker();
+
+
 
   @override
   void initState() {
@@ -45,6 +46,8 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       String address = prefs.getString('address') ?? "Unknown Address";
       String country = prefs.getString('country') ?? "Unknown Country";
       location = "$address, $country";
+      profileImagePath =
+          prefs.getString('profileImage');
     });
   }
 
@@ -56,7 +59,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
         title: const Text('Profile'),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
+        backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
       body: Column(
@@ -73,9 +76,9 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   child: CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.grey.shade200,
-                    backgroundImage: profileImage != null
-                        ? FileImage(profileImage!) as ImageProvider
-                        : const AssetImage('assets/logo.png'),
+                    backgroundImage: profileImagePath != null
+                        ? NetworkImage("${AppConfig.baseUrl}$profileImagePath")
+                        : const AssetImage('assets/logo.png') as ImageProvider,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -271,47 +274,46 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   }
 
   Future<void> _editProfilePicture() async {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera),
-                title: const Text("Take Photo"),
-                onTap: () async {
-                  final pickedFile = await _picker.pickImage(
-                    source: ImageSource.camera,
-                  );
-                  if (pickedFile != null) {
-                    setState(() {
-                      profileImage = File(pickedFile.path);
-                    });
-                  }
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.image),
-                title: const Text("Choose from Gallery"),
-                onTap: () async {
-                  final pickedFile = await _picker.pickImage(
-                    source: ImageSource.gallery,
-                  );
-                  if (pickedFile != null) {
-                    setState(() {
-                      profileImage = File(pickedFile.path);
-                    });
-                  }
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      File imageFile = File(pickedFile.path);
+      await uploadProfileImage(imageFile);
+    }
+  }
+
+  Future<void> uploadProfileImage(File imageFile) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId == null) {
+      print("User ID not found");
+      return;
+    }
+
+    var uri = Uri.parse("${AppConfig.baseUrl}/api/users/update-image/$userId");
+    var request = http.MultipartRequest("PUT", uri)
+      ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+
+    try {
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+      var jsonData = jsonDecode(responseData);
+
+      if (jsonData['image'] != null && jsonData['image'] is String) {
+        setState(() {
+          profileImagePath = jsonData['image'];
+        });
+
+        prefs.setString(
+            "profileImage", jsonData['image']); // Save to local storage
+        print("Profile image updated successfully");
+      } else {
+        print("Invalid response: ${jsonData}");
+      }
+    } catch (e) {
+      print("Error uploading profile image: $e");
+    }
   }
 }
 
