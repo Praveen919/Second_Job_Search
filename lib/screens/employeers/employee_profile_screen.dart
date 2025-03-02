@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:second_job_search/screens/employeers/allapplicant_screen.dart';
 import 'package:second_job_search/screens/employeers/candidate_screen.dart';
 import 'package:second_job_search/screens/employeers/company_details_screen.dart';
 import 'package:second_job_search/screens/employeers/employee_dashbord.dart';
@@ -170,17 +169,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                             builder: (context) => const ManageJobsScreen()));
                   },
                 ),
-                _buildOption(
-                  context,
-                  icon: Icons.article_outlined,
-                  text: 'All Applicants',
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ApplicantsDashboard()));
-                  },
-                ),
+
                 _buildOption(
                   context,
                   icon: Icons.sort_outlined,
