@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:second_job_search/Config/config.dart';
@@ -17,6 +16,9 @@ class Profilescreen extends StatefulWidget {
 
 class _ProfilescreenState extends State<Profilescreen> {
   String? name = "";
+  String? applied_count = "";
+  String? job_count = "";
+  String? message_count = "";
   String? saved_job_count = "";
 
   @override
@@ -28,16 +30,73 @@ class _ProfilescreenState extends State<Profilescreen> {
 
   Future<void> _loadDashboardData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String apiUrl =
+    String apiForAppliedJobsUrl =
+        "${AppConfig.baseUrl}/api/applied-jobs//count/${prefs.getString("userId")}";
+    String apiForUnreadMessagesUrl =
+        "${AppConfig.baseUrl}/api/messages/notify/${prefs.getString("userId")}";
+    String apiForJobsUrl = "${AppConfig.baseUrl}/api/jobs/jobCount";
+    String apiForSaveJobsUrl =
         "${AppConfig.baseUrl}/api/users/save-jobs/${prefs.getString("userId")}";
+
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await http.get(Uri.parse(apiForAppliedJobsUrl));
 
       if (response.statusCode == 200) {
-        dynamic data = response.body;
-
+        dynamic data = jsonDecode(response.body);
         setState(() {
-          saved_job_count = data["count"];
+          applied_count = data["applied_jobs_count"].toString();
+        });
+      } else {
+        setState(() {
+          applied_count = "0";
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+
+    try {
+      final response = await http.get(Uri.parse(apiForJobsUrl));
+
+      if (response.statusCode == 200) {
+        dynamic data = jsonDecode(response.body);
+        setState(() {
+          print(data);
+          job_count = data["total_jobs"].toString();
+        });
+      } else {
+        setState(() {
+          job_count = "0";
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+
+    try {
+      final response = await http.get(Uri.parse(apiForUnreadMessagesUrl));
+
+      if (response.statusCode == 200) {
+        dynamic data = jsonDecode(response.body);
+        setState(() {
+          message_count = data["readCount"].toString();
+        });
+      } else {
+        setState(() {
+          applied_count = "0";
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+
+    try {
+      final response = await http.get(Uri.parse(apiForSaveJobsUrl));
+
+      if (response.statusCode == 200) {
+        dynamic data = jsonDecode(response.body);
+        setState(() {
+          saved_job_count = data["count"].toString();
         });
       } else {
         setState(() {
@@ -47,6 +106,7 @@ class _ProfilescreenState extends State<Profilescreen> {
     } catch (error) {
       print("Error fetching data: $error");
     }
+
     setState(() {
       name = prefs.getString("name");
       name = name?.split(" ")[0];
@@ -106,8 +166,8 @@ class _ProfilescreenState extends State<Profilescreen> {
                         children: [
                           _buildInfoContainer(
                             icon: Icons.work_outline_rounded,
-                            count: '1',
-                            label: 'Applied Job',
+                            count: '$applied_count',
+                            label: 'Applied',
                             iconColor: Colors.black,
                             backgroundColor:
                                 const Color.fromARGB(255, 77, 177, 223),
@@ -115,7 +175,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                           const SizedBox(width: 10),
                           _buildInfoContainer(
                             icon: Icons.sticky_note_2_outlined,
-                            count: '4525',
+                            count: '$job_count',
                             label: 'Job Alerts',
                             iconColor: Colors.black,
                             backgroundColor:
@@ -128,7 +188,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                         children: [
                           _buildInfoContainer(
                             icon: Icons.message_outlined,
-                            count: '0',
+                            count: '$message_count',
                             label: 'Messages',
                             iconColor: Colors.black,
                             backgroundColor:
