@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:second_job_search/Config/config.dart';
+import 'package:http/http.dart' as http;
 
 class ManageJobsScreen extends StatelessWidget {
   const ManageJobsScreen({super.key});
+
+  Future<String?> getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userId');
+  }
 
   // Reusable Container Widget
   Widget _buildInfoContainer({
@@ -86,10 +94,10 @@ class ManageJobsScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Column(
             children: [
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               LayoutBuilder(
                 builder: (context, constraints) {
                   final maxWidth = constraints.maxWidth;
@@ -100,18 +108,18 @@ class ManageJobsScreen extends StatelessWidget {
                           Flexible(
                             child: _buildInfoContainer(
                               icon: Icons.work_outline_rounded,
-                              count: '4',
+                              count: '1',
                               label: 'Active Jobs',
                               iconColor: Colors.black,
                               backgroundColor:
                                   const Color.fromARGB(255, 169, 210, 230),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           Flexible(
                             child: _buildInfoContainer(
                               icon: Icons.work_outline_outlined,
-                              count: '4',
+                              count: '0',
                               label: 'Inactive Jobs',
                               iconColor: Colors.black,
                               backgroundColor:
@@ -120,7 +128,7 @@ class ManageJobsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           Flexible(
@@ -137,7 +145,7 @@ class ManageJobsScreen extends StatelessWidget {
                           Flexible(
                             child: _buildInfoContainer(
                                 icon: Icons.work_outline_outlined,
-                                count: '0',
+                                count: '1',
                                 label: 'Total Jobs',
                                 iconColor: Colors.black,
                                 backgroundColor: Colors.pink[200]!),
@@ -150,7 +158,7 @@ class ManageJobsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               // Directly include JobManager here
-              const JobManager()
+              JobManager()
             ],
           ),
         ),
@@ -195,7 +203,7 @@ class _JobManagerState extends State<JobManager> {
   ];
 
   // List of job listings
-  late List<Map<String, String>> jobListings;
+  late List<Map<String, String>> jobListings = [];
 
   // Pagination variables
   int currentPage = 0;
@@ -204,24 +212,41 @@ class _JobManagerState extends State<JobManager> {
   @override
   void initState() {
     super.initState();
-    // Generate job listings with random categories and locations
-    jobListings = List.generate(
-      12, // More than 10 records
-      (index) {
-        final random = Random();
-        final category = categories[random.nextInt(categories.length)];
-        final location = locations[random.nextInt(locations.length)];
+    fetchJobs();
+  }
 
-        return {
-          'title': 'Job Title ${index + 1}',
-          'category': category,
-          'location': location,
-          'applications': '${(index + 1) * 5}', // Convert int to String
-          'expiryDate':
-              '11/${(index + 1).toString().padLeft(2, '0')}/2025', // Ensure expiry date is correctly formatted
-        };
-      },
-    );
+  Future<void> fetchJobs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+
+    if (userId == null) {
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('${AppConfig.baseUrl}/api/applied-jobs/get-job-by-userid/$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          jobListings = data.map((job) {
+            return {
+              'title': job['jobTitle'].toString(),
+              'category': job['jobType'].toString(),
+              'location': job['city'].toString(),
+              'applications': (job['applications'] ?? 0).toString(),
+              'expiryDate': (job['expiryDate'] ?? 'N/A').toString(),
+            };
+          }).toList();
+        });
+      } else {
+        throw Exception('Failed to load jobs');
+      }
+    } catch (error) {
+      print('Error fetching jobs: $error');
+    }
   }
 
   // Method to load the next set of jobs
@@ -270,7 +295,7 @@ class _JobManagerState extends State<JobManager> {
                 'My Job Listings',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: screenWidth * 0.05,
+                  fontSize: screenWidth * 0.045,
                   color: Colors.black87,
                 ),
               ),
