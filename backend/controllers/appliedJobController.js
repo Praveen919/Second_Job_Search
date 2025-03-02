@@ -7,6 +7,67 @@ const Plan = require('../models/planModel');
 const { sendEmail } = require('../utils/sendEmail'); // Importing sendEmail
 console.log('sendEmail function:', sendEmail);
 
+
+const getApplicationUsingPostId = async (req, res) => {
+  const { post_id } = req.params;
+
+  if (!post_id) {
+    return res.status(400).send({ message: 'Post_id is required' });
+  }
+
+  try {
+    const applications = await AppliedJob.find({ post_id });
+
+    if (applications.length > 0) {
+      res.status(200).json(applications);
+    } else {
+      res.status(404).json({ message: 'No applications found for the specified post_id' });
+    }
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getApplicationUsingUserId = async (req, res) => {
+  const { user_id } = req.params;
+
+  if (!user_id) {
+    return res.status(400).send({ message: 'user_id is required' });
+  }
+
+  try {
+    // Fetch the applications for the specified user_id
+    const applications = await AppliedJob.find({ user_id });
+
+    // Dynamically populate post_id based on post_type
+    for (const application of applications) {
+      if (application.post_type === 'Job') {
+        await application.populate('post_id', 'jobTitle industry city country');
+      } else if (application.post_type === 'FreeJobs') {
+        await application.populate('post_id', 'jobTitle industry city country');
+      }
+
+      // Format the timestamp (or any other date field)
+      if (application.timestamp) {
+        const timestamp = new Date(application.timestamp);
+        application.timestamp = isNaN(timestamp.getTime())
+          ? 'Invalid Date'
+          : timestamp.toLocaleDateString(); // Format the date
+      }
+    }
+
+    if (applications.length > 0) {
+      return res.status(200).json(applications); // Return the applications with formatted date
+    } else {
+      return res.status(404).json({ message: 'No applications found for the specified user_id' });
+    }
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Controller function to get all applied jobs
 const getAllAppliedJobs = async (req, res) => {
   try {
@@ -329,4 +390,6 @@ module.exports = {
   deleteAppliedJob,
   applyForJob,
   getAppliedJobsCount,
+  getApplicationUsingPostId,
+  getApplicationUsingUserId
 };
