@@ -340,80 +340,66 @@ const getUser = async (req, res) => {
 };
 
 
-const publicResumeDir = path.join(__dirname, '../public/resume/');
+const uploadDir = path.join(__dirname, '../uploads/');
 
-if (!fs.existsSync(publicResumeDir)) {
-  fs.mkdirSync(publicResumeDir, { recursive: true });
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 // Setup multer storage for resumes
 const resumeStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, publicResumeDir); // Save files to the public/resume directory
-  },
-  filename: (req, file, cb) => {
-    const extension = path.extname(file.originalname);
-    cb(null, `resume_${Date.now()}${extension}`); // Ensure unique filenames
-  }
+    destination: (req, file, cb) => {
+        cb(null, uploadDir); // Save files in "uploads/" directory
+    },
+    filename: (req, file, cb) => {
+        const extension = path.extname(file.originalname);
+        cb(null, `resume_${Date.now()}${extension}`); // Unique filename
+    }
 });
+
 
 // Multer setup for resumes
 const resumeUploadMiddleware = multer({
-  storage: resumeStorage,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB file size limit
+    storage: resumeStorage,
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
 // Function to handle the resume upload logic
 const uploadResume = async (req, res) => {
-  const { user_id } = req.params;
-  const { resumeType } = req.body;
-  const file = req.file;
+    const { user_id } = req.params;
+    const { resumeType } = req.body;
+    const file = req.file;
 
-  console.log('User ID:', user_id);
-  console.log('Uploaded file:', file);
-  console.log('Resume Type:', resumeType);
-
-  if (!user_id) {
-    return res.status(400).json({ error: 'User ID is required' });
-  }
-
-  if (!file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
-  if (!resumeType) {
-    return res.status(400).json({ error: 'Resume type is required' });
-  }
-
-  try {
-    const user = await User.findById(user_id);
-    if (!user) {
-      fs.unlink(path.join(publicResumeDir, file.filename), (err) => {
-        if (err) console.error('Error deleting file:', err);
-      });
-      return res.status(404).json({ error: 'User not found' });
+    if (!user_id || !file || !resumeType) {
+        return res.status(400).json({ error: 'User ID, resume file, and resume type are required' });
     }
 
-    user.resume = `/resume/${file.filename}`;
-    user.resumeType = resumeType;
-    console.log('Resume path to save:', user.resume);
-    console.log('Resume type to save:', user.resumeType);
-    await user.save();
-    console.log('User updated successfully');
+    try {
+        const user = await User.findById(user_id);
+        if (!user) {
+            fs.unlink(path.join(uploadDir, file.filename), (err) => {
+                if (err) console.error('Error deleting file:', err);
+            });
+            return res.status(404).json({ error: 'User not found' });
+        }
 
-    res.status(200).json({ user_id, resume: user.resume, resumeType: user.resumeType });
+        user.resume = `/uploads/${file.filename}`; // Update path
+        user.resumeType = resumeType;
+        await user.save();
 
-  } catch (error) {
-    console.error('Error uploading resume:', error);
+        res.status(200).json({ user_id, resume: user.resume, resumeType: user.resumeType });
 
-    if (file) {
-      fs.unlink(path.join(publicResumeDir, file.filename), (err) => {
-        if (err) console.error('Error deleting file:', err);
-      });
+    } catch (error) {
+        console.error('Error uploading resume:', error);
+
+        if (file) {
+            fs.unlink(path.join(uploadDir, file.filename), (err) => {
+                if (err) console.error('Error deleting file:', err);
+            });
+        }
+
+        res.status(500).json({ error: 'An error occurred while uploading the resume' });
     }
-
-    res.status(500).json({ error: 'An error occurred while uploading the resume' });
-  }
 };
 
 // Delete Resume Function
