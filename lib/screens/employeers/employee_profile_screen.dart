@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:second_job_search/screens/employeers/candidate_screen.dart';
 import 'package:second_job_search/screens/employeers/company_details_screen.dart';
 import 'package:second_job_search/screens/employeers/employee_dashbord.dart';
+import 'package:second_job_search/screens/employeers/interview_screen.dart';
 import 'package:second_job_search/screens/employeers/manage_jobs_screen.dart';
 import 'package:second_job_search/screens/employeers/shorlist_resume_screen.dart';
 import 'dart:io';
@@ -195,6 +196,31 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         MaterialPageRoute(
                             builder: (context) =>
                             const ManageCandidatesScreen()));
+                  },
+                ),
+                _buildOption(
+                  context,
+                  icon: Icons.phone_in_talk_outlined,
+                  text: 'Interviews',
+                  onTap: () async {
+                    SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
+                    String? employeeId = prefs
+                        .getString("userId"); // Fetch from SharedPreferences
+
+                    if (employeeId != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              InterviewSchedulingScreen(employeeId: employeeId),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Employee ID not found!")),
+                      );
+                    }
                   },
                 ),
                 _buildOption(
