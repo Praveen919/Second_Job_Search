@@ -220,11 +220,13 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
               const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.reload();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const CompanyLinksScreen(),
+                        builder: (context) => CompanyLinksScreen(userId: prefs.getString("userId") ?? ""),
                       ),
                     );
                   },

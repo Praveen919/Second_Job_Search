@@ -12,6 +12,8 @@ const {
   updateUserImage,
   changePassword,
   updateUserData,
+  updateUserCompanyDataLinks,
+  updateUserCompanyDataContact,
   updateCompanyData,
   updateNotificationSettings,
   saveJob,
@@ -52,6 +54,8 @@ router.delete('/delete-resume/:user_id', deleteResume);      // Delete resume
 router.put('/update-image/:id', profileUploadMiddleware.single('image'), updateUserImage);         // Update user image
 router.put('/change-password/:id', changePassword);         // Change user password
 router.put('/update-data/:id', updateUserData);             // Update user data
+router.put('/update-data-links/:id', updateUserCompanyDataLinks);             // Update user data company links
+router.put('/update-data-contact/:id', updateUserCompanyDataContact);
 router.put('/update-companyData/:id', updateCompanyData);    //Update Company data
 router.put('/update-notifications', updateNotificationSettings); // Update notification settings
 router.put('/save-jobs', saveJob);
