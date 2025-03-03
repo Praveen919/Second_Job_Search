@@ -7,6 +7,7 @@ import 'package:second_job_search/screens/change_password_screen.dart';
 import 'dart:convert';
 import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/screens/profile_screens/account_setting_screen.dart';
+import 'package:second_job_search/screens/profile_screens/candidate_interview_screen.dart';
 import 'package:second_job_search/screens/profile_screens/candidate_package_screen.dart';
 import 'package:second_job_search/screens/profile_screens/password_update_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
@@ -152,6 +153,33 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => const ResumeScreen()));
+                  },
+                ),
+                _buildOption(
+                  context,
+                  icon: Icons.phone_in_talk,
+                  text: 'Interviews',
+                  onTap: () async {
+                    SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
+                    String? candidateId =
+                    prefs.getString("userId"); // Fetch candidate ID
+
+                    if (candidateId != null && candidateId.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CandidateInterviewScreen(
+                              candidateId: candidateId),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                "Candidate ID not found! Please log in again.")),
+                      );
+                    }
                   },
                 ),
                 _buildOption(
