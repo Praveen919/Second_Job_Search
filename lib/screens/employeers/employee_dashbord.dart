@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:second_job_search/screens/notifications_screen.dart';
@@ -17,7 +18,10 @@ class EmployeeDashboardscreen extends StatefulWidget {
 class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
   String? name = "";
   String? lastLoginTime = "";
-  String? saved_job_count = "";
+  String? posted_jobs_count = "";
+  String? candidates_count = "";
+  String? messages_count = "";
+  String? shortlist_count = "";
 
   String convertMongoDBTimestamp(String mongoTimestamp) {
     // Parse the MongoDB timestamp to DateTime
@@ -40,11 +44,21 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String apiUrl =
         "${AppConfig.baseUrl}/api/users/${prefs.getString("userId")}";
+    String apiForPostedJobsUrl =
+        "${AppConfig.baseUrl}/api/jobs/posted-jobs/${prefs.getString(
+        "userId")}";
+    String apiForCandidatesUrl =
+        "${AppConfig.baseUrl}/api/applied-jobs/applicants-count/${prefs.getString("userId")}";
+    String apiForMessagesUrl =
+        "${AppConfig.baseUrl}/api/messages/notify/${prefs.getString("userId")}";
+    String apiForShortlistUrl =
+        "${AppConfig.baseUrl}/api/applied-jobs/shortlisted-count/${prefs
+        .getString("userId")}";
     try {
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
-        dynamic data = response.body;
+        dynamic data = jsonDecode(response.body);
 
         setState(() {
           lastLoginTime =
@@ -63,6 +77,73 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
       name = prefs.getString("name");
       name = name?.split(" ")[0];
     });
+    try {
+      final response = await http.get(Uri.parse(apiForPostedJobsUrl));
+
+      if (response.statusCode == 200) {
+        dynamic data = jsonDecode(response.body);
+        posted_jobs_count = data['jobCount'].toString();
+      } else {
+        posted_jobs_count = "0";
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+
+    try {
+      final response = await http.get(Uri.parse(apiForCandidatesUrl));
+      if (response.statusCode == 200) {
+        dynamic data = jsonDecode(response.body);
+        print("Total Applications: ${data['totalApplications']}"); // Debugging line
+
+        setState(() { // Ensure UI updates
+          candidates_count = data['totalApplications'].toString();
+        });
+      } else {
+        setState(() {
+          candidates_count = "0";
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+
+    try {
+      final response = await http.get(Uri.parse(apiForMessagesUrl));
+
+      if (response.statusCode == 200) {
+        dynamic data = jsonDecode(response.body);
+        setState(() {
+          messages_count = data["readCount"].toString();
+        });
+      } else {
+        setState(() {
+          messages_count = "0";
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+
+    try {
+      final response = await http.get(Uri.parse(apiForShortlistUrl));
+
+      if (response.statusCode == 200) {
+        dynamic data = jsonDecode(response.body);
+        print(
+            "Total Shortlisted: ${data['totalShortlisted']}"); // Debugging line
+
+        setState(() { // Ensure UI updates
+          shortlist_count = data['totalShortlisted'].toString();
+        });
+      } else {
+        setState(() {
+          shortlist_count = "0";
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
   }
 
   // Reusable Container Widget
@@ -178,22 +259,22 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
                           Flexible(
                             child: _buildInfoContainer(
                               icon: Icons.work_outline_rounded,
-                              count: '1',
-                              label: 'Applied Job',
+                              count: '$posted_jobs_count',
+                              label: 'Posted Jobs',
                               iconColor: Colors.black,
                               backgroundColor:
-                                  const Color.fromARGB(255, 77, 177, 223),
+                              const Color.fromARGB(255, 77, 177, 223),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Flexible(
                             child: _buildInfoContainer(
                               icon: Icons.sticky_note_2_outlined,
-                              count: '452',
-                              label: 'Job Alerts',
+                              count: '$candidates_count',
+                              label: 'Candidates',
                               iconColor: Colors.black,
                               backgroundColor:
-                                  const Color.fromARGB(255, 18, 149, 209),
+                              const Color.fromARGB(255, 18, 149, 209),
                             ),
                           ),
                         ],
@@ -204,22 +285,22 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
                           Flexible(
                             child: _buildInfoContainer(
                               icon: Icons.message_outlined,
-                              count: '0',
+                              count: '$messages_count',
                               label: 'Messages',
                               iconColor: Colors.black,
                               backgroundColor:
-                                  const Color.fromARGB(255, 18, 149, 209),
+                              const Color.fromARGB(255, 18, 149, 209),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Flexible(
                             child: _buildInfoContainer(
                               icon: Icons.bookmark_outline,
-                              count: '0',
+                              count: '$shortlist_count',
                               label: 'Shortlist',
                               iconColor: Colors.black,
                               backgroundColor:
-                                  const Color.fromARGB(255, 77, 177, 223),
+                              const Color.fromARGB(255, 77, 177, 223),
                             ),
                           ),
                         ],
@@ -229,7 +310,7 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
                 },
               ),
               const SizedBox(height: 10),
-              const ProfileViewsChart1(),
+              const ProfileViewsChart(),
               const SizedBox(height: 10),
               const Notifications(),
             ],
@@ -240,55 +321,81 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
   }
 }
 
-class ProfileViewsChart1 extends StatefulWidget {
-  const ProfileViewsChart1({super.key});
+class ProfileViewsChart extends StatefulWidget {
+  const ProfileViewsChart({super.key});
 
   @override
   _ProfileViewsChartState createState() => _ProfileViewsChartState();
 }
 
-class _ProfileViewsChartState extends State<ProfileViewsChart1> {
-  // Changed _ProfileViewsChartState1 to _ProfileViewsChartState
+class _ProfileViewsChartState extends State<ProfileViewsChart> {
   String selectedPeriod = 'Monthly';
-  String? tooltipText;
+  Map<int, int> monthData = {};
 
-  final List<FlSpot> dataPoints = [
-    const FlSpot(0, 5),
-    const FlSpot(1, 10),
-    const FlSpot(2, 7),
-    const FlSpot(3, 12),
-    const FlSpot(4, 15),
-    const FlSpot(5, 9),
-    const FlSpot(6, 20),
-    const FlSpot(7, 18),
-    const FlSpot(8, 14),
-    const FlSpot(9, 22),
-    const FlSpot(10, 11),
-    const FlSpot(11, 25),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadGraphDataPoints();
+  }
 
-  void onSpotTapped(FlSpot spot) {
-    setState(() {
-      tooltipText = 'Views: ${spot.y.toInt()}';
+  Map<int, int> extractMonthCount(dynamic jsonData) {
+    List<dynamic> dataList = jsonDecode(jsonData);
+    Map<int, int> monthFrequency = {};
+
+    for (var item in dataList) {
+      DateTime date = DateTime.parse(item['postedDate']);
+      int month = date.month;
+      monthFrequency[month] = (monthFrequency[month] ?? 0) + 1;
+    }
+
+    return monthFrequency;
+  }
+
+  Future<void> _loadGraphDataPoints() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String apiUrl =
+        "${AppConfig.baseUrl}/api/jobs/${prefs.getString("userId")}";
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        setState(() {
+          monthData = extractMonthCount(response.body);
+        });
+      }
+    } catch (error) {
+      print("Error fetching data: $error");
+    }
+  }
+
+  List<FlSpot> getDataPoints() {
+    return List.generate(12, (index) {
+      return FlSpot(
+          (index + 1).toDouble(), monthData[index + 1]?.toDouble() ?? 0);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width; // Get screen width
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
       height: 400,
-      padding: EdgeInsets.all(screenWidth * 0.04), // Responsive padding
+      padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade50, Colors.blue.shade200],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 8,
-            spreadRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 10,
+            spreadRadius: 5,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -296,26 +403,21 @@ class _ProfileViewsChartState extends State<ProfileViewsChart1> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Your Profile Views',
+            'Post Job Stats',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: screenWidth * 0.05, // Responsive font size
+              fontSize: screenWidth * 0.05,
+              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 10),
-          Container(
-            width: screenWidth * 0.3, // Responsive width
-            height: 30,
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 228, 228, 228),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(width: 1, color: Colors.grey),
-            ),
+          SizedBox(
+            width: screenWidth * 0.3,
             child: DropdownButton<String>(
               isExpanded: true,
               dropdownColor: Colors.white,
               value: selectedPeriod,
-              items: <String>['Daily', 'Weekly', 'Monthly']
+              items: ['Daily', 'Weekly', 'Monthly']
                   .map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
@@ -332,118 +434,121 @@ class _ProfileViewsChartState extends State<ProfileViewsChart1> {
                   selectedPeriod = newValue!;
                 });
               },
-              style: const TextStyle(color: Colors.white), // Text color
-              underline: const SizedBox(), // Remove underline
-              alignment: Alignment.center, // Center align the dropdown text
+              style: const TextStyle(color: Colors.black),
+              underline: const SizedBox(),
+              alignment: Alignment.center,
             ),
           ),
           const SizedBox(height: 16),
-          if (tooltipText != null)
-            Container(
-              padding: const EdgeInsets.all(8),
-              color: Colors.blue,
-              child: Text(
-                tooltipText!,
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 250,
-            child: LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  horizontalInterval: 1,
-                  getDrawingHorizontalLine: (value) {
-                    return const FlLine(
-                      color: Color(0xffe7e7e7),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: Colors.grey.shade300,
                       strokeWidth: 1,
-                    );
-                  },
-                  getDrawingVerticalLine: (value) {
-                    return const FlLine(
-                      color: Color(0xffe7e7e7),
-                      strokeWidth: 1,
-                    );
-                  },
-                ),
-                titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 12),
-                        );
-                      },
                     ),
                   ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 38,
-                      getTitlesWidget: (value, meta) {
-                        switch (value.toInt()) {
-                          case 0:
-                            return const Text('Jan');
-                          case 1:
-                            return const Text('Feb');
-                          case 2:
-                            return const Text('Mar');
-                          case 3:
-                            return const Text('Apr');
-                          case 4:
-                            return const Text('May');
-                          case 5:
-                            return const Text('Jun');
-                          case 6:
-                            return const Text('Jul');
-                          case 7:
-                            return const Text('Aug');
-                          case 8:
-                            return const Text('Sep');
-                          case 9:
-                            return const Text('Oct');
-                          case 10:
-                            return const Text('Nov');
-                          case 11:
-                            return const Text('Dec');
-                          default:
-                            return const Text('');
-                        }
-                      },
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Text(
+                              value.toInt().toString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          const months = [
+                            'Jan',
+                            'Feb',
+                            'Mar',
+                            'Apr',
+                            'May',
+                            'Jun',
+                            'Jul',
+                            'Aug',
+                            'Sep',
+                            'Oct',
+                            'Nov',
+                            'Dec'
+                          ];
+                          return Text(
+                            months[value.toInt() - 1],
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
+                  borderData: FlBorderData(
+                    show: false,
                   ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  minX: 1,
+                  maxX: 12,
+                  minY: 0,
+                  maxY: monthData.values.isNotEmpty
+                      ? (monthData.values.reduce((a, b) => a > b ? a : b) + 5)
+                      .toDouble()
+                      : 10,
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: getDataPoints(),
+                      isCurved: true,
+                      color: Colors.blue.shade700,
+                      barWidth: 3,
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blue.shade200.withOpacity(0.4),
+                            Colors.transparent,
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, barData, index) =>
+                            FlDotCirclePainter(
+                              radius: 4,
+                              color: Colors.blue.shade900,
+                              strokeWidth: 2,
+                              strokeColor: Colors.white,
+                            ),
+                      ),
+                    ),
+                  ],
                 ),
-                borderData: FlBorderData(
-                  show: true,
-                  border: const Border(
-                    left: BorderSide(color: Color(0xff37434d), width: 1),
-                    bottom: BorderSide(color: Color(0xff37434d), width: 1),
-                  ),
-                ),
-                minX: 0,
-                maxX: 11.5,
-                minY: 0,
-                maxY: 30,
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: dataPoints,
-                    isCurved: false,
-                    color: const Color.fromARGB(255, 18, 96, 214),
-                    dotData: const FlDotData(show: true),
-                    belowBarData: BarAreaData(show: false),
-                  ),
-                ],
               ),
             ),
           ),
@@ -489,9 +594,11 @@ class Notifications extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () async {
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  SharedPreferences prefs =
+                  await SharedPreferences.getInstance();
                   String? userId = prefs.getString('userId');
-                  String? userRole = prefs.getString('role') ?? 'candidate'; // Default to candidate
+                  String? userRole = prefs.getString('role') ??
+                      'candidate'; // Default to candidate
 
                   if (userId != null) {
                     Navigator.push(
@@ -618,14 +725,14 @@ final List<NotificationItem> notificationData = [
   NotificationItem(
     title: 'New Comment',
     description:
-        'Dennis Nedry commented on Isla Nublar SOC2 compliance report: "Oh, I finished de-bugging the phones..."',
+    'Dennis Nedry commented on Isla Nublar SOC2 compliance report: "Oh, I finished de-bugging the phones..."',
     time: 'Last Wednesday at 9:42 AM',
     icon: Icons.comment,
   ),
   NotificationItem(
     title: 'File Uploaded',
     description:
-        'Dennis Nedry uploaded "landing_page_ver2.fig (2MB)" to Isla Nublar report.',
+    'Dennis Nedry uploaded "landing_page_ver2.fig (2MB)" to Isla Nublar report.',
     time: 'Last Wednesday at 10:00 AM',
     icon: Icons.attach_file,
   ),
