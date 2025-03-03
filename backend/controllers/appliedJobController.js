@@ -60,6 +60,32 @@ const getApplicationUsingPostId = async (req, res) => {
   }
 };
 
+//get applicants count using  postid
+const getApplicationCountUsingUserId = async (req, res) => {
+  const { user_id } = req.params;
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'user_id is required' });
+  }
+
+  try {
+    // Count applications directly using user_id
+    const applicationCount = await AppliedJob.countDocuments({ user_id });
+
+    console.log("Total Applications for user_id:", user_id, "=>", applicationCount); // ✅ Debugging
+
+    if (applicationCount === 0) {
+      return res.status(404).json({ message: 'No applications found for the specified user_id' });
+    }
+
+    res.status(200).json({ totalApplications: applicationCount });
+  } catch (error) {
+    console.error('Error fetching application count:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 const getApplicationUsingUserId = async (req, res) => {
   const { user_id } = req.params;
   
@@ -634,6 +660,38 @@ const getShortlistedCandidates = async (req, res) => {
   }
 };
 
+//Get count of shortlisted candidates for specific employer based on userid
+const getShortlistedCandidatesCount = async (req, res) => {
+  const { user_id } = req.params;
+
+  console.log("Fetching Shortlisted Candidates Count for employer_id:", user_id);
+
+  if (!user_id) {
+    return res.status(400).json({ message: 'user_id is required' });
+  }
+
+  try {
+    // Step 1: Fetch all jobs posted by this employer
+    const jobIds = await Job.find({ user_id }).distinct('_id');
+
+    if (jobIds.length === 0) {
+      return res.status(404).json({ message: 'No jobs found for this employer' });
+    }
+
+    // Step 2: Get count of shortlisted candidates for these jobs
+    const shortlistedCount = await AppliedJob.countDocuments({
+      post_id: { $in: jobIds },
+      __v: 1, // Shortlisted candidates
+    });
+
+    console.log("Total Shortlisted Candidates:", shortlistedCount); // ✅ Debugging
+
+    res.status(200).json({ totalShortlisted: shortlistedCount });
+  } catch (error) {
+    console.error('Error fetching shortlisted count:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 // Exporting the functions to be used in your routes
 module.exports = {
@@ -650,5 +708,7 @@ module.exports = {
   getApplicationUsingUserId,
   updateJobStatus,
   getShortlistedCandidates,
+  getShortlistedCandidatesCount,
+  getApplicationCountUsingUserId
   //updateJobsStatus
 };
