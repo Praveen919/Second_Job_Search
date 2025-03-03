@@ -37,6 +37,16 @@ const getAllJobs = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+//function to get Job Count
+const getAllJobsCount = async (req, res) => {
+  try {
+    const jobCount = await Job.countDocuments(); // Total job count retrieve kar raha hai
+    res.status(200).json({ total_jobs: jobCount });
+  } catch (error) {
+    console.error('Error fetching job count:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 // Post a new job
 const postJob = async (req, res) => {
@@ -190,9 +200,24 @@ const findJobsByUserId = async (req, res) => {
   }
 };
 
+// Fetch job count by user ID
+const getJobCountByUserId = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const jobCount = await Job.countDocuments({ user_id: id });
+    res.status(200).json({ user_id: id, jobCount });
+  } catch (error) {
+    console.error('Error fetching job count:', error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   getAllJobs,
   postJob,
   getShortlistedJobsById,
-  findJobsByUserId
+  getAllJobsCount,
+  findJobsByUserId,
+  getJobCountByUserId
 };
