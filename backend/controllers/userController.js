@@ -501,7 +501,6 @@ const updateUserImage = async (req, res) => {
 };
 
 
-
 // Change Password Function
 const changePassword = async (req, res) => {
   const { newPassword } = req.body;
@@ -525,7 +524,6 @@ const changePassword = async (req, res) => {
     res.status(500).send('Server error');
   }
 }
-
 // Update User Data Function
 const updateUserData = async (req, res) => {
   try {
@@ -557,6 +555,79 @@ const updateUserData = async (req, res) => {
   }
 }
 
+// Update User Data Company links Function
+const updateUserCompanyDataLinks = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const {name, email, mobileNumber, linkedin, github, portfolio, other } = req.body;
+
+    // Validate required fields
+    if (!email || !mobileNumber) {
+      return res.status(400).json({ message: "Required fields are missing" });
+    }
+
+    // Find and update only specified fields
+    const updatedUserCompanyDataLinks = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: { email, mobileNumber, linkedin, github, portfolio, other },
+      },
+      { new: true } // Return the updated user object
+    );
+
+    if (!updatedUserCompanyDataLinks) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(updatedUserCompanyDataLinks);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+const updateUserCompanyDataContact = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { companyAddress, latitude, longitude, country, state, city,  email, mobileNumber } = req.body;
+
+        console.log("🔹 Received Data for Update:", req.body);
+
+        if (!email || !mobileNumber) {
+            console.log("❌ Missing required fields");
+            return res.status(400).json({ message: "Required fields are missing" });
+        }
+
+        // ✅ Ensure { new: true } is used to return updated document
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            {
+                $set: {
+                    companyAddress,
+                    latitude,
+                    longitude,
+                    country,
+                    state,
+                    city,
+                    email,
+                    mobileNumber
+                }
+            },
+            { new: true } // ✅ Ensure latest data is returned
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        console.log("✅ Updated User Data:", updatedUser);
+        res.json(updatedUser); // ✅ Send updated data
+
+    } catch (error) {
+        console.error("❌ Error updating user:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
 
 
 const getUserDetails = async (req, res) => {
@@ -678,10 +749,10 @@ const updateNotificationSettings = async (req, res) => {
 const saveJob = async (req, res) => {
   const { user_id, post_id } = req.body;
 
-  console.log('Received request to save job:', { user_id, post_id }); // Debugging log
+  console.log('Received request to save job:', { user_id, post_id });
 
   if (!user_id || !post_id) {
-    console.log('Missing user_id or post_id'); // Debugging log
+    console.log('Missing user_id or post_id');
     return res.status(400).json({ error: 'user_id and post_id are required' });
   }
 
@@ -689,24 +760,24 @@ const saveJob = async (req, res) => {
     const user = await User.findById(user_id);
 
     if (!user) {
-      console.log('User not found'); // Debugging log
+      console.log('User not found');
       return res.status(404).json({ valid: false, message: 'User not found' });
     }
 
     // Check if the job is already saved
     if (user.jobPostIds.includes(post_id)) {
-      console.log('Job already saved'); // Debugging log
-      return res.status(400).json({ valid: false, message: 'Job is already saved' });
+      console.log('Job already saved');
+      return res.status(200).json({ valid: false, message: 'Already Saved' }); // Change status to 200 and message
     }
 
     // Save the job
     user.jobPostIds.push(post_id);
     await user.save();
 
-    console.log('Job saved successfully'); // Debugging log
+    console.log('Job saved successfully');
     return res.status(200).json({ valid: true, message: 'Job Saved' });
   } catch (error) {
-    console.error('Error saving job:', error); // Debugging log
+    console.error('Error saving job:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -831,6 +902,8 @@ module.exports = {
   updateUserImage,
   changePassword,
   updateUserData,
+  updateUserCompanyDataLinks,
+  updateUserCompanyDataContact,
   updateCompanyData,
   profileUploadMiddleware,
   updateNotificationSettings,
