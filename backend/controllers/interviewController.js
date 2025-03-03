@@ -136,36 +136,112 @@ const deleteInterview = async (req, res) => {
 
 // Get interview by ID
 const getInterviewById = async (req, res) => {
-    try {
+  try {
       const { interviewId } = req.params;
+
+      // Fetch interview details
       const interview = await Interview.findById(interviewId);
-      if (!interview) return res.status(404).json({ message: 'Interview not found' });
-      res.json(interview);
-    } catch (error) {
+      if (!interview) {
+          return res.status(404).json({ message: 'Interview not found' });
+      }
+
+      // Fetch user details
+      const user = await User.findById(interview.userId, 'name email');
+
+      // Fetch job details (try Job first, then FreeJob)
+      let job = await Job.findById(interview.postId, 'jobTitle jobType');
+      if (!job) {
+          job = await FreeJob.findById(interview.postId, 'jobTitle jobType');
+      }
+
+      // Construct response
+      const response = {
+          interview,
+          user: user || { name: 'Unknown', email: 'Unknown' },
+          job: job || { jobTitle: 'Not Found', jobType: 'Not Found' }
+      };
+
+      res.json(response);
+  } catch (error) {
       res.status(500).json({ message: error.message });
-    }
+  }
 };
+
   
-  // Get interviews by userId
+ // Get interviews by userId
 const getInterviewsByUserId = async (req, res) => {
-    try {
+  try {
       const { userId } = req.params;
+
+      // Fetch all interviews for the given user
       const interviews = await Interview.find({ userId });
-      res.json(interviews);
-    } catch (error) {
+
+      if (!interviews.length) {
+          return res.status(404).json({ message: 'No interviews found for this user' });
+      }
+
+      // Fetch job and employee details for each interview
+      const interviewsWithDetails = await Promise.all(
+          interviews.map(async (interview) => {
+              // Fetch employee details using employeeId from interview
+              const employee = await User.findById(interview.employeeId, 'companyContactPerson.name companyContactPerson.officialEmail');
+
+              // Fetch job details
+              let job = await Job.findById(interview.postId, 'jobTitle jobType');
+              if (!job) {
+                  job = await FreeJob.findById(interview.postId, 'jobTitle jobType');
+              }
+
+              return {
+                  interview,
+                  employee: employee || { name: 'Unknown', email: 'Unknown' },
+                  job: job || { jobTitle: 'Not Found', jobType: 'Not Found' }
+              };
+          })
+      );
+
+      res.json(interviewsWithDetails);
+  } catch (error) {
       res.status(500).json({ message: error.message });
-    }
+  }
 };
-  
-  // Get interviews by employeeId
+
+// Get interviews by employeeId
 const getInterviewsByEmployeeId = async (req, res) => {
-    try {
-        const { employeeId } = req.params;
-        const interviews = await Interview.find({ employeeId });
-        res.json(interviews);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+  try {
+      const { employeeId } = req.params;
+
+      // Fetch all interviews for the given employee
+      const interviews = await Interview.find({ employeeId });
+
+      if (!interviews.length) {
+          return res.status(404).json({ message: 'No interviews found for this employee' });
+      }
+
+      // Fetch job and user details for each interview
+      const interviewsWithDetails = await Promise.all(
+          interviews.map(async (interview) => {
+              // Fetch user details using userId from interview
+              const user = await User.findById(interview.userId, 'name email');
+
+              // Fetch job details
+              let job = await Job.findById(interview.postId, 'jobTitle jobType');
+              if (!job) {
+                  job = await FreeJob.findById(interview.postId, 'jobTitle jobType');
+              }
+
+              return {
+                  interview,
+                  user: user || { name: 'Unknown', email: 'Unknown' },
+                  job: job || { jobTitle: 'Not Found', jobType: 'Not Found' }
+              };
+          })
+      );
+
+      res.json(interviewsWithDetails);
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
 };
 
 module.exports = {
