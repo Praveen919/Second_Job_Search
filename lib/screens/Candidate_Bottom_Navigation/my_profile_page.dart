@@ -7,6 +7,7 @@ import 'package:second_job_search/screens/change_password_screen.dart';
 import 'dart:convert';
 import 'package:second_job_search/screens/login.dart';
 import 'package:second_job_search/screens/profile_screens/account_setting_screen.dart';
+import 'package:second_job_search/screens/profile_screens/applied_job_screen.dart';
 import 'package:second_job_search/screens/profile_screens/candidate_interview_screen.dart';
 import 'package:second_job_search/screens/profile_screens/candidate_package_screen.dart';
 import 'package:second_job_search/screens/profile_screens/password_update_screen.dart';
@@ -40,8 +41,7 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
     setState(() {
       profileName = prefs.getString('name') ?? profileName;
       location =
-      "${prefs.getString('address') ?? "Unknown Address"}, ${prefs.getString(
-          'country') ?? "Unknown Country"}";
+          "${prefs.getString('address') ?? "Unknown Address"}, ${prefs.getString('country') ?? "Unknown Country"}";
       profileImagePath =
           prefs.getString('profileImage'); // Load image from storage
     });
@@ -122,13 +122,12 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   text: 'Edit Profile',
                   onTap: () async {
                     SharedPreferences prefs =
-                    await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            EditProfileScreen(
-                                userId: '${prefs.getString("userId")}'),
+                        builder: (_) => EditProfileScreen(
+                            userId: '${prefs.getString("userId")}'),
                       ),
                     );
                   },
@@ -157,13 +156,24 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                 ),
                 _buildOption(
                   context,
+                  icon: Icons.dashboard_customize_outlined,
+                  text: 'Applied Jobs',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const AppliedJobScreen()));
+                  },
+                ),
+                _buildOption(
+                  context,
                   icon: Icons.phone_in_talk,
                   text: 'Interviews',
                   onTap: () async {
                     SharedPreferences prefs =
-                    await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                     String? candidateId =
-                    prefs.getString("userId"); // Fetch candidate ID
+                        prefs.getString("userId"); // Fetch candidate ID
 
                     if (candidateId != null && candidateId.isNotEmpty) {
                       Navigator.push(
@@ -191,7 +201,7 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                            const AccountSettingsScreen()));
+                                const AccountSettingsScreen()));
                   },
                 ),
                 _buildOption(
@@ -214,7 +224,7 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                            const ChangePasswordScreen()));
+                                const ChangePasswordScreen()));
                   },
                 ),
                 _buildOption(
@@ -247,7 +257,7 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
                   text: 'Log Out',
                   onTap: () async {
                     SharedPreferences pref =
-                    await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                     pref.setString("role", "");
                     pref.setString("userId", "");
                     Navigator.push(
@@ -269,9 +279,9 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
 
   Widget _buildOption(BuildContext context,
       {required IconData icon,
-        required String text,
-        required VoidCallback onTap,
-        bool isLogout = false}) {
+      required String text,
+      required VoidCallback onTap,
+      bool isLogout = false}) {
     return ListTile(
       leading: Icon(icon, color: isLogout ? Colors.red : Colors.blue),
       title: Text(
@@ -329,7 +339,7 @@ class _ProfileScreenState extends State<MyProfilePageScreen> {
   }
 }
 
-  class EditProfileScreen extends StatefulWidget {
+class EditProfileScreen extends StatefulWidget {
   final String userId;
 
   const EditProfileScreen({super.key, required this.userId});
