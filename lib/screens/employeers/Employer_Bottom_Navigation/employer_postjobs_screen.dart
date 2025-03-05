@@ -1882,8 +1882,8 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                       gender = value;
                     });
                   },
-                  items:
-                      ['Male', 'Female', 'Others'].map((String genderOption) {
+                  items: ['Any', 'Male', 'Female', 'Others']
+                      .map((String genderOption) {
                     return DropdownMenuItem<String>(
                       value: genderOption,
                       child: Text(genderOption),
@@ -2264,9 +2264,15 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
 
   bool showAllAdditionalCards = false;
 
-  Future<void> _postingNewJob() async {
+  Future<void> _postingNewJob(String plan) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String apiUrl = "${AppConfig.baseUrl}/api/jobs";
+    String apiUrl;
+
+    if (plan == "Free") {
+      apiUrl = "${AppConfig.baseUrl}/api/free-jobs";
+    } else {
+      apiUrl = "${AppConfig.baseUrl}/api/jobs";
+    }
 
     final body = {
       "user_id": prefs.getString("userId") ?? "",
@@ -2315,7 +2321,7 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
       "companyWebsite": companyDetails.isNotEmpty
           ? companyDetails[0]['companyWebsite'] ?? ''
           : '',
-      "plan_id": "67ab0c695d26342441c9ea08", // Add this if needed
+      "plan_id": prefs.getString("planId"), // Add this if needed
       "benefits": additionalInfo.isNotEmpty
           ? additionalInfo[0]['benefits']?.split(',') ?? []
           : [],
@@ -2380,166 +2386,12 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Image.asset(
-            'assets/logo.png',
-            fit: BoxFit.contain,
-          ),
-        ),
-        title: const Text(
-          'Post Jobs',
-          style: TextStyle(color: Colors.black, fontSize: 24),
-        ),
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Post a New Job!",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              const Column(
-                children: [
-                  Card(
-                    color: Colors.white,
-                    elevation: 8,
-                    child: SizedBox(
-                      height: 80,
-                      width: 350,
-                      child: Row(
-                        children: [
-                          Card(
-                            margin: EdgeInsets.all(15),
-                            color: Color.fromARGB(255, 221, 244, 248),
-                            child: Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Icon(
-                                  size: 27,
-                                  Icons.work_outline,
-                                  color: Color.fromARGB(255, 0, 136, 248),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "15",
-                                style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromARGB(255, 0, 136, 248)),
-                              ),
-                              Text(
-                                "Total Free Jobs Available",
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 16),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Card(
-                    color: Colors.white,
-                    elevation: 10,
-                    child: SizedBox(
-                      height: 80,
-                      width: 350,
-                      child: Row(
-                        children: [
-                          Card(
-                            margin: EdgeInsets.all(15),
-                            color: Color.fromARGB(255, 248, 184, 184),
-                            child: Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Icon(
-                                  size: 30,
-                                  Icons.work_outline,
-                                  color: Color.fromARGB(255, 248, 0, 0),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "15",
-                                style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromARGB(255, 248, 0, 0)),
-                              ),
-                              Text(
-                                "Total Free Jobs Available",
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 16),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Card(
-                    color: Colors.white,
-                    elevation: 10,
-                    child: SizedBox(
-                      height: 80,
-                      width: 350,
-                      child: Row(
-                        children: [
-                          Card(
-                            margin: EdgeInsets.all(15),
-                            color: Color.fromARGB(255, 192, 248, 184),
-                            child: Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Icon(
-                                  size: 30,
-                                  Icons.work_outline,
-                                  color: Colors.green,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "15",
-                                style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.green),
-                              ),
-                              Text(
-                                "Total Free Jobs Available",
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 16),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
               const Text(
                 'Select your job type:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -3216,9 +3068,11 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                     ),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      _postingNewJob("Free");
+                    },
                     child: const Text(
-                      'Back',
+                      'Post(Free Job)',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -3227,10 +3081,10 @@ class _EmployerPostJobScreenState extends State<EmployerPostJobScreen> {
                       backgroundColor: Colors.blue,
                     ),
                     onPressed: () {
-                      _postingNewJob();
+                      _postingNewJob("Premium");
                     },
                     child: const Text(
-                      'Post',
+                      'Post(Premium Job)',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
