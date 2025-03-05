@@ -201,16 +201,17 @@ class _ShortlistedResumeScreenState extends State<ShortlistedResumeScreen> {
 
     return paginatedList.map((candidate) {
       return applicantCard(
+        candidate['post_id'] ?? "Unknown",
+        candidate['user_id'] ?? "Unkown",
         candidate['name'] ?? 'Unknown',
-        candidate['email'] ?? 'No Email',
         candidate['jobTitle'] ?? 'Not Available',
         candidate['jobType'] ?? 'Not Specified',
       );
     }).toList();
   }
 
-  Widget applicantCard(
-      String name, String email, String jobTitle, String jobType) {
+  Widget applicantCard(String postId, String userId, String name,
+      String jobTitle, String jobType) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -236,8 +237,6 @@ class _ShortlistedResumeScreenState extends State<ShortlistedResumeScreen> {
                           fontWeight: FontWeight.bold,
                           color: Colors.black87)),
                   const SizedBox(height: 5),
-                  Text("Email: $email",
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600])),
                   Text("Applied for: $jobTitle",
                       style: TextStyle(fontSize: 14, color: Colors.grey[600])),
                   Text("Job Type: $jobType",
@@ -254,7 +253,7 @@ class _ShortlistedResumeScreenState extends State<ShortlistedResumeScreen> {
               onSelected: (value) {
                 switch (value) {
                   case 'Schedule Interview':
-                    showAddSchedulePopup();
+                    showAddSchedulePopup(userId, postId);
                     break;
                   case 'Unshortlist':
                     print('Unshortlist clicked');
@@ -296,9 +295,47 @@ class _ShortlistedResumeScreenState extends State<ShortlistedResumeScreen> {
     );
   }
 
-  void showAddSchedulePopup() {
+  void showAddSchedulePopup(String userId, String postId) {
     final meetingDetailsController = TextEditingController();
     DateTime? meetingDateTime;
+    Future<void> _scheduleJob() async {
+      DateTime dateTime = DateTime.parse(
+          meetingDateTime.toString()); // Convert string to DateTime
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String apiUrl = "${AppConfig.baseUrl}/api/interview";
+      final body = {
+        'postId': postId,
+        'userId': userId,
+        'employeeId': prefs.getString('userId'),
+        'meetDetails': meetingDetailsController.text.toString(),
+        'interviewTimestamp': dateTime.millisecondsSinceEpoch
+      };
+      print(body);
+      try {
+        final response = await http.post(
+          Uri.parse(apiUrl),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(body),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final result = jsonDecode(response.body);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Scheduled successfully")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Failed to schedule job")),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("An error occurred while schedule the job")),
+        );
+      }
+    }
 
     showDialog(
       context: context,
@@ -426,12 +463,7 @@ class _ShortlistedResumeScreenState extends State<ShortlistedResumeScreen> {
                       );
                       return;
                     }
-
-                    // Save the data
-                    setState(() {
-                      // Save meetingDateTime and details
-                    });
-
+                    _scheduleJob();
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
