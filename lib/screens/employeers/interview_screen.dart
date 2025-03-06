@@ -52,7 +52,6 @@ class _InterviewSchedulingScreenState extends State<InterviewSchedulingScreen> {
             "userId": data["interview"]["userId"] ?? "",
             "meetDetails": data["interview"]["meetDetails"] ?? "No details",
             "interviewTimestamp": data["interview"]["interviewTimestamp"] ?? "",
-            "userEmail": data["user"]["email"] ?? "No email",
             "userName": data["user"]["name"] ?? "Unknown User",
             "jobTitle": data["job"]["jobTitle"] ?? "Unknown Job",
             "jobType": data["job"]["jobType"] ?? "Unknown Type",
@@ -97,7 +96,10 @@ class _InterviewSchedulingScreenState extends State<InterviewSchedulingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Interview Scheduling")),
+      appBar: AppBar(
+        title: Text("Interview Scheduling"),
+        backgroundColor: Color.fromARGB(255, 100, 176, 238),
+      ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -109,14 +111,14 @@ class _InterviewSchedulingScreenState extends State<InterviewSchedulingScreen> {
                   if (index == interviews.length) {
                     return hasMoreData
                         ? Center(
-                      child: TextButton(
-                        onPressed: () {
-                          setState(() => page++);
-                          fetchInterviews(isNewPage: true);
-                        },
-                        child: Text("Load More"),
-                      ),
-                    )
+                            child: TextButton(
+                              onPressed: () {
+                                setState(() => page++);
+                                fetchInterviews(isNewPage: true);
+                              },
+                              child: Text("Load More"),
+                            ),
+                          )
                         : SizedBox();
                   }
 
@@ -148,29 +150,34 @@ class _InterviewSchedulingScreenState extends State<InterviewSchedulingScreen> {
                             ],
                           ),
 
-                          SizedBox(height: 8),
-
+                          SizedBox(height: 2),
                           // Meet Details
                           Row(
                             children: [
-                              Icon(Icons.video_call, color: Colors.green),
-                              SizedBox(width: 8),
+                              Icon(Icons.video_call,
+                                  color: Colors.green, size: 20),
+                              SizedBox(width: 6),
                               Expanded(
                                 child: Text(
                                   interview['meetDetails'],
+                                  maxLines: 2, // Restrict to 2 lines
+                                  overflow: TextOverflow
+                                      .ellipsis, // Show "..." when text is too long
                                   style: TextStyle(
-                                      fontSize: 14, color: Colors.grey[700]),
+                                    fontSize: 14,
+                                    color: Colors.grey[700],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
 
-                          SizedBox(height: 8),
-
+                          SizedBox(height: 2),
                           // Interview Time
                           Row(
                             children: [
-                              Icon(Icons.calendar_today, color: Colors.orange),
+                              Icon(Icons.calendar_today,
+                                  size: 20, color: Colors.orange),
                               SizedBox(width: 8),
                               Text(
                                 DateFormat.yMMMd().add_jm().format(
@@ -182,16 +189,16 @@ class _InterviewSchedulingScreenState extends State<InterviewSchedulingScreen> {
                             ],
                           ),
 
-                          SizedBox(height: 8),
+                          SizedBox(height: 2),
 
                           // User Information
                           Row(
                             children: [
-                              Icon(Icons.person, color: Colors.blue),
+                              Icon(Icons.person, size: 20, color: Colors.blue),
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  "${interview['userName']} (${interview['userEmail']})",
+                                  "${interview['userName']}",
                                   style: TextStyle(
                                       fontSize: 14, color: Colors.grey[700]),
                                 ),
@@ -199,25 +206,33 @@ class _InterviewSchedulingScreenState extends State<InterviewSchedulingScreen> {
                             ],
                           ),
 
-                          Divider(thickness: 1, height: 16),
+                          Divider(thickness: 1, height: 2),
 
                           // Edit & Delete Buttons
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              TextButton.icon(
-                                onPressed: () {},
-                                icon: Icon(Icons.edit, color: Colors.blue),
-                                label: Text("Edit",
-                                    style: TextStyle(color: Colors.blue)),
-                              ),
-                              SizedBox(width: 8),
-                              TextButton.icon(
-                                onPressed: () =>
-                                    deleteInterview(interview['id']),
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                label: Text("Delete",
-                                    style: TextStyle(color: Colors.red)),
+                              Wrap(
+                                spacing: 8,
+                                children: [
+                                  TextButton.icon(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.edit,
+                                        color: Colors.blue, size: 18),
+                                    label: Text("Edit",
+                                        style: TextStyle(
+                                            color: Colors.blue, fontSize: 14)),
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: () =>
+                                        deleteInterview(interview['id']),
+                                    icon: Icon(Icons.delete,
+                                        color: Colors.red, size: 18),
+                                    label: Text("Delete",
+                                        style: TextStyle(
+                                            color: Colors.red, fontSize: 14)),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
