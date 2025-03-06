@@ -693,6 +693,28 @@ const getShortlistedCandidatesCount = async (req, res) => {
   }
 };
 
+const getApplicationUsingPostIdCount = async (req, res) => {
+  const { post_id } = req.params;
+
+  if (!post_id) {
+    return res.status(400).json({ message: 'Post_id is required' });
+  }
+
+  try {
+    // Fetch applications based on post_id
+    const applications = await AppliedJob.find({ post_id });
+
+    if (applications.length === 0) {
+      return res.status(404).json({ message: 'No applications found for the specified post_id' });
+    }
+    
+    res.status(200).json(applications.length)
+} catch (error) {
+    console.error('Error fetching applications count', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Exporting the functions to be used in your routes
 module.exports = {
   getAllAppliedJobs,
@@ -709,6 +731,7 @@ module.exports = {
   updateJobStatus,
   getShortlistedCandidates,
   getShortlistedCandidatesCount,
-  getApplicationCountUsingUserId
+  getApplicationCountUsingUserId,
+  getApplicationUsingPostIdCount
   //updateJobsStatus
 };
