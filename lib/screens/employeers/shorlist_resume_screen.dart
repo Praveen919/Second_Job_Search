@@ -99,90 +99,65 @@ class _ShortlistedResumeScreenState extends State<ShortlistedResumeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
-                    Text(
-                      "Your Shortlisted Resumes!",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.05,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 8,
-                            spreadRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Column(
-                            children: _getPaginatedJobCards(),
-                          ),
-                          const SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              if (currentPage > 0)
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      currentPage--;
-                                    });
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    backgroundColor: Colors.blue,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10, horizontal: 20),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Load Previous',
-                                    style:
-                                        TextStyle(fontSize: screenWidth * 0.04),
+                    Column(
+                      children: [
+                        SizedBox(height: 8),
+                        Column(
+                          children: _getPaginatedJobCards(),
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            if (currentPage > 0)
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    currentPage--;
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.blue,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 20),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                              if (currentPage + 1 <
-                                  (shortlistedCandidates.length /
-                                          recordsPerPage)
-                                      .ceil())
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      currentPage++;
-                                    });
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    backgroundColor: Colors.blue,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10, horizontal: 20),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Load More',
-                                    style:
-                                        TextStyle(fontSize: screenWidth * 0.04),
+                                child: Text(
+                                  'Load Previous',
+                                  style:
+                                      TextStyle(fontSize: screenWidth * 0.04),
+                                ),
+                              ),
+                            if (currentPage + 1 <
+                                (shortlistedCandidates.length / recordsPerPage)
+                                    .ceil())
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    currentPage++;
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.blue,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 20),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                            ],
-                          ),
-                        ],
-                      ),
+                                child: Text(
+                                  'Load More',
+                                  style:
+                                      TextStyle(fontSize: screenWidth * 0.04),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -213,84 +188,118 @@ class _ShortlistedResumeScreenState extends State<ShortlistedResumeScreen> {
   Widget applicantCard(String postId, String userId, String name,
       String jobTitle, String jobType) {
     final screenWidth = MediaQuery.of(context).size.width;
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      elevation: 8,
-      shadowColor: Colors.black26,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-                radius: 27, backgroundImage: AssetImage('assets/logo.png')),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name,
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87)),
-                  const SizedBox(height: 5),
-                  Text("Applied for: $jobTitle",
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-                  Text("Job Type: $jobType",
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-                ],
-              ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Circular Profile Image
+          CircleAvatar(
+            radius: 32,
+            backgroundColor: Colors.blue[100],
+            child: const Icon(
+              Icons.person,
+              size: 32,
+              color: Colors.blue,
             ),
-            PopupMenuButton<String>(
-              icon: const Icon(
-                Icons.more_vert,
-                color: Colors.blueGrey,
-                size: 30,
-              ),
-              onSelected: (value) {
-                switch (value) {
-                  case 'Schedule Interview':
-                    showAddSchedulePopup(userId, postId);
-                    break;
-                  case 'Unshortlist':
-                    print('Unshortlist clicked');
-                    break;
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return [
-                  PopupMenuItem<String>(
-                    value: 'Schedule Interview',
-                    child: Text(
-                      'Schedule Interview',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.04,
-                        color: Colors.blue,
+          ),
+          const SizedBox(width: 16),
+
+          // Candidate Details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.work, size: 18, color: Colors.blueGrey),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        jobTitle,
+                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'Unshortlist',
-                    child: Text(
-                      'Unshortlist',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.04,
-                        color: Colors.red,
-                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.business_center,
+                        size: 18, color: Colors.blueGrey),
+                    const SizedBox(width: 6),
+                    Text(
+                      jobType,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
-                  ),
-                ];
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 4,
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          // Action Button (Popup Menu)
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.blueGrey, size: 30),
+            onSelected: (value) {
+              switch (value) {
+                case 'Schedule Interview':
+                  showAddSchedulePopup(userId, postId);
+                  break;
+                case 'Unshortlist':
+                  print('Unshortlist clicked');
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                PopupMenuItem<String>(
+                  value: 'Schedule Interview',
+                  child: Text(
+                    'Schedule Interview',
+                    style: TextStyle(
+                        fontSize: screenWidth * 0.04, color: Colors.blue),
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'Unshortlist',
+                  child: Text(
+                    'Unshortlist',
+                    style: TextStyle(
+                        fontSize: screenWidth * 0.04, color: Colors.red),
+                  ),
+                ),
+              ];
+            },
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 4,
+          ),
+        ],
       ),
     );
   }
