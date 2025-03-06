@@ -4,9 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:second_job_search/Config/config.dart';
 import 'package:http/http.dart' as http;
 
-class ManageJobsScreen extends StatelessWidget {
+class ManageJobsScreen extends StatefulWidget {
   const ManageJobsScreen({super.key});
 
+  @override
+  State<ManageJobsScreen> createState() => _ManageJobsScreenState();
+}
+
+class _ManageJobsScreenState extends State<ManageJobsScreen> {
   Future<String?> getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('userId');
@@ -20,52 +25,49 @@ class ManageJobsScreen extends StatelessWidget {
     required Color iconColor,
     required Color backgroundColor,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 35,
-            color: iconColor,
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                count,
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 24,
-                  color: iconColor,
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 20, color: iconColor),
+                const SizedBox(width: 5),
+                Text(
+                  count,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: iconColor,
+                  ),
                 ),
+              ],
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 12,
+                color: Colors.black,
               ),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -79,9 +81,7 @@ class ManageJobsScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Manage Jobs',
@@ -92,76 +92,63 @@ class ManageJobsScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: Column(
-            children: [
-              const SizedBox(height: 8),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final maxWidth = constraints.maxWidth;
-                  return Column(
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: _buildInfoContainer(
-                              icon: Icons.work_outline_rounded,
-                              count: '1',
-                              label: 'Active Jobs',
-                              iconColor: Colors.black,
-                              backgroundColor:
-                                  const Color.fromARGB(255, 169, 210, 230),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: _buildInfoContainer(
-                              icon: Icons.work_outline_outlined,
-                              count: '0',
-                              label: 'Inactive Jobs',
-                              iconColor: Colors.black,
-                              backgroundColor:
-                                  const Color.fromARGB(255, 179, 233, 182),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Flexible(
-                            child: _buildInfoContainer(
-                              icon: Icons.work_outline_outlined,
-                              count: '0',
-                              label: 'Pending',
-                              iconColor: Colors.black,
-                              backgroundColor:
-                                  const Color.fromARGB(255, 224, 189, 137),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Flexible(
-                            child: _buildInfoContainer(
-                                icon: Icons.work_outline_outlined,
-                                count: '1',
-                                label: 'Total Jobs',
-                                iconColor: Colors.black,
-                                backgroundColor: Colors.pink[200]!),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 10),
-              // Directly include JobManager here
-              JobManager()
-            ],
-          ),
-        ),
+      body: FutureBuilder<String?>(
+        future: getUserId(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(child: Text('User ID not found.'));
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildInfoContainer(
+                      icon: Icons.work_outline_rounded,
+                      count: '1',
+                      label: 'Active Jobs',
+                      iconColor: Colors.black,
+                      backgroundColor: const Color.fromARGB(255, 169, 210, 230),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildInfoContainer(
+                      icon: Icons.work_off_outlined,
+                      count: '0',
+                      label: 'Inactive Jobs',
+                      iconColor: Colors.black,
+                      backgroundColor: const Color.fromARGB(255, 179, 233, 182),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildInfoContainer(
+                      icon: Icons.hourglass_empty_rounded,
+                      count: '0',
+                      label: 'Pending',
+                      iconColor: Colors.black,
+                      backgroundColor: const Color.fromARGB(255, 224, 189, 137),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildInfoContainer(
+                      icon: Icons.list_alt_rounded,
+                      count: '1',
+                      label: 'Total Jobs',
+                      iconColor: Colors.black,
+                      backgroundColor: Colors.pink[200]!,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const JobManager(), // Assuming JobManager() exists
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -219,33 +206,59 @@ class _JobManagerState extends State<JobManager> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
 
-    if (userId == null) {
-      return;
-    }
+    if (userId == null) return;
 
     try {
       final response = await http.get(
-        Uri.parse('${AppConfig.baseUrl}/api/applied-jobs/get-job-by-userid/$userId'),
+        Uri.parse(
+            '${AppConfig.baseUrl}/api/applied-jobs/get-job-by-userid/$userId'),
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+        List<Map<String, String>> updatedJobListings = [];
+
+        for (var job in data) {
+          String postId =
+              job['_id'].toString(); // Get post_id from API response
+          String applicationCount =
+              await fetchApplicationCount(postId); // Fetch application count
+
+          updatedJobListings.add({
+            'title': job['jobTitle'].toString(),
+            'category': job['jobType'].toString(),
+            'location': job['city'].toString(),
+            'applications': applicationCount, // Add fetched count
+          });
+        }
+
         setState(() {
-          jobListings = data.map((job) {
-            return {
-              'title': job['jobTitle'].toString(),
-              'category': job['jobType'].toString(),
-              'location': job['city'].toString(),
-              'applications': (job['applications'] ?? 0).toString(),
-              'expiryDate': (job['expiryDate'] ?? 'N/A').toString(),
-            };
-          }).toList();
+          jobListings = updatedJobListings;
         });
       } else {
         throw Exception('Failed to load jobs');
       }
     } catch (error) {
       print('Error fetching jobs: $error');
+    }
+  }
+
+  Future<String> fetchApplicationCount(String postId) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            '${AppConfig.baseUrl}/api/applied-jobs/job-applicant-count/$postId'),
+      );
+
+      if (response.statusCode == 200) {
+        return response.body
+            .trim(); // API returns just a number, so trim extra spaces
+      } else {
+        return '0';
+      }
+    } catch (error) {
+      print('Error fetching application count for job $postId: $error');
+      return '0';
     }
   }
 
@@ -473,13 +486,6 @@ class _JobManagerState extends State<JobManager> {
                           children: [
                             Text(
                               "Applications: ${job['applications']}",
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.038,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            Text(
-                              "Expiry Date: ${job['expiryDate']}",
                               style: TextStyle(
                                 fontSize: screenWidth * 0.038,
                                 color: Colors.black54,
