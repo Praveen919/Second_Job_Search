@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const geoip = require('geoip-lite');
 const rateLimit = require('express-rate-limit');
 const { isEmail } = require('validator');
