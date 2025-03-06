@@ -1,6 +1,6 @@
 const express = require('express');
 const { getAllAppliedJobs, validateIds,getAppliedJobsCount, getAppliedJobsById, getAllAppliedJobsWithDetails, updateSeenStatus, 
-       deleteAppliedJob, applyForJob, getJobsByUserId, getApplicationUsingPostId, getApplicationUsingUserId, getShortlistedCandidates, getShortlistedCandidatesCount, getApplicationCountUsingUserId,  updateJobStatus } = require('../controllers/appliedJobController');
+       deleteAppliedJob, applyForJob, getJobsByUserId, getApplicationUsingPostId, getApplicationUsingUserId, getShortlistedCandidates, getShortlistedCandidatesCount, getApplicationCountUsingUserId,  updateJobStatus, getApplicationUsingPostIdCount } = require('../controllers/appliedJobController');
 const router = express.Router();
 
 router.get('', getAllAppliedJobs);
@@ -18,7 +18,7 @@ router.post('/update-job-status/:id', updateJobStatus);
 router.get('/shortlisted/:user_id', getShortlistedCandidates);
 router.get('/shortlisted-count/:user_id', getShortlistedCandidatesCount);
 router.get('/applicants-count/:user_id', getApplicationCountUsingUserId);
-
+router.get('/job-applicant-count/:post_id',getApplicationUsingPostIdCount)
 
 
 module.exports = router;
