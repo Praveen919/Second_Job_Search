@@ -32,8 +32,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
   String? profileImagePath; // Updated to handle image URL
   final ImagePicker _picker = ImagePicker();
 
-
-
   @override
   void initState() {
     super.initState();
@@ -47,8 +45,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
       String address = prefs.getString('address') ?? "Unknown Address";
       String country = prefs.getString('country') ?? "Unknown Country";
       location = "$address, $country";
-      profileImagePath =
-          prefs.getString('profileImage');
+      profileImagePath = prefs.getString('profileImage');
     });
   }
 
@@ -138,7 +135,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   text: 'Edit Profile',
                   onTap: () async {
                     SharedPreferences prefs =
-                    await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -153,11 +150,13 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   icon: Icons.person_2_outlined,
                   text: 'Company Details',
                   onTap: () async {
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => CompanyDetailsScreen(userId: '${prefs.getString("userId")}'),
+                        builder: (_) => CompanyDetailsScreen(
+                            userId: '${prefs.getString("userId")}'),
                       ),
                     );
                   },
@@ -173,7 +172,6 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                             builder: (context) => const ManageJobsScreen()));
                   },
                 ),
-
                 _buildOption(
                   context,
                   icon: Icons.sort_outlined,
@@ -183,7 +181,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                            const ShortlistedResumeScreen()));
+                                const ShortlistedResumeScreen()));
                   },
                 ),
                 _buildOption(
@@ -195,7 +193,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                            const ManageCandidatesScreen()));
+                                const ManageCandidatesScreen()));
                   },
                 ),
                 _buildOption(
@@ -204,7 +202,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                   text: 'Interviews',
                   onTap: () async {
                     SharedPreferences prefs =
-                    await SharedPreferences.getInstance();
+                        await SharedPreferences.getInstance();
                     String? employeeId = prefs
                         .getString("userId"); // Fetch from SharedPreferences
 
@@ -225,6 +223,17 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                 ),
                 _buildOption(
                   context,
+                  icon: Icons.local_offer_outlined,
+                  text: 'Packages',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SubscriptionScreen()));
+                  },
+                ),
+                _buildOption(
+                  context,
                   icon: Icons.remove_red_eye_outlined,
                   text: 'Password Update',
                   onTap: () {
@@ -232,7 +241,7 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                            const UpdatePasswordScreen()));
+                                const UpdatePasswordScreen()));
                   },
                 ),
                 _buildOption(
@@ -283,9 +292,9 @@ class _EmployeeProfileScreenState extends State<EmployeeProfileScreen> {
 
   Widget _buildOption(BuildContext context,
       {required IconData icon,
-        required String text,
-        required VoidCallback onTap,
-        bool isLogout = false}) {
+      required String text,
+      required VoidCallback onTap,
+      bool isLogout = false}) {
     return ListTile(
       leading: Icon(icon, color: isLogout ? Colors.red : Colors.blue),
       title: Text(
