@@ -119,7 +119,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 90, 20, 20),
+                      padding: const EdgeInsets.fromLTRB(20,0.13 * screenHeight  , 20, 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
