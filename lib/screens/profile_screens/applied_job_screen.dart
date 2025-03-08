@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:second_job_search/Config/config.dart';
 import 'package:http/http.dart' as http;
+import 'package:fluttertoast/fluttertoast.dart';
 
 class AppliedJobScreen extends StatefulWidget {
   const AppliedJobScreen({super.key});
@@ -12,32 +13,67 @@ class AppliedJobScreen extends StatefulWidget {
 }
 
 class _AppliedJobScreenState extends State<AppliedJobScreen> {
-  final List<Map<String, dynamic>> data = [
-    {
-      "_id": "678f605f225d5175b92d8105",
-      "post_id": "677fa5e8428c76fadc9c96f1",
-      "name": "Alok K",
-      "jobTitle": "N/A",
-      "jobType": "N/A",
-      "timestamp": "2025-01-21T08:52:47.330Z",
-    },
-    {
-      "_id": "67c2c623c7270b248628ca11",
-      "post_id": "67bd90214e7f940552243064",
-      "name": "Alok K",
-      "jobTitle": "Data Analyst",
-      "jobType": "Full-time",
-      "timestamp": "2025-03-01T08:32:35.803Z",
-    },
-    {
-      "_id": "67c2c874a238b7d3a0d84b23",
-      "post_id": "677be53772819fd848a494d6",
-      "name": "Alok K",
-      "jobTitle": "Data Scientist",
-      "jobType": "Full-time",
-      "timestamp": "2025-03-01T08:42:28.350Z",
-    },
-  ];
+  List<Map<String, dynamic>> jobList = [];
+  List<dynamic> data = [];
+  List<String> postIds = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchJobs();
+  }
+
+  List<String> extractPostIds(List<Map<String, dynamic>> data) {
+    return data.map((item) => item['post_id'] as String).toList();
+  }
+
+  List<Map<String, dynamic>> filterJobsByIds(
+      List<Map<String, dynamic>> jobs, List<String> ids) {
+    return jobs.where((job) => ids.contains(job['_id'])).toList();
+  }
+
+  Future<void> fetchJobs() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    const url = "${AppConfig.baseUrl}/api/jobs";
+    String applicationUrl =
+        "${AppConfig.baseUrl}/api/applied-jobs/user/${pref.getString("userId")}";
+
+    try {
+      // Fetch applied jobs
+      final appliedResponse = await http.get(Uri.parse(applicationUrl));
+      if (appliedResponse.statusCode == 200) {
+        List<dynamic> appliedJobList = json.decode(appliedResponse.body);
+        setState(() {
+          postIds = extractPostIds(appliedJobList.cast<Map<String, dynamic>>());
+          print(postIds);
+        });
+      } else {
+        throw Exception('Failed to load applied jobs');
+      }
+    } catch (e) {
+      print("Error fetching applied jobs: $e");
+      return; // Exit early if applied jobs fetch fails
+    }
+
+    try {
+      // Fetch all jobs
+      final jobResponse = await http.get(Uri.parse(url));
+      if (jobResponse.statusCode == 200) {
+        List<dynamic> mydata = json.decode(jobResponse.body);
+        setState(() {
+          jobList = mydata.cast<Map<String, dynamic>>();
+          data = filterJobsByIds(jobList, postIds);
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load jobs');
+      }
+    } catch (e) {
+      print("Error fetching jobs: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,34 +96,52 @@ class _AppliedJobScreenState extends State<AppliedJobScreen> {
           ),
         ),
       ),
-      body: ListView.builder(
-        itemCount: data.length,
-        itemBuilder: (context, index) {
-          final job = data[index];
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : data.isEmpty
+              ? const Text("There are no Applied Jobs",
+                  style: TextStyle(color: Colors.red))
+              : ListView.builder(
+                  padding: EdgeInsets.fromLTRB(15, 5, 15, 0),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    final job = data[index];
+                    return JobCard(job: job);
+                  },
+                ),
+    );
+  }
+}
 
-          return Card(
-            elevation: 3,
-            margin: EdgeInsets.all(10),
-            child: ListTile(
-              title: Text(job["jobTitle"],
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Type: ${job["jobType"]}"),
-                  Text("Applied on: ${job["timestamp"]}"),
-                  Text("Applicant: ${job["name"]}"),
-                ],
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        JobDescriptionScreen(postId: job["post_id"]),
-                  ),
-                );
-              },
+class JobCard extends StatelessWidget {
+  final dynamic job;
+
+  const JobCard({super.key, required this.job});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      elevation: 5,
+      child: ListTile(
+        leading: const Icon(
+          Icons.work_outline,
+          color: Colors.blue,
+          size: 30,
+        ),
+        title: Text(job['jobTitle'] ?? 'Job Title Not Available'),
+        subtitle: Text(job['companyName'] ?? 'Company Name Not Available'),
+        trailing: const Icon(Icons.arrow_forward),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => JobDescriptionPage(job: job),
             ),
           );
         },
@@ -96,391 +150,237 @@ class _AppliedJobScreenState extends State<AppliedJobScreen> {
   }
 }
 
-class JobDescriptionScreen extends StatelessWidget {
-  final String postId;
+class JobDescriptionPage extends StatefulWidget {
+  final Map<String, dynamic> job;
 
-  const JobDescriptionScreen({Key? key, required this.postId})
-      : super(key: key);
+  const JobDescriptionPage({super.key, required this.job});
 
   @override
+  _JobDescriptionPageState createState() => _JobDescriptionPageState();
+}
+
+class _JobDescriptionPageState extends State<JobDescriptionPage> {
+  @override
   Widget build(BuildContext context) {
+    final job = widget.job;
+
     return Scaffold(
-      appBar: AppBar(title: Text("Job Description")),
-      body: Center(
-        child: Text("Job details for post ID: $postId"),
+      appBar: AppBar(
+        title: Text(job['jobTitle'] ?? 'Job Details'),
+        backgroundColor: const Color.fromARGB(255, 251, 252, 252),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Job Header Section
+              _buildJobHeader(job),
+
+              const SizedBox(height: 16),
+
+              // Job Details Section
+              _buildCardSection("Job Details", [
+                DetailItem(label: "Company", value: job['companyName']),
+                DetailItem(label: "Category", value: job['jobCategory']),
+                DetailItem(
+                    label: "Location",
+                    value: "${job['city']}, ${job['country']}"),
+                DetailItem(label: "Career Level", value: job['careerLevel']),
+                DetailItem(
+                    label: "Employment Status", value: job['employmentStatus']),
+                DetailItem(label: "Vacancies", value: "${job['vacancies']}"),
+              ]),
+
+              const SizedBox(height: 16),
+
+              // Job Description Section with Read More
+              _buildCardSection("Job Description", [
+                ReadMoreText(
+                  label: "Description",
+                  value: job['jobDescription'] ?? "No description available.",
+                ),
+                ReadMoreText(
+                  label: "Responsibilities",
+                  value: (job['keyResponsibilities']?.join(', ') ??
+                      "No responsibilities provided."),
+                ),
+              ]),
+
+              const SizedBox(height: 16),
+
+              // Skills & Requirements Section
+              _buildCardSection("Skills & Requirements", [
+                DetailItem(
+                  label: "Skills",
+                  value: job['skillsAndExperience']?.join(', '),
+                ),
+                DetailItem(label: "Qualification", value: job['qualification']),
+              ]),
+
+              const SizedBox(height: 16),
+
+              // Salary & Industry Details
+              _buildCardSection("Salary & Industry Details", [
+                DetailItem(label: "Salary", value: "\$${job['offeredSalary']}"),
+                DetailItem(label: "Industry", value: job['industry']),
+                DetailItem(
+                  label: "Application Deadline",
+                  value: job['applicationDeadlineDate'],
+                ),
+              ]),
+            ],
+          ),
+        ),
       ),
     );
   }
-}
 
-class JobManager extends StatefulWidget {
-  const JobManager({super.key});
-
-  @override
-  _JobManagerState createState() => _JobManagerState();
-}
-
-class _JobManagerState extends State<JobManager> {
-  // Lists of categories and locations
-  final List<String> categories = [
-    'IT',
-    'Marketing',
-    'Finance',
-    'Sales',
-    'HR',
-    'Engineering',
-    'Design',
-    'Customer Service',
-    'Administration',
-    'Education'
-  ];
-
-  final List<String> locations = [
-    'Mumbai',
-    'Delhi',
-    'Bangalore',
-    'Chennai',
-    'Hyderabad',
-    'Pune',
-    'Kolkata',
-    'Ahmedabad',
-    'Chandigarh',
-    'Goa'
-  ];
-
-  // List of job listings
-  late List<Map<String, String>> jobListings = [];
-
-  // Pagination variables
-  int currentPage = 0;
-  final int recordsPerPage = 5;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchJobs();
-  }
-
-  Future<void> fetchJobs() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('userId');
-
-    if (userId == null) {
-      return;
-    }
-
-    try {
-      final response = await http.get(
-        Uri.parse('${AppConfig.baseUrl}/api/applied-jobs/user/$userId'),
-      );
-
-      if (response.statusCode == 200) {
-        dynamic data = json.decode(response.body);
-      } else {
-        throw Exception('Failed to load jobs');
-      }
-    } catch (error) {
-      print('Error fetching jobs: $error');
-    }
-  }
-
-  // Method to load the next set of jobs
-  void loadMoreJobs() {
-    setState(() {
-      if (currentPage + 1 < (jobListings.length / recordsPerPage).ceil()) {
-        currentPage++;
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    // Get the jobs for the current page
-    final startIndex = currentPage * recordsPerPage;
-    final endIndex = startIndex + recordsPerPage;
-    final jobsToShow = jobListings.sublist(
-      startIndex,
-      endIndex > jobListings.length ? jobListings.length : endIndex,
-    );
-
+  Widget _buildJobHeader(Map<String, dynamic> job) {
     return Container(
-      padding: EdgeInsets.all(screenWidth * 0.04),
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            spreadRadius: 4,
-            offset: const Offset(0, 2),
+        color: const Color.fromARGB(255, 54, 155, 238),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const CircleAvatar(
+            radius: 40,
+            backgroundImage:
+                AssetImage('assets/logo.png'), // Placeholder for company logo
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  job['companyName'] ?? 'Company Name',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  job['jobCategory'] ?? 'Job Category',
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "${job['city']}, ${job['country']}",
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCardSection(String title, List<Widget> children) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 3,
+      color: const Color.fromARGB(255, 230, 231, 231),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 54, 155, 238),
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DetailItem extends StatelessWidget {
+  final String label;
+  final String? value;
+
+  const DetailItem({super.key, required this.label, this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              "$label:",
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+          ),
+          Expanded(
+            flex: 5,
+            child: Text(value ?? "N/A"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ReadMoreText extends StatefulWidget {
+  final String label;
+  final String value;
+
+  const ReadMoreText({super.key, required this.label, required this.value});
+
+  @override
+  _ReadMoreTextState createState() => _ReadMoreTextState();
+}
+
+class _ReadMoreTextState extends State<ReadMoreText> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final maxLines = _isExpanded ? null : 5;
+    final overflow = _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Applied Job Listings',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: screenWidth * 0.045,
-                  color: Colors.black87,
-                ),
-              ),
-              DropdownButton<String>(
-                icon: const Icon(Icons.filter_list, color: Colors.blue),
-                underline: const SizedBox(),
-                items: <String>[
-                  'Last 6 Months',
-                  'Last 12 Months',
-                  'Last 16 Months',
-                  'Last 24 Months',
-                  'Last 5 Years'
-                ].map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (value) {},
-                hint: Text(
-                  'Filter',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            widget.value,
+            maxLines: maxLines,
+            overflow: overflow,
           ),
-          const SizedBox(height: 8),
-          // List of Job Cards
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: jobsToShow.length,
-            itemBuilder: (context, index) {
-              final job = jobsToShow[index];
-
-              return Container(
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 8,
-                      spreadRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const CircleAvatar(
-                          radius: 30,
-                          backgroundImage: AssetImage('assets/logo.png'),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                job['title']!,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: screenWidth * 0.045,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Flexible(
-                                    flex: 9,
-                                    child: Text(
-                                      job['category']!,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.038,
-                                        color: Colors.blueGrey,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Flexible(
-                                    flex: 8,
-                                    child: Text(
-                                      " - ${job['location']}",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.038,
-                                        color: Colors.blueGrey,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                            ],
-                          ),
-                        ),
-                        //const Spacer(), // Push the 3 dots to the end of the row
-                        PopupMenuButton<String>(
-                          icon: const Icon(
-                            Icons.more_vert,
-                            color: Colors.blueGrey,
-                            size: 30,
-                          ),
-                          onSelected: (value) {
-                            switch (value) {
-                              case 'View':
-                                print('View clicked');
-                                break;
-                              case 'Update':
-                                print('Update clicked');
-                                break;
-                              case 'Delete':
-                                print('Delete clicked');
-                                break;
-                            }
-                          },
-                          itemBuilder: (BuildContext context) {
-                            return [
-                              PopupMenuItem<String>(
-                                value: 'View',
-                                child: Text(
-                                  'View',
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.04,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ),
-                              PopupMenuItem<String>(
-                                value: 'Update',
-                                child: Text(
-                                  'Update',
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.04,
-                                    color: Colors.orange,
-                                  ),
-                                ),
-                              ),
-                              PopupMenuItem<String>(
-                                value: 'Delete',
-                                child: Text(
-                                  'Delete',
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.04,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ),
-                            ];
-                          },
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 4,
-                        ),
-                      ],
-                    ),
-                    const Divider(color: Colors.grey, height: 5),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Applications: ${job['applications']}",
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.038,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            Text(
-                              "Expiry Date: ${job['expiryDate']}",
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.038,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
             },
+            child: Text(
+              _isExpanded ? "View Less" : "Read More",
+              style: const TextStyle(
+                color: Color.fromARGB(255, 54, 155, 238),
+              ),
+            ),
           ),
-          // Pagination Button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // "Load Previous" Button
-              if (currentPage > 0)
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      currentPage--; // Decrease the current page index
-                    });
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'Load Previous',
-                    style: TextStyle(fontSize: screenWidth * 0.04),
-                  ),
-                ),
-
-              // "Load More" Button
-              if (currentPage + 1 <
-                  (jobListings.length / recordsPerPage).ceil())
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      currentPage++; // Increase the current page index
-                    });
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'Load More',
-                    style: TextStyle(fontSize: screenWidth * 0.04),
-                  ),
-                ),
-            ],
-          )
         ],
       ),
     );
