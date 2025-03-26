@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const geoip = require('geoip-lite');
 const rateLimit = require('express-rate-limit');
 const { isEmail } = require('validator');
@@ -19,6 +19,7 @@ const Award = require('../models/awardModel');
 const Skill = require('../models/skillModel');
 const Job = require('../models/jobModel');
 const FreeJob = require('../models/freeJobModel');
+const Plan = require('../models/planModel');
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -528,7 +529,7 @@ const changePassword = async (req, res) => {
 const updateUserData = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { name, username, email, mobile1, address, gender, country } = req.body;
+    const { name, username, email, mobile1, address, gender, country, licenseNumber } = req.body;
 
     // Validate required fields
     if (!email || !mobile1) {
@@ -539,7 +540,7 @@ const updateUserData = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       {
-        $set: { name, username, email, mobile1, address, gender, country },
+        $set: { name, username, email, mobile1, address, gender, country, licenseNumber },
       },
       { new: true } // Return the updated user object
     );
@@ -649,12 +650,14 @@ const getUserDetails = async (req, res) => {
       // Fetch the user's awards from the Award model
       const awards = await Award.find({ user_id: id });
       // Return all the data including user details, skills, education, experience, and awards
+      const plans = await Plan.find({ user_id : id})
       res.status(200).json({
         ...otherDetails, // user details without password
         skills,
         education,
         experience,
         awards,
+        plans,
       });
     } else {
       res.status(404).json({ message: "No such user exists" });
