@@ -20,6 +20,7 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> jobList = [];
   List<dynamic> filteredJobList = [];
   bool isLoading = true;
+  int joblist = 6;
 
   @override
   void initState() {
@@ -119,7 +120,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.fromLTRB(20,0.13 * screenHeight  , 20, 20),
+                      padding:
+                          EdgeInsets.fromLTRB(20, 0.13 * screenHeight, 20, 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -133,37 +135,72 @@ class _HomePageState extends State<HomePage> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  // Handle "See all" tap
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    // Toggle between 6 jobs and all jobs
+                                    joblist = joblist == 6
+                                        ? filteredJobList.length
+                                        : 6;
+                                  });
                                 },
-                                child: const Text(
-                                  "See all",
-                                  style: TextStyle(
-                                    color: Colors.blue,
-                                    fontSize: 18,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 251, 252, 252),
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    side: BorderSide.none,
                                   ),
                                 ),
-                              ),
+                                child: Text(
+                                  joblist == 6 ? "See all" : "See less",
+                                  style: const TextStyle(
+                                      fontSize: 18, color: Colors.blue),
+                                ),
+                              )
                             ],
                           ),
                           const SizedBox(height: 20),
                           isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : jobList.isEmpty
-                              ? const Text(
-                              "Can't fetch jobs at the moment.",
-                              style: TextStyle(color: Colors.red))
-                              : ListView.builder(
-                            shrinkWrap: true,
-                            physics:
-                            const NeverScrollableScrollPhysics(),
-                            itemCount: filteredJobList.length,
-                            itemBuilder: (context, index) {
-                              final job = filteredJobList[index];
-                              return JobCard(job: job);
+                                  ? const Text(
+                                      "Can't fetch jobs at the moment.",
+                                      style: TextStyle(color: Colors.red))
+                                  : ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: filteredJobList.length,
+                                      itemBuilder: (context, index) {
+                                        final job = filteredJobList[index];
+                                        return JobCard(job: job);
+                                      },
+                                    ),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                // Toggle between 6 jobs and all jobs
+                                joblist =
+                                    joblist == 6 ? filteredJobList.length : 6;
+                              });
                             },
-                          ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 251, 252, 252),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide.none,
+                              ),
+                            ),
+                            child: Text(
+                              joblist == 6 ? "See all" : "See less",
+                              style: const TextStyle(
+                                  fontSize: 18, color: Colors.blue),
+                            ),
+                          )
                         ],
                       ),
                     ),
@@ -346,6 +383,34 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
   void initState() {
     super.initState();
     _checkIfJobIsSaved(); // Check if the job is already saved
+    _checkIfJobAlreadyApplied();
+  }
+
+  Future<void> _checkIfJobAlreadyApplied() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+
+    if (userId == null) {
+      return;
+    }
+
+    const apiUrl = '${AppConfig.baseUrl}/api/applied-jobs/validate';
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'user_id': userId, 'post_id': widget.job['_id']}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        setState(() {
+          _isApplied = responseData['valid'];
+        });
+      }
+    } catch (error) {
+      print("Error checking saved job: $error");
+    }
   }
 
   Future<void> _checkIfJobIsSaved() async {
@@ -492,10 +557,11 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
     }
   }
 
-  Future<void> _applyForJob() async {
+  Future<void> _applyForJob(String Applied_n_Withdraw) async {
     // Fetch user_id from SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString("userId");
+    String url;
 
     if (userId == null) {
       Fluttertoast.showToast(
@@ -515,38 +581,70 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
       "post_id": widget.job['_id'], // Assuming job has an _id field
     };
 
-    // Make the API call
-    const url = "${AppConfig.baseUrl}/api/applied-jobs/applyJob";
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(requestBody),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          _isApplied = true;
-        });
-        Fluttertoast.showToast(
-          msg: "You have successfully applied for this job!",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          fontSize: 16.0,
+      dynamic response;
+      if (Applied_n_Withdraw == "WithDraw") {
+        url = "${AppConfig.baseUrl}/api/applied-jobs/appliedJob";
+        response = await http.delete(
+          Uri.parse(url),
+          headers: {"Content-Type": "application/json"},
+          body: json.encode(requestBody),
         );
+        if (response.statusCode == 200) {
+          setState(() {
+            _isApplied = false;
+          });
+          Fluttertoast.showToast(
+            msg: "You have successfully withdrawed for this job!",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        } else {
+          // Print the error response from the backend
+          print("Backend Error: ${response.body}");
+          Fluttertoast.showToast(
+            msg: "Failed to withdraw for the job. Please try again.",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        }
       } else {
-        // Print the error response from the backend
-        print("Backend Error: ${response.body}");
-        Fluttertoast.showToast(
-          msg: "Failed to apply for the job. Please try again.",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0,
+        url = "${AppConfig.baseUrl}/api/applied-jobs/applyJob";
+        response = await http.post(
+          Uri.parse(url),
+          headers: {"Content-Type": "application/json"},
+          body: json.encode(requestBody),
         );
+        if (response.statusCode == 200) {
+          setState(() {
+            _isApplied = true;
+          });
+          Fluttertoast.showToast(
+            msg: "You have successfully applied for this job!",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        } else {
+          // Print the error response from the backend
+          print("Backend Error: ${response.body}");
+          Fluttertoast.showToast(
+            msg: "Failed to apply for the job. Please try again.",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        }
       }
     } catch (e) {
       // Print the exception for debugging
@@ -569,12 +667,14 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(job['jobTitle'] ?? 'Job Details'),
-        backgroundColor: const Color.fromARGB(255, 251, 252, 252),
+        backgroundColor: const Color.fromARGB(255, 100, 176, 238),
         actions: [
           IconButton(
             icon: Icon(
               _isSaved ? Icons.bookmark : Icons.bookmark_border,
-              color: _isSaved ? Colors.blue : Colors.grey,
+              color: _isSaved
+                  ? Colors.blue
+                  : const Color.fromARGB(255, 41, 41, 41),
             ),
             onPressed: () {
               if (_isSaved) {
@@ -653,19 +753,25 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
               // Apply Button
               Center(
                 child: ElevatedButton(
-                  onPressed: _isApplied ? null : _applyForJob,
+                  onPressed: () {
+                    if (_isApplied) {
+                      _applyForJob("WithDraw");
+                    } else {
+                      _applyForJob("Apply");
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 40.0,
                       vertical: 16.0,
                     ),
-                    backgroundColor: _isApplied ? Colors.grey : Colors.blue,
+                    backgroundColor: _isApplied ? Colors.red : Colors.blue,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: Text(
-                    _isApplied ? "Applied" : "Apply Now",
+                    _isApplied ? "Withdraw" : "Apply Now",
                     style: const TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
@@ -690,7 +796,7 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
           const CircleAvatar(
             radius: 40,
             backgroundImage:
-            AssetImage('assets/logo.png'), // Placeholder for company logo
+                AssetImage('assets/logo.png'), // Placeholder for company logo
           ),
           const SizedBox(width: 16),
           Expanded(
