@@ -40,6 +40,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             data['plans'] is List &&
             data['plans'].isNotEmpty) {
           var plan = data['plans'][0];
+          prefs.setString("planId",plan["_id"]);
 
           setState(() {
             activePackage = {
