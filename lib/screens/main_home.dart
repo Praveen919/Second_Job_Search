@@ -12,6 +12,7 @@ import 'package:second_job_search/screens/plan_pricing_screen.dart';
 import 'package:second_job_search/screens/profile_screens/profile_cand_dashboard.dart';
 import 'package:second_job_search/screens/saved_jobs_screen.dart';
 import 'package:second_job_search/screens/sms_screen.dart';
+import 'package:second_job_search/screens/wallet_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -81,9 +82,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 IconButton(
                   onPressed: () async {
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
                     String? userId = prefs.getString('userId');
-                    String? userRole = prefs.getString('role') ?? 'candidate'; // Default to candidate
+                    String? userRole = prefs.getString('role') ??
+                        'candidate'; // Default to candidate
 
                     if (userId != null) {
                       Navigator.push(
@@ -98,7 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }
                   },
-                  icon: const Icon(Icons.notifications_none, color: Colors.white),
+                  icon:
+                      const Icon(Icons.notifications_none, color: Colors.white),
                 ),
                 IconButton(
                   onPressed: () {
@@ -130,16 +134,24 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Center(
                 child: Text(
                   'Menu',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ),
             ),
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              leading: const Icon(Icons.dashboard, color: Colors.blueGrey, size: 30),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              leading:
+                  const Icon(Icons.dashboard, color: Colors.blueGrey, size: 30),
               title: const Text(
                 "Dashboard",
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 18),
+                style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18),
               ),
               onTap: () {
                 Navigator.push(
@@ -153,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // Register/Login ListTile with added styling
             ListTile(
               contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               leading: const Icon(
                 Icons.login,
                 color: Color.fromARGB(255, 3, 79, 117),
@@ -178,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               leading: const Icon(
                 Icons.group_work_rounded,
                 color: Color.fromARGB(255, 3, 79, 117),
@@ -197,6 +209,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => PlanPricingScreen(userId: ''),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              leading: const Icon(
+                Icons.wallet,
+                color: Color.fromARGB(255, 3, 79, 117),
+                size: 24,
+              ),
+              title: const Text(
+                "Wallet",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                ),
+              ),
+              onTap: () {
+                // Your navigation logic here
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WalletScreen(),
                   ),
                 );
               },
