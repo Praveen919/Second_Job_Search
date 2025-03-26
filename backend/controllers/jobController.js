@@ -213,11 +213,72 @@ const getJobCountByUserId = async (req, res) => {
   }
 };
 
+//Update the job
+const updateJob = async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+
+  try {
+    const updatedJob = await Job.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!updatedJob) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    res.status(200).json({ message: "Job updated successfully", updatedJob });
+  } catch (error) {
+    console.error("Error updating job:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+//delete the job
+const deleteJob = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const job = await Job.findByIdAndDelete(id);
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    // Delete all applied jobs linked to this job
+    await AppliedJob.deleteMany({ post_id: id });
+
+    res.status(200).json({ message: "Job deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting job:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+//get jobstatus counts
+const getEmployerJobCounts = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const activeJobs = await Job.countDocuments({ user_id: id, status: "active" });
+    const inactiveJobs = await Job.countDocuments({ user_id: id, status: "inactive" });
+    const pendingJobs = await Job.countDocuments({ user_id: id, status: "pending" });
+    const totalJobs = activeJobs + inactiveJobs + pendingJobs;
+
+    res.status(200).json({ activeJobs, inactiveJobs, pendingJobs, totalJobs });
+  } catch (error) {
+    console.error("Error fetching job counts:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   getAllJobs,
   postJob,
   getShortlistedJobsById,
   getAllJobsCount,
   findJobsByUserId,
-  getJobCountByUserId
+  getJobCountByUserId,
+  getEmployerJobCounts,
+  updateJob,
+  deleteJob
+
 };
