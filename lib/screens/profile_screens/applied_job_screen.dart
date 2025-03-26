@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,10 +20,15 @@ class _AppliedJobScreenState extends State<AppliedJobScreen> {
   List<String> postIds = [];
   bool isLoading = true;
 
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
     fetchJobs();
+    _timer = Timer.periodic(Duration(milliseconds: 500), (timer) {
+      fetchJobs();
+    });
   }
 
   List<String> extractPostIds(List<Map<String, dynamic>> data) {
@@ -160,6 +167,74 @@ class JobDescriptionPage extends StatefulWidget {
 }
 
 class _JobDescriptionPageState extends State<JobDescriptionPage> {
+  Future<void> _JobWithdraw() async {
+    // Fetch user_id from SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+    String url;
+
+    if (userId == null) {
+      Fluttertoast.showToast(
+        msg: "User not logged in!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+      return;
+    }
+
+    // Prepare the data to be sent to the backend
+    Map<String, dynamic> requestBody = {
+      "user_id": userId, // Use "user_id" instead of "userId"
+      "post_id": widget.job['_id'], // Assuming job has an _id field
+    };
+
+    try {
+      dynamic response;
+      url = "${AppConfig.baseUrl}/api/applied-jobs/appliedJob";
+      response = await http.delete(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode(requestBody),
+      );
+      if (response.statusCode == 200) {
+        Fluttertoast.showToast(
+          msg: "You have successfully withdrawed for this job!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+        Navigator.pop(context);
+      } else {
+        // Print the error response from the backend
+        print("Backend Error: ${response.body}");
+        Fluttertoast.showToast(
+          msg: "Failed to withdraw for the job. Please try again.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (e) {
+      // Print the exception for debugging
+      print("Exception: $e");
+      Fluttertoast.showToast(
+        msg: "Error applying for job: $e",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final job = widget.job;
@@ -168,6 +243,27 @@ class _JobDescriptionPageState extends State<JobDescriptionPage> {
       appBar: AppBar(
         title: Text(job['jobTitle'] ?? 'Job Details'),
         backgroundColor: const Color.fromARGB(255, 251, 252, 252),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              _JobWithdraw();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  const Color.fromARGB(255, 251, 252, 252), // Change as needed
+              elevation: 0, // Removes shadow
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(8), // Adjust radius if needed
+                side: BorderSide.none, // Removes border
+              ),
+            ),
+            child: const Text(
+              "Withdraw",
+              style: TextStyle(fontSize: 18, color: Colors.red),
+            ),
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
