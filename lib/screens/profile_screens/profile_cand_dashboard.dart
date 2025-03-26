@@ -31,7 +31,7 @@ class _ProfilescreenState extends State<Profilescreen> {
   Future<void> _loadDashboardData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String apiForAppliedJobsUrl =
-        "${AppConfig.baseUrl}/api/applied-jobs//count/${prefs.getString("userId")}";
+        "${AppConfig.baseUrl}/api/applied-jobs/count/${prefs.getString("userId")}";
     String apiForUnreadMessagesUrl =
         "${AppConfig.baseUrl}/api/messages/notify/${prefs.getString("userId")}";
     String apiForJobsUrl = "${AppConfig.baseUrl}/api/jobs/jobCount";
@@ -150,7 +150,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                 ),
               ),
               const Text(
-                'Last login: 7th October 2024, 1:25 pm - Unknown',
+                'Registered on: 7th October 2024, 1:25 pm - Unknown',
                 style: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 14,
