@@ -52,8 +52,7 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
     String apiForMessagesUrl =
         "${AppConfig.baseUrl}/api/messages/notify/${prefs.getString("userId")}";
     String apiForShortlistUrl =
-        "${AppConfig.baseUrl}/api/applied-jobs/shortlisted-count/${prefs
-        .getString("userId")}";
+        "${AppConfig.baseUrl}/api/applied-jobs/shortlisted-count/${prefs.getString("userId")}";
     try {
       final response = await http.get(Uri.parse(apiUrl));
 
@@ -240,7 +239,7 @@ class _EmployeeDashboardscreenState extends State<EmployeeDashboardscreen> {
                 ),
               ),
               Text(
-                'Last login: $lastLoginTime - Unknown',
+                'Registered on: $lastLoginTime - Unknown',
                 style: const TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 14,
@@ -353,27 +352,33 @@ class _ProfileViewsChartState extends State<ProfileViewsChart> {
 
   Future<void> _loadGraphDataPoints() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String apiUrl =
-        "${AppConfig.baseUrl}/api/jobs/${prefs.getString("userId")}";
+    String apiUrl = "${AppConfig.baseUrl}/api/jobs/posted-jobs/${prefs.getString("userId")}";
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
+        dynamic data = jsonDecode(response.body);
+        int jobCount = int.tryParse(data['jobCount'].toString()) ?? 0;
+
         setState(() {
-          monthData = extractMonthCount(response.body);
+          monthData = {1: jobCount};  // Month 1 (Jan) pe Job Count dikhao
         });
+
+        print("Updated Month Data: $monthData");
       }
     } catch (error) {
       print("Error fetching data: $error");
     }
   }
 
+
   List<FlSpot> getDataPoints() {
     return List.generate(12, (index) {
       return FlSpot(
           (index + 1).toDouble(), monthData[index + 1]?.toDouble() ?? 0);
     });
+
   }
 
   @override
