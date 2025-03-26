@@ -4,7 +4,7 @@ const { getAllAppliedJobs, validateIds,getAppliedJobsCount, getAppliedJobsById, 
 const router = express.Router();
 
 router.get('', getAllAppliedJobs);
-router.get('/validate', validateIds);
+router.post('/validate', validateIds);
 router.get('/appliedJobs/details', getAllAppliedJobsWithDetails);
 router.put('/appliedJob/seen', updateSeenStatus);
 router.delete('/appliedJob', deleteAppliedJob);
