@@ -18,6 +18,7 @@ class _HomePageState extends State<EmployerHomePage> {
   List<dynamic> jobList = [];
   List<dynamic> filteredJobList = [];
   bool isLoading = true;
+  int joblist = 6;
 
   @override
   void initState() {
@@ -117,7 +118,8 @@ class _HomePageState extends State<EmployerHomePage> {
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 90, 20, 20),
+                      padding:
+                          EdgeInsets.fromLTRB(20, 0.11 * screenHeight, 20, 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -131,18 +133,30 @@ class _HomePageState extends State<EmployerHomePage> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              GestureDetector(
-                                onTap: () {
-                                  // Handle "See all" tap
+                              ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    // Toggle between 6 jobs and all jobs
+                                    joblist = joblist == 6
+                                        ? filteredJobList.length
+                                        : 6;
+                                  });
                                 },
-                                child: const Text(
-                                  "See all",
-                                  style: TextStyle(
-                                    color: Colors.blue,
-                                    fontSize: 18,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 251, 252, 252),
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    side: BorderSide.none,
                                   ),
                                 ),
-                              ),
+                                child: Text(
+                                  joblist == 6 ? "See all" : "See less",
+                                  style: const TextStyle(
+                                      fontSize: 18, color: Colors.blue),
+                                ),
+                              )
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -156,12 +170,36 @@ class _HomePageState extends State<EmployerHomePage> {
                                       shrinkWrap: true,
                                       physics:
                                           const NeverScrollableScrollPhysics(),
-                                      itemCount: filteredJobList.length,
+                                      itemCount: joblist.clamp(
+                                          0, filteredJobList.length),
                                       itemBuilder: (context, index) {
                                         final job = filteredJobList[index];
                                         return JobCard(job: job);
                                       },
                                     ),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                // Toggle between 6 jobs and all jobs
+                                joblist =
+                                    joblist == 6 ? filteredJobList.length : 6;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 251, 252, 252),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide.none,
+                              ),
+                            ),
+                            child: Text(
+                              joblist == 6 ? "See all" : "See less",
+                              style: const TextStyle(
+                                  fontSize: 18, color: Colors.blue),
+                            ),
+                          )
                         ],
                       ),
                     ),
