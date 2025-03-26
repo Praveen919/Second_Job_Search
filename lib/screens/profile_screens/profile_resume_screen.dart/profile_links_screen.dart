@@ -230,6 +230,43 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
       );
     }
   }
+  void _updateProfileLinks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString("userId");
+    String apiUrl = "${AppConfig.baseUrl}/api/users/edit/$userId";
+
+    final body = {
+      "linkedin": personalInfoControllers['LinkedIn Link']!.text,
+      "facebook": personalInfoControllers['Facebook Link']!.text,
+      "twitter": personalInfoControllers['Twitter Link']!.text,
+      "googlePlus": personalInfoControllers['Other Links']!.text,
+      "portfolio": personalInfoControllers['Portfolio Link']!.text,
+      "github": personalInfoControllers['GitHub Link']!.text,
+    };
+
+    try {
+      final response = await http.put(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile updated successfully")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update profile")),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("An error occurred")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +334,7 @@ class _ProfileLinksScreenState extends State<ProfileLinksScreen> {
                       label: 'Save',
                       color: Colors.blue,
                       onTap: () {
-                        _uploadResumeData();
+                        _updateProfileLinks();
                       },
                     ),
                   ],
