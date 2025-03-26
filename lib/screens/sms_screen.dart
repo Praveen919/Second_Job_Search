@@ -68,53 +68,87 @@ class _SmsScreenState extends State<SmsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chats'),
-        backgroundColor: Color(0xFFBFDBFE),
-        elevation: 4.0,
+        backgroundColor:
+            const Color.fromARGB(255, 100, 176, 238), // Clean solid color
+        elevation: 3.0,
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : errorMessage.isNotEmpty
-              ? Center(child: Text(errorMessage))
+              ? Center(
+                  child: Text(
+                    errorMessage,
+                    style: TextStyle(color: Colors.red, fontSize: 16),
+                  ),
+                )
               : ListView.builder(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                   itemCount: contacts.length,
                   itemBuilder: (context, index) {
-                    return Column(
-                      children: [
-                        ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.green,
-                            child: Text(
-                              contacts[index]['name'][0],
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatScreen(
+                                senderId: senderId ?? "",
+                                receiverId: contacts[index]['receiverId'],
+                                contactName: contacts[index]['name']),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 6),
+                        padding:
+                            EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
                             ),
-                          ),
-                          title: Text(
-                            contacts[index]['name'],
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                          subtitle: Text(
-                            'Last active: ${_getLastActiveDate(contacts[index]['lastActive'])}',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                          trailing: const Icon(Icons.arrow_forward,
-                              color: Colors.green),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChatScreen(
-                                    senderId: senderId ?? "",
-                                    receiverId: contacts[index]['receiverId'],
-                                    contactName: contacts[index]['name']),
-                              ),
-                            );
-                          },
+                          ],
                         ),
-                        const Divider(),
-                      ],
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 28,
+                              backgroundColor: Colors.green,
+                              child: Text(
+                                contacts[index]['name'][0],
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 18),
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    contacts[index]['name'],
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Last active: ${_getLastActiveDate(contacts[index]['lastActive'])}',
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.arrow_forward_ios,
+                                color: Colors.grey.shade400, size: 18),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),
@@ -208,6 +242,7 @@ class _ChatScreenState extends State<ChatScreen> {
         "receiverId": receiverId,
         "text": message,
       };
+      print(messageData);
 
       try {
         final response = await http.post(
@@ -238,44 +273,93 @@ class _ChatScreenState extends State<ChatScreen> {
     final expanded = messageData['expanded'];
 
     List<String> messageLines = message.split("\n");
+    bool isLongMessage = messageLines.length > 15;
 
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: ConstrainedBox(
         constraints:
-            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+            BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         child: GestureDetector(
-          onTap: () {
-            setState(() {
-              messageData['expanded'] = !expanded;
-            });
-          },
           child: Container(
             margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
-              color: isMe ? Colors.green[400] : Colors.grey[300],
-              borderRadius: BorderRadius.circular(18),
+              gradient: isMe
+                  ? LinearGradient(
+                      colors: [
+                        Color(0xFF00B4DB), // Light Teal
+                        Color(0xFF0083B0), // Royal Blue
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : LinearGradient(
+                      colors: [Color(0xFF64B0EE), Color(0xFF007AFF)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(18),
+                topRight: Radius.circular(18),
+                bottomLeft: isMe ? Radius.circular(18) : Radius.zero,
+                bottomRight: isMe ? Radius.zero : Radius.circular(18),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 5,
+                  offset: Offset(0, 3),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment:
                   isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
-                Text(
-                  expanded || messageLines.length <= 15
-                      ? message
-                      : "${messageLines.take(15).join("\n")}...\nRead More",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isMe ? Colors.white : Colors.black87,
+                AnimatedSize(
+                  duration: Duration(milliseconds: 200),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        expanded || !isLongMessage
+                            ? message
+                            : "${messageLines.take(15).join("\n")}...",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: isMe ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      if (isLongMessage)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              messageData['expanded'] = !expanded;
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 5),
+                            child: Text(
+                              expanded ? "Read Less" : "Read More",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: isMe ? Colors.white70 : Colors.blue,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}',
+                  DateFormat('hh:mm a').format(timestamp),
                   style: TextStyle(
-                      fontSize: 12,
-                      color: isMe ? Colors.white70 : Colors.black54),
+                    fontSize: 12,
+                    color: isMe ? Colors.white70 : Colors.black54,
+                  ),
                 ),
               ],
             ),
@@ -290,7 +374,8 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.contactName),
-        backgroundColor: Color(0xFFBFDBFE),
+        backgroundColor:
+            const Color.fromARGB(255, 100, 176, 238), // Single solid color
         elevation: 4.0,
       ),
       body: Column(
@@ -299,6 +384,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: isLoading
                 ? Center(child: CircularProgressIndicator())
                 : ListView.builder(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       return _buildMessageBubble(messages[index]);
@@ -306,30 +392,61 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    onSubmitted: (_) =>
-                        _sendMessage(widget.senderId, widget.receiverId),
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Type a message...',
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                        border: InputBorder.none,
+                      ),
+                      onSubmitted: (_) =>
+                          _sendMessage(widget.senderId, widget.receiverId),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                CircleAvatar(
-                  radius: 25,
-                  backgroundColor: Colors.green,
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: () =>
-                        _sendMessage(widget.senderId, widget.receiverId),
+                SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF64B0EE), Color(0xFF007AFF)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.5),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.transparent,
+                    child: IconButton(
+                      icon: Icon(Icons.send, color: Colors.white),
+                      onPressed: () =>
+                          _sendMessage(widget.senderId, widget.receiverId),
+                    ),
                   ),
                 ),
               ],
