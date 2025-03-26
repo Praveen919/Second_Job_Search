@@ -128,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(
-                color: Color(0xFFBFDBFE),
+                color: const Color.fromARGB(255, 100, 176, 238),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Center(
