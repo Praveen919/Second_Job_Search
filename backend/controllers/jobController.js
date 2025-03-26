@@ -258,9 +258,10 @@ const getEmployerJobCounts = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const activeJobs = await Job.countDocuments({ user_id: id, status: "active" });
-    const inactiveJobs = await Job.countDocuments({ user_id: id, status: "inactive" });
-    const pendingJobs = await Job.countDocuments({ user_id: id, status: "pending" });
+    const activeJobs = await Job.countDocuments({ user_id: id, label: "Paid Job" });
+    const inactiveJobs = await Job.countDocuments({ user_id: id, label: "Free Job" });
+    const pendingJobs = await Job.countDocuments({ user_id: id, status: "pending" }); // Agar status field available hai toh
+
     const totalJobs = activeJobs + inactiveJobs + pendingJobs;
 
     res.status(200).json({ activeJobs, inactiveJobs, pendingJobs, totalJobs });
@@ -269,6 +270,7 @@ const getEmployerJobCounts = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 module.exports = {
   getAllJobs,
